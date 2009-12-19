@@ -473,7 +473,7 @@ public class Utils
                 list = parser.parse(filter);
                 String tmpName = list.toNodeArray()[0].toPlainTextString().replaceAll(",", "");
                 tmpName = tmpName.replaceAll("\\([\\d]*\\)$", "");
-                System.out.println(" Movie real name seems to be " + tmpName);
+                System.out.println("*** Google says - Movie real name is:" + tmpName);
                 return tmpName;
                 
             } catch (ParserException e1)

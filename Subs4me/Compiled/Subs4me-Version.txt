@@ -1,3 +1,8 @@
+Version 0.8
+Renamed to subs4me (which I am hoping will keep).
+Changed internet address to https://code.google.com/p/subs4me/
+fixed bug that when we feed an mkv file specifically, it would delete it at the end.
+change: delete the .dowork file automatically if there are no srt files for that movie.
 Version 0.7
 Added support for locating the correct file name using google
 Thanks to http://www.json.org/java/
@@ -8,3 +13,6 @@ Move to providers for torec and sratim
 version 0.5
 Taken out the /intense and changes the /everything to be /all
 So now I will always get either the correct file name, or all the files with the same group.
+
+
+created by htpcfreak...

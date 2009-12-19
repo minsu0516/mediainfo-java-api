@@ -80,7 +80,12 @@ public class HandleMultipleSubs
         String[] files = findSrtFilesInDir(currentFile.getFile().getParent());
         if (files.length == 0)
         {
-            exitShowMessage();
+            if (currentFile.getExt().equals(DO_WORK_EXT))
+            {
+                currentFile.getFile().delete();
+            }
+            return;
+//            exitShowMessage();
         }
         StringBuilder sb = new StringBuilder();
         sb.append("Found ");
@@ -149,7 +154,10 @@ public class HandleMultipleSubs
     
     private void cleanup(String[] files)
     {
-        currentFile.getFile().delete();
+        if (!currentFile.isVideoFile())
+        {
+            currentFile.getFile().delete();
+        }
         
         for (int i = 0; i < files.length; i++)
         {

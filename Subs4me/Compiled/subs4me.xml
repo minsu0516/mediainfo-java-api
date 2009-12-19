@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<project default="create_run_jar" name="Create Runnable Jar for Project Autosubs with Jar-in-Jar Loader">
+<project default="create_run_jar" name="Create Runnable Jar for Project Subs4me with Jar-in-Jar Loader">
     <!--this file was created by Eclipse Runnable JAR Export Wizard-->
     <!--ANT 1.7 is required                                        -->
     <target name="create_run_jar">
-        <jar destfile="D:/work/private/Autosubs/Compiled/Subs4me.jar">
+        <jar destfile="C:/work/sage/Subs4me/Compiled/subs4me.jar">
             <manifest>
                 <attribute name="Main-Class" value="org.eclipse.jdt.internal.jarinjarloader.JarRsrcLoader"/>
                 <attribute name="Rsrc-Main-Class" value="subs.Subs4me"/>
@@ -11,9 +11,9 @@
                 <attribute name="Rsrc-Class-Path" value="./ htmllexer.jar htmlparser.jar"/>
             </manifest>
             <zipfileset src="jar-in-jar-loader.zip"/>
-            <fileset dir="D:/work/private/Autosubs/bin"/>
-            <zipfileset dir="D:\work\private\Autosubs" includes="htmllexer.jar"/>
-            <zipfileset dir="D:\work\private\Autosubs" includes="htmlparser.jar"/>
+            <fileset dir="C:/work/sage/Subs4me/bin"/>
+            <zipfileset dir="C:\work\sage\Subs4me" includes="htmllexer.jar"/>
+            <zipfileset dir="C:\work\sage\Subs4me" includes="htmlparser.jar"/>
         </jar>
     </target>
 </project>

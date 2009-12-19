@@ -330,4 +330,16 @@ public class FileStruct
         return orig;
     }
     
+    public boolean isVideoFile()
+    {
+        if (getExt().equals("mkv") 
+                || getExt().equals("avi"))
+        {
+            return true;
+        }
+        
+        return false;
+    }
+    
+    
 }
