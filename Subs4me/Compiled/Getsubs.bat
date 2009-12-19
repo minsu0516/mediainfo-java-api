@@ -1,0 +1,1 @@
+java -jar autosubs.jar %1 /r /c /all

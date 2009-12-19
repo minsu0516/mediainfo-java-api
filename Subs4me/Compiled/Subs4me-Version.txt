@@ -1,0 +1,10 @@
+Version 0.7
+Added support for locating the correct file name using google
+Thanks to http://www.json.org/java/
+Thanks to http://htmlparser.sourceforge.net/
+Sratim.co.il is still not a viable source
+Version 0.6
+Move to providers for torec and sratim
+version 0.5
+Taken out the /intense and changes the /everything to be /all
+So now I will always get either the correct file name, or all the files with the same group.
