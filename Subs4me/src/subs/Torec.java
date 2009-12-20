@@ -16,6 +16,7 @@ import org.htmlparser.filters.HasAttributeFilter;
 import org.htmlparser.filters.HasChildFilter;
 import org.htmlparser.filters.HasParentFilter;
 import org.htmlparser.filters.LinkRegexFilter;
+import org.htmlparser.filters.NodeClassFilter;
 import org.htmlparser.filters.TagNameFilter;
 import org.htmlparser.nodes.TagNode;
 import org.htmlparser.nodes.TextNode;
@@ -220,23 +221,27 @@ public class Torec implements Provider
             parser.setEncoding("UTF-8");
             
             //lets find out how many seasons are showing:
-            NodeFilter filter = new AndFilter(new TagNameFilter("a"),
-                    new HasParentFilter(new AndFilter(new TagNameFilter("div"),
-                            new HasAttributeFilter("id")), true));
+            NodeFilter filter = new AndFilter(new TagNameFilter("div"),
+                     new HasAttributeFilter("class", "season_table"));
             NodeList list = new NodeList();
-            for (NodeIterator e = parser.elements(); e.hasMoreNodes();)
+            list = parser.parse(filter);
+            Node[] nodes = list.toNodeArray();
+            LinkedList<String> seasons = new LinkedList<String>();
+            for (int i = 0; i < nodes.length; i++)
             {
-                Node node = e.nextNode();
-                node.collectInto(list, filter);
-                 System.out.println(((TextNode)node).getText());
+                Node node = nodes[i];
+                seasons.add(((TagNode)node).getAttribute("id"));
+//                System.out.println();
             }
-//            list = parser.parse(filter);
-//            System.out.println(list);
+            list = new NodeList();
+            
+            parser = new Parser(baseUrl + "/" + seriesInfo);
+            parser.setEncoding("UTF-8");
             
             filter = new AndFilter(new TagNameFilter("a"),
                     new HasParentFilter(new AndFilter(new TagNameFilter("div"),
-                            new HasAttributeFilter("id", "season_"
-                                    + currentFile.getSeasonSimple())), true));
+                            new HasAttributeFilter("id", seasons.get(
+                                    Integer.parseInt(currentFile.getSeasonSimple())-1))), true));
 
             for (NodeIterator e = parser.elements(); e.hasMoreNodes();)
             {
@@ -245,7 +250,6 @@ public class Torec implements Provider
                 // System.out.println(node.toHtml());
             }
 
-            Node[] nodes = list.toNodeArray();
             for (int i = 0; i < nodes.length; i++)
             {
                 Node node = nodes[i];
