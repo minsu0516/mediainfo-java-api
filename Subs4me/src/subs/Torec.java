@@ -233,22 +233,17 @@ public class Torec implements Provider
                 seasons.add(((TagNode)node).getAttribute("id"));
 //                System.out.println();
             }
-            list = new NodeList();
             
-            parser = new Parser(baseUrl + "/" + seriesInfo);
-            parser.setEncoding("UTF-8");
+            list.removeAll();
+            parser.reset();
+            String se = seasons.get(
+                    Integer.parseInt(currentFile.getSeasonSimple())-1);
             
             filter = new AndFilter(new TagNameFilter("a"),
                     new HasParentFilter(new AndFilter(new TagNameFilter("div"),
-                            new HasAttributeFilter("id", seasons.get(
-                                    Integer.parseInt(currentFile.getSeasonSimple())-1))), true));
-
-            for (NodeIterator e = parser.elements(); e.hasMoreNodes();)
-            {
-                Node node = e.nextNode();
-                node.collectInto(list, filter);
-                // System.out.println(node.toHtml());
-            }
+                            new HasAttributeFilter("id", se)), true));
+            list = parser.parse(filter);
+            nodes = list.toNodeArray();
 
             for (int i = 0; i < nodes.length; i++)
             {
