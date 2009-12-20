@@ -211,7 +211,7 @@ public class Subs4me
      */
     public static void exitShowMessage()
     {
-        StringBuffer sb = new StringBuffer("Usage: autosubs \"[file]\" | \"[directory]\" [/params]");
+        StringBuffer sb = new StringBuffer("Usage: subs4me \"[file]\" | \"[directory]\" [/params]");
         sb.append("\nVersion ");
         sb.append(VERSION);
         sb.append("\n");
