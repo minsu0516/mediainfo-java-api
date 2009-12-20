@@ -236,8 +236,15 @@ public class Torec implements Provider
             
             list.removeAll();
             parser.reset();
-            String se = seasons.get(
-                    Integer.parseInt(currentFile.getSeasonSimple())-1);
+            int seNum = Integer.parseInt(currentFile.getSeasonSimple());
+            String se = null;
+            if (seNum <= seasons.size())
+            {
+                 se = seasons.get(seNum-1);
+            }
+            
+            if (se == null)
+                return null;
             
             filter = new AndFilter(new TagNameFilter("a"),
                     new HasParentFilter(new AndFilter(new TagNameFilter("div"),
