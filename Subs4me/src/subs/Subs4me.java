@@ -10,6 +10,7 @@ import java.util.regex.Pattern;
 public class Subs4me
 {
     public static final String SRT_EXISTS = "/c";
+    public static final String VERSION = "0.8.1";
     public static final String RECURSIVE_SEARCH = "/r";
     public static final String FULL_DOWNLOAD = "/all";
     public static final String PROVIDERS = "/p";
@@ -211,7 +212,9 @@ public class Subs4me
     public static void exitShowMessage()
     {
         StringBuffer sb = new StringBuffer("Usage: autosubs \"[file]\" | \"[directory]\" [/params]");
-        sb.append("\nVersion 0.7\n");
+        sb.append("\nVersion ");
+        sb.append(VERSION);
+        sb.append("\n");
         sb.append("Example:\n");
         sb.append("\tautosubs \"C:\\movies\" /r /all \n\n");
         sb.append("Params:\n");
