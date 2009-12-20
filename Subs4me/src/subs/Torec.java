@@ -18,6 +18,7 @@ import org.htmlparser.filters.HasParentFilter;
 import org.htmlparser.filters.LinkRegexFilter;
 import org.htmlparser.filters.TagNameFilter;
 import org.htmlparser.nodes.TagNode;
+import org.htmlparser.nodes.TextNode;
 import org.htmlparser.util.NodeIterator;
 import org.htmlparser.util.NodeList;
 import org.htmlparser.util.ParserException;
@@ -217,12 +218,26 @@ public class Torec implements Provider
                 seriesInfo = seriesInfo.substring(1);
             Parser parser = new Parser(baseUrl + "/" + seriesInfo);
             parser.setEncoding("UTF-8");
+            
+            //lets find out how many seasons are showing:
             NodeFilter filter = new AndFilter(new TagNameFilter("a"),
+                    new HasParentFilter(new AndFilter(new TagNameFilter("div"),
+                            new HasAttributeFilter("id")), true));
+            NodeList list = new NodeList();
+            for (NodeIterator e = parser.elements(); e.hasMoreNodes();)
+            {
+                Node node = e.nextNode();
+                node.collectInto(list, filter);
+                 System.out.println(((TextNode)node).getText());
+            }
+//            list = parser.parse(filter);
+//            System.out.println(list);
+            
+            filter = new AndFilter(new TagNameFilter("a"),
                     new HasParentFilter(new AndFilter(new TagNameFilter("div"),
                             new HasAttributeFilter("id", "season_"
                                     + currentFile.getSeasonSimple())), true));
 
-            NodeList list = new NodeList();
             for (NodeIterator e = parser.elements(); e.hasMoreNodes();)
             {
                 Node node = e.nextNode();
