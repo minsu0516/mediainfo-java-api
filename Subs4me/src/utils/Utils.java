@@ -62,7 +62,12 @@ public class Utils
             // see Request Header Definitions:
             // http://www.ietf.org/rfc/rfc2616.txt
             connection.setRequestProperty("Accept-Charset", "*");
-            connection.setRequestProperty("Referer", urlString);
+            connection.setRequestProperty("Accept_Languaget", "en-us,en;q=0.5");
+            connection.setRequestProperty("Accept-Encoding", "gzip,deflate");
+            connection.setRequestProperty("Accept-Charset", "ISO-8859-1,utf-8;q=0.7,*;q=0.7");
+            connection.setRequestProperty("X-Requested-With", "XMLHttpRequest");
+            connection.setRequestProperty("Referer", "www.torec.net");
+           
 
             out = new PrintWriter(connection.getOutputStream());
             out.print(extraProps);

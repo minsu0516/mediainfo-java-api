@@ -477,20 +477,21 @@ public class Torec implements Provider
     
             parser = new Parser(connection);
             parser.setEncoding("UTF-8");
+            String name = "";
             for (NodeIterator e = parser.elements(); e.hasMoreNodes();)
             {
                 Node node = e.nextNode();
-                guest = node.toPlainTextString();
+                name = node.toPlainTextString();
                 // node.collectInto(list, filter);
                 // System.out.println(node.toHtml());
             }
     
             // System.out.println("file name returning is:" +
             // guest.substring(14, guest.length() - 4));
-            if (guest.startsWith("/zip_versions/"))
-                return guest.substring(14, guest.length() - 4);
-            else
-                return guest.substring(0, guest.length() - 4);
+            if (name.startsWith("/zip_versions/"))
+                return name.substring(14, name.length() - 4);
+            else if (!name.isEmpty())
+                return name.substring(0, name.length() - 4);
             
         } catch (ParserException e1)
         {
