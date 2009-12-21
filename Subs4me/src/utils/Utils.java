@@ -151,6 +151,7 @@ public class Utils
                                 destFileName)));
             }
             zipFile.close();
+            new File(tempDir + zipName).delete();
         }
         catch (IOException ioe)
         {
