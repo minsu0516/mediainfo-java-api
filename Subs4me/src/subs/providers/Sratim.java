@@ -1,4 +1,4 @@
-package subs;
+package subs.providers;
 
 import java.io.File;
 import java.io.IOException;
@@ -22,6 +22,9 @@ import org.htmlparser.util.NodeIterator;
 import org.htmlparser.util.NodeList;
 import org.htmlparser.util.ParserException;
 
+import subs.Provider;
+import subs.Results;
+import subs.Subs4me;
 import utils.FileStruct;
 import utils.Utils;
 

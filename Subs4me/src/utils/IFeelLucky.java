@@ -1,4 +1,4 @@
-package subs;
+package utils;
 
 import org.htmlparser.Node;
 import org.htmlparser.NodeFilter;

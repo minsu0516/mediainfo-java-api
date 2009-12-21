@@ -1,4 +1,4 @@
-package subs;
+package subs.providers;
 
 import java.io.File;
 import java.io.IOException;
@@ -16,14 +16,15 @@ import org.htmlparser.filters.HasAttributeFilter;
 import org.htmlparser.filters.HasChildFilter;
 import org.htmlparser.filters.HasParentFilter;
 import org.htmlparser.filters.LinkRegexFilter;
-import org.htmlparser.filters.NodeClassFilter;
 import org.htmlparser.filters.TagNameFilter;
 import org.htmlparser.nodes.TagNode;
-import org.htmlparser.nodes.TextNode;
 import org.htmlparser.util.NodeIterator;
 import org.htmlparser.util.NodeList;
 import org.htmlparser.util.ParserException;
 
+import subs.Provider;
+import subs.Results;
+import subs.Subs4me;
 import utils.FileStruct;
 import utils.Utils;
 
@@ -65,6 +66,7 @@ public class Torec implements Provider
                             + Utils.escape(subID) + ".zip", Utils.escape(subID) + ".zip");
                     if (success)
                     {
+                        
                         Utils.unzipSubs(currentFile, Utils.escape(subID) + ".zip", subsID.isCorrectResults());
                     }
                 }
@@ -158,6 +160,7 @@ public class Torec implements Provider
                         {
                             subids.add(ref);
                         }
+                        
                         // System.out.println("subid = " + subids.get(i));
                     }
                 }
@@ -406,6 +409,14 @@ public class Torec implements Provider
                 e.printStackTrace();
             }
     
+            try
+            {
+                Runtime.getRuntime().exec(baseUrl + "/" + subid);
+            } catch (IOException e1)
+            {
+                // TODO Auto-generated catch block
+                e1.printStackTrace();
+            }
             /*
              * Now we get to a dillema:
              * 1. the user did not specify all and there is more than 1 proposal to download

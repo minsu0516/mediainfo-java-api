@@ -7,10 +7,13 @@ import java.util.LinkedList;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import subs.providers.Sratim;
+import subs.providers.Torec;
+
 public class Subs4me
 {
     public static final String SRT_EXISTS = "/c";
-    public static final String VERSION = "0.8.2";
+    public static final String VERSION = "0.8.3";
     public static final String RECURSIVE_SEARCH = "/r";
     public static final String FULL_DOWNLOAD = "/all";
     public static final String PROVIDERS = "/p";

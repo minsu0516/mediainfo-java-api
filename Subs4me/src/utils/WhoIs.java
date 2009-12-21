@@ -2,7 +2,6 @@ package utils;
 import java.io.PrintWriter;
 import java.net.HttpURLConnection;
 import java.net.URL;
-import java.net.URLConnection;
 
 import org.htmlparser.beans.StringBean;
 
