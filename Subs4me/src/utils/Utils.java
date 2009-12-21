@@ -38,7 +38,7 @@ import org.json.JSONObject;
 
 public class Utils
 {
-    private static final String TEMP_SUBS_ZIPPED_FILE = "c:/temp/subs.zip";
+    private static final String TEMP_SUBS_ZIPPED_FILE = "temp";
     private static final String HTTP_REFERER = "http://www.example.com/";
 
     public static HttpURLConnection createPost(String urlString,
@@ -89,6 +89,7 @@ public class Utils
 
     /**
      * unzip the files
+     * @param zipName 
      * 
      * @param retainTheSameName
      * 
@@ -99,14 +100,15 @@ public class Utils
      *            download, false will change to filename + entry.srt
      */
     public static void unzipSubs(FileStruct currentFile,
-            boolean retainTheSameName)
+            String zipName, boolean retainTheSameName)
     {
         Enumeration entries;
         ZipFile zipFile;
-
+        String property = "java.io.tmpdir";
+        String tempDir = System.getProperty(property);
         try
         {
-            zipFile = new ZipFile(TEMP_SUBS_ZIPPED_FILE);
+            zipFile = new ZipFile(tempDir + zipName);
             entries = zipFile.entries();
             while (entries.hasMoreElements())
             {
@@ -174,14 +176,20 @@ public class Utils
     /**
      * 
      * @param file
+     * @param fileName 
      * @return succeeded true or false
      */
-    public static boolean downloadZippedSubs(String file)
+    public static boolean downloadZippedSubs(String file, String fileName)
     {
         StringBuffer sb = new StringBuffer(file);
         BufferedInputStream bis = null;
         BufferedOutputStream bos = null;
-        File destination = new File(TEMP_SUBS_ZIPPED_FILE);
+     // Get the temporary directory and print it.
+        String property = "java.io.tmpdir";
+        String tempDir = System.getProperty(property);
+//        System.out.println("OS current temporary directory is " + tempDir);
+        File destination = null;
+        destination = new File(tempDir + fileName);
         URL url;
         try
         {

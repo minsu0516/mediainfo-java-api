@@ -273,10 +273,10 @@ public class Sratim implements Provider
             {
                 for (String subID : subsID.getResults())
                 {
-                    success = Utils.downloadZippedSubs(baseUrl + subID);
+                    success = Utils.downloadZippedSubs(baseUrl + subID, subID+".zip");
                     if (success)
                     {
-                        Utils.unzipSubs(currentFile, subsID.isCorrectResults());
+                        Utils.unzipSubs(currentFile, subID+".zip", subsID.isCorrectResults());
                     }
                 }
             }

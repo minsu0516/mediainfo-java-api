@@ -45,10 +45,10 @@ public class Torec implements Provider
             // try brute force, just try to get the filename - ext + .zip
             boolean success = false;
             success = Utils.downloadZippedSubs(baseUrl + "/zip_versions/"
-                    + Utils.escape(f) + ".zip");
+                    + Utils.escape(f) + ".zip", Utils.escape(f)+ ".zip");
             if (success)
             {
-                Utils.unzipSubs(currentFile, true);
+                Utils.unzipSubs(currentFile, Utils.escape(f)+ ".zip", true);
                 return;
             }
             else
@@ -62,10 +62,10 @@ public class Torec implements Provider
                 for (String subID : subsID.getResults())
                 {
                     success = Utils.downloadZippedSubs(baseUrl + "/zip_versions/"
-                            + Utils.escape(subID) + ".zip");
+                            + Utils.escape(subID) + ".zip", Utils.escape(subID) + ".zip");
                     if (success)
                     {
-                        Utils.unzipSubs(currentFile, subsID.isCorrectResults());
+                        Utils.unzipSubs(currentFile, Utils.escape(subID) + ".zip", subsID.isCorrectResults());
                     }
                 }
             }
