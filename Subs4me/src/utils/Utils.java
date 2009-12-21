@@ -185,15 +185,19 @@ public class Utils
         StringBuffer sb = new StringBuffer(file);
         BufferedInputStream bis = null;
         BufferedOutputStream bos = null;
-     // Get the temporary directory and print it.
         String property = "java.io.tmpdir";
         String tempDir = System.getProperty(property);
-//        System.out.println("OS current temporary directory is " + tempDir);
-        File destination = null;
-        destination = new File(tempDir + fileName);
+        
         URL url;
         try
         {
+            File tmpDir = new File(tempDir);
+            if (!tmpDir.exists());
+            {
+                tmpDir.mkdirs();
+            }
+            File destination = null;
+            destination = new File(tempDir + fileName);
             url = new URL(sb.toString());
             URLConnection urlc = url.openConnection();
 

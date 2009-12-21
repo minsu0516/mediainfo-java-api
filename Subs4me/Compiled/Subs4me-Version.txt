@@ -1,6 +1,11 @@
+Version 0.8.2
+ fixed: if season does not exist do not try to download the subtitle (either no such series or no such season)
+ fixed: Use the temp directory (not c:\temp)for downloading zipped files to.
+ added: delete zip file after unzip (cleanup)
 Version 0.8.1
-Bug fixed: Torec does not use the same series convetion everytime, sometimes starts series for 
-0 and then from 1, fixed to not care.
+ fixed: Torec does not use the same series convention everytime, sometimes starts series for 
+ 	0 and then from 1, fixed to not care.
+
 Version 0.8
 Renamed to subs4me (which I am hoping will keep).
 Changed internet address to https://code.google.com/p/subs4me/
