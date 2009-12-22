@@ -32,9 +32,15 @@ public class Torec implements Provider
 {
     public static final String baseUrl ="http://www.torec.net";
     private FileStruct currentFile = null;
+    
+    static final Torec instance = new Torec();
+    static
+    {
+        Subs4me.registerProvider(instance);
+    }
 
     @Override
-    public void doWork(File fi)
+    public boolean doWork(File fi)
     {
         try
         {
@@ -50,7 +56,7 @@ public class Torec implements Provider
             if (success)
             {
                 Utils.unzipSubs(currentFile, Utils.escape(f)+ ".zip", true);
-                return;
+                return true;
             }
             else
             {
@@ -82,7 +88,8 @@ public class Torec implements Provider
                     + currentFile.getFullFileName());
             // e.printStackTrace();
         }
-        // now search sratim
+        
+        return false;
     }
 
     @Override

@@ -8,7 +8,7 @@ public interface Provider
 {
     public String getName();
     
-    public void doWork(File fi);
+    public boolean doWork(File fi);
     
     /**
      * Search based on the normalized name, and then if its a series

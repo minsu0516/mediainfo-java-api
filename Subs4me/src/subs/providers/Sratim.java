@@ -263,7 +263,7 @@ public class Sratim implements Provider
     }
 
     @Override
-    public void doWork(File fi)
+    public boolean doWork(File fi)
     {
         try
         {
@@ -280,6 +280,7 @@ public class Sratim implements Provider
                     if (success)
                     {
                         Utils.unzipSubs(currentFile, subID+".zip", subsID.isCorrectResults());
+                        return true;
                     }
                 }
             }
@@ -294,6 +295,8 @@ public class Sratim implements Provider
                     + currentFile.getFullFileName());
             // e.printStackTrace();
         }
+        
+        return false;
     }
 
     @Override

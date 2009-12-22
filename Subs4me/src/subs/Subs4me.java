@@ -7,7 +7,7 @@ import java.util.LinkedList;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import subs.providers.Sratim;
+import subs.providers.OpenSubs;
 import subs.providers.Torec;
 
 public class Subs4me
@@ -25,9 +25,9 @@ public class Subs4me
 //    private static boolean intense = false;
     private static boolean fullDownload = false;
     
-    private LinkedList<Provider> availableProviders = null;
+    private static LinkedList<Provider> availableProviders = new LinkedList<Provider>();
     
-    private LinkedList<Provider> providers = null;
+    private static LinkedList<Provider> providers = null;
     
     private static Subs4me instance = new Subs4me();
     
@@ -132,31 +132,40 @@ public class Subs4me
     
     private void initProviders(LinkedList<String> provNames)
     {
+        new Torec();
+        new OpenSubs();
+        
         providers = new LinkedList<Provider>();
-        Torec t= new Torec();
-        Sratim s = new Sratim();
-        
-        
         if (provNames == null)
         {
-            providers.add(new Torec());
-//            providers.add(new Sratim());
+            providers.add(getProvider("opensubs"));
+            providers.add(getProvider("torec"));
         }
         else
         {
             for (Iterator iterator = provNames.iterator(); iterator.hasNext();)
             {
                 String p = (String) iterator.next();
-                if (p.equalsIgnoreCase(t.getName()))
+                Provider prov = getProvider(p);
+                if (prov != null)
                 {
-                    providers.add(new Torec());
-                }
-                else if (p.equalsIgnoreCase(s.getName()))
-                {
-                    providers.add(new Sratim());
+                    providers.add(prov);
                 }
             }
         }
+    }
+    
+    private Provider getProvider(String name)
+    {
+        for (Iterator iterator2 = availableProviders.iterator(); iterator2.hasNext();)
+        {
+            Provider availProv = (Provider) iterator2.next();
+            if (availProv.getName().equals(name))
+            {
+                return availProv;
+            }
+        }
+        return null;
     }
     
     public static boolean isFullDownload()
@@ -223,12 +232,22 @@ public class Subs4me
         sb.append("Params:\n");
         sb.append("  c: If an srt file exists do not try to get the subtitels for this file\n");
         sb.append("  r: Recurse over all the files in all the directories\n");
-        sb.append("  p: select providers, /p=torec,sratim will select these two providers, default is Torec only\n");
+        sb.append("  p: select providers, /p=torec,opensubs will select these two providers, default is opensubs,torec \n");
+        sb.append("     Currently supporting: torec, opensubs, subscene");
 //        sb.append("  intense: Download all the subs that correspond to the same group, uzip, and rename to be: original_fileName.zip entry.srt\n");
         sb.append("  all: Download all the subtitles for this title and unzip with the above schema\n");
         sb.append("\nCreated by ilank\nEnjoy...");
         System.out.println(sb.toString());
         System.exit(-1);
+    }
+    
+    public static void registerProvider(Provider provider)
+    {
+        if (availableProviders.contains(provider))
+        {
+            return;
+        }
+        availableProviders.add(provider);
     }
 }
 
