@@ -3,5 +3,11 @@
 	<classpathentry kind="src" path="src"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/JavaSE-1.6"/>
 	<classpathentry kind="lib" path="htmlparser.jar"/>
+	<classpathentry kind="lib" path="xmlrpc-1.1.1.jar"/>
+	<classpathentry kind="lib" path="jna.jar"/>
+	<classpathentry kind="lib" path="sublight-ws.jar"/>
+	<classpathentry kind="lib" path="nekohtml.jar"/>
+	<classpathentry kind="lib" path="xercesImpl.jar"/>
+	<classpathentry kind="lib" path="ehcache.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
