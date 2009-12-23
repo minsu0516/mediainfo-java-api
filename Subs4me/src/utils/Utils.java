@@ -351,10 +351,10 @@ public class Utils
 
     public static boolean isSameMovie(FileStruct ff1, FileStruct ff2)
     {
-        if (!ff1.getReleaseName().equalsIgnoreCase(ff2.getReleaseName()))
-        {
-            return false;
-        }
+//        if (!ff1.getReleaseName().equalsIgnoreCase(ff2.getReleaseName()))
+//        {
+//            return false;
+//        }
         String file1 = ff1.getFullFileNameNoGroup();
         String file2 = ff2.getFullFileNameNoGroup();
         
@@ -498,8 +498,18 @@ public class Utils
                 }
                 else
                 {
-                    imdbTitleUrl = ((TextNode)nodes[0]).getText();
+                    Pattern p = Pattern.compile("http://.*title/.*/");
+                    Matcher m = p.matcher(((TextNode)nodes[0]).getText());
+                    if (m.find())
+                    {
+                        imdbTitleUrl = m.group();
+                    }
                 }
+                if (imdbTitleUrl == null)
+                {
+                    return null;
+                }
+                
                 parser = new Parser(imdbTitleUrl);
                 parser.setEncoding("UTF-8");
                 filter = new TagNameFilter("title");
