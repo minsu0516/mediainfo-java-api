@@ -1,3 +1,5 @@
+Version 0.8.3a
+ change: DO NOT CHECK SAMPLES - it's a waste of time!!!
 Version 0.8.3
  added: support 2 more providers - subscene and opensubs, thanks to http://filebot.sourceforge.net/ (Reinhard)
  	    /p=opensubs,torec,subscene (order is important).

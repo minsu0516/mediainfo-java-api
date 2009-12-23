@@ -49,7 +49,7 @@ public class Torec implements Provider
             currentFile = new FileStruct(fi);
 //            Sratim.searchByActualName(currentFile);
             String f = currentFile.getNameNoExt();
-            System.out.println("Trying direct download: " + f);
+            System.out.println("Torec - trying direct download: " + f);
 
             // try brute force, just try to get the filename - ext + .zip
             boolean success = false;
@@ -62,7 +62,7 @@ public class Torec implements Provider
             }
             else
             {
-                System.out.println("Could not find:" + Utils.escape(f) + ".zip on Torec"); 
+                System.out.println("Torec - could not find:" + Utils.escape(f) + ".zip on Torec"); 
             }
 
             subsID = searchByActualName(currentFile);
@@ -85,7 +85,7 @@ public class Torec implements Provider
 
         } catch (Exception e)
         {
-            System.out.println("******** Error - cannot get subs for "
+            System.out.println("******** Error - Torec cannot get subs for "
                     + currentFile.getFullFileName());
             // e.printStackTrace();
         }
@@ -366,7 +366,7 @@ public class Torec implements Provider
                         displayNames.add(node.toPlainTextString().trim());
                         String dlPlease = postForFileName(subid.substring(15),
                                 filesTodl.get(i));
-                        System.out.println("found exact movie name proceeding to dl: "
+                        System.out.println("Torec - found exact movie name proceeding to dl: "
                                 + dlPlease);
                         LinkedList<String> lst = new LinkedList<String>();
                         lst.add(dlPlease);

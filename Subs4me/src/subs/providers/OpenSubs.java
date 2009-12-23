@@ -34,6 +34,7 @@ public class OpenSubs implements Provider
         files[0] = fi;
         try
         {
+            System.out.println("   Opensubs provider trying:" + currentFile.getFullFileName());
             Map<File, List<SubtitleDescriptor>> list = openClient.getSubtitleList(files, "Hebrew");
             List<SubtitleDescriptor> descList = list.get(fi);
             if (descList.size() == 0)

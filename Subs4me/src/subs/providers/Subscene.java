@@ -37,6 +37,7 @@ public class Subscene implements Provider
         files[0] = fi;
         try
         {
+            System.out.println("   Subscene provider trying:" + currentFile.getFullFileName());
             List<SearchResult> searchResults = subsceneClient.search(fi.getName());
             LinkedList<SubtitleDescriptor> subs = new LinkedList<SubtitleDescriptor>();
             for (Iterator<SearchResult> iterator = searchResults.iterator(); iterator
