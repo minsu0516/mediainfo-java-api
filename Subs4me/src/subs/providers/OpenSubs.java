@@ -18,7 +18,7 @@ import utils.FileStruct;
 
 public class OpenSubs implements Provider
 {
-    FileStruct currentFile = null;
+    static FileStruct currentFile = null;
     static final OpenSubtitlesClient openClient = new OpenSubtitlesClient("subs4me");
     static final OpenSubs instance = new OpenSubs();
     static
@@ -29,6 +29,7 @@ public class OpenSubs implements Provider
     @Override
     public boolean doWork(File fi)
     {
+        currentFile = new FileStruct(fi, false);
         File[] files = new File[1];
         files[0] = fi;
         try
@@ -46,6 +47,7 @@ public class OpenSubs implements Provider
                 if (subtitleDescriptor.getType().equals("srt"))
                 {
                     sub = subtitleDescriptor;
+                    System.out.println("   Opensubs provider found:" + sub.getName());
                     break;
                 }
             }
@@ -53,7 +55,7 @@ public class OpenSubs implements Provider
                 return false;
             
             ByteBuffer subFileBuffer = sub.fetch();
-            downloadSubs(subFileBuffer, fi.getParent(), sub.getName());
+            downloadSubs(subFileBuffer, fi.getParent(), sub);
         } catch (Exception e)
         {
             // TODO Auto-generated catch block
@@ -65,14 +67,14 @@ public class OpenSubs implements Provider
     /**
      * 
      */
-    public static boolean downloadSubs(ByteBuffer buffer, String location, String fileName)
+    public static boolean downloadSubs(ByteBuffer buffer, String location, SubtitleDescriptor subDesc)
     {
         FileOutputStream fileOutputStream;
         FileChannel fileChannel;
 
         try
         {
-            fileOutputStream = new FileOutputStream(location + File.separator + fileName + ".srt");
+            fileOutputStream = new FileOutputStream(location + File.separator + currentFile.getFullNameNoExt() + "." + subDesc.getType());
             fileChannel = fileOutputStream.getChannel();
             fileChannel.write(buffer);
             fileChannel.close();

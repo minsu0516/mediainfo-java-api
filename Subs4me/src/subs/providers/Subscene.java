@@ -8,9 +8,9 @@ import java.nio.channels.FileChannel;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Map;
 
-import net.sourceforge.filebot.web.OpenSubtitlesClient;
+import net.sourceforge.filebot.ui.panel.subtitle.MemoryFile;
+import net.sourceforge.filebot.ui.panel.subtitle.ZipArchive;
 import net.sourceforge.filebot.web.SearchResult;
 import net.sourceforge.filebot.web.SubsceneSubtitleClient;
 import net.sourceforge.filebot.web.SubtitleDescriptor;
@@ -21,7 +21,7 @@ import utils.FileStruct;
 
 public class Subscene implements Provider
 {
-    FileStruct currentFile = null;
+    static FileStruct currentFile = null;
     static final SubsceneSubtitleClient subsceneClient = new SubsceneSubtitleClient();
     static final Subscene instance = new Subscene();
     static
@@ -32,24 +32,23 @@ public class Subscene implements Provider
     @Override
     public boolean doWork(File fi)
     {
+        currentFile = new FileStruct(fi, false);
         File[] files = new File[1];
         files[0] = fi;
-        currentFile = new FileStruct(fi);
         try
         {
             List<SearchResult> searchResults = subsceneClient.search(fi.getName());
             LinkedList<SubtitleDescriptor> subs = new LinkedList<SubtitleDescriptor>();
-            for (Iterator iterator = searchResults.iterator(); iterator
+            for (Iterator<SearchResult> iterator = searchResults.iterator(); iterator
                     .hasNext();)
             {
                 SearchResult searchResult = (SearchResult) iterator.next();
-                List<SubtitleDescriptor> descs = subsceneClient.getSubtitleList(searchResult, "English");
-                for (Iterator iterator2 = descs.iterator(); iterator2.hasNext();)
+                List<SubtitleDescriptor> descs = subsceneClient.getSubtitleList(searchResult, "Hebrew");
+                for (Iterator<SubtitleDescriptor> iterator2 = descs.iterator(); iterator2.hasNext();)
                 {
                     SubtitleDescriptor sub = (SubtitleDescriptor) iterator2
                             .next();
-                    if (sub.getName().toLowerCase().indexOf(currentFile.getFullNameNoExt().toLowerCase()) > -1
-                            && sub.getType().equals("srt"))
+                    if (sub.getName().toLowerCase().indexOf(currentFile.getFullNameNoExt().toLowerCase()) > -1)
                     {
                         System.out.println("Subscene found:" + sub.getName());
                         subs.add(sub);
@@ -62,7 +61,21 @@ public class Subscene implements Provider
             if (subs.size() == 1)
             {
                 ByteBuffer subFileBuffer = subs.get(0).fetch();
-                downloadSubs(subFileBuffer, fi.getParent(), subs.get(0).getName());
+                downloadSubs(subFileBuffer, fi.getParent(), subs.get(0), false);
+                return true;
+            }
+            else
+            {
+                File f = new File(currentFile.getFile().getParent(), currentFile.getFullNameNoExt() + ".dowork");
+                f.createNewFile();
+                for (Iterator iterator = subs.iterator(); iterator.hasNext();)
+                {
+                    SubtitleDescriptor subtitleDescriptor = (SubtitleDescriptor) iterator
+                            .next();
+                    ByteBuffer subFileBuffer = subtitleDescriptor.fetch();
+                    downloadSubs(subFileBuffer, fi.getParent(), subtitleDescriptor, true);
+                } 
+                return false;
             }
 
         } catch (Exception e)
@@ -76,14 +89,49 @@ public class Subscene implements Provider
     /**
      * 
      */
-    public static boolean downloadSubs(ByteBuffer buffer, String location, String fileName)
+    public static boolean downloadSubs(ByteBuffer buffer, String location, SubtitleDescriptor subDesc, boolean moreThanOne)
+    {
+        if (subDesc.getType().equals("zip"))
+        {
+            ZipArchive zip = new ZipArchive(buffer);
+            try         
+            {
+                List<MemoryFile> list = zip.extract();
+                 for (Iterator iterator = list.iterator(); iterator.hasNext();)
+                {
+                    MemoryFile memFile = (MemoryFile) iterator.next();
+                    if (memFile.getName().endsWith("srt"))
+                    {
+                        if (!moreThanOne)
+                        {
+                            writeToDisk(memFile.getData(), location + File.separator + memFile.getName());
+                        }
+                        else
+                        {
+                            writeToDisk(memFile.getData(), location + File.separator + currentFile.getFullNameNoExt() + ".srt.subscene."+ memFile.getName());
+                            return true;
+                        }
+                    }
+                }
+            }
+            catch (IOException e)
+            {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
+            }
+        }
+
+        return false;
+    }
+
+    private static boolean writeToDisk(ByteBuffer buffer, String destination)
     {
         FileOutputStream fileOutputStream;
         FileChannel fileChannel;
 
         try
         {
-            fileOutputStream = new FileOutputStream(location + File.separator + fileName + ".srt");
+            fileOutputStream = new FileOutputStream(destination);
             fileChannel = fileOutputStream.getChannel();
             fileChannel.write(buffer);
             fileChannel.close();
@@ -92,10 +140,10 @@ public class Subscene implements Provider
         {
             return false;
         }
-
+        
         return true;
     }
-
+    
     @Override
     public String getName()
     {

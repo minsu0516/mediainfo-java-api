@@ -9,5 +9,6 @@
 	<classpathentry kind="lib" path="nekohtml.jar"/>
 	<classpathentry kind="lib" path="xercesImpl.jar"/>
 	<classpathentry kind="lib" path="ehcache.jar"/>
+	<classpathentry kind="lib" path="junrar-custom.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

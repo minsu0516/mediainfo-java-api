@@ -10,6 +10,7 @@ import java.util.regex.Pattern;
 import subs.providers.OpenSubs;
 import subs.providers.Subscene;
 import subs.providers.Torec;
+import utils.FileStruct;
 
 public class Subs4me
 {
@@ -48,31 +49,92 @@ public class Subs4me
      */
     public void startProcessingFiles(String src)
     {
-        for (Iterator iterator = providers.iterator(); iterator.hasNext();)
+        String[] sources = findFilesInDir(src);
+        if (sources == null)
         {
-            Provider p = (Provider) iterator.next();
-            String[] sources = findFilesInDir(src);
-            if (sources == null)
+            // this is a file and not a directory
+            File fi = new File(src);
+            // String f = fi.getName();
+            for (Iterator iterator = providers.iterator(); iterator.hasNext();)
             {
-                // this is a file and not a directory
-                File fi = new File(src);
-                // String f = fi.getName();
-                p.doWork(fi);
-            } else
-            {
-                for (int j = 0; j < sources.length; j++)
+                Provider p = (Provider) iterator.next();
+                boolean success = p.doWork(fi);
+                if (success)
                 {
-                    File f = new File(src + File.separator + sources[j]);
-                    if (f.isDirectory())
+                    cleanup();
+                    break;
+                }
+            }
+        } else
+        {
+            for (int j = 0; j < sources.length; j++)
+            {
+                File f = new File(src + File.separator + sources[j]);
+                if (f.isDirectory())
+                {
+                    startProcessingFiles(f.getPath());
+                } else
+                {
+                    for (Iterator iterator = providers.iterator(); iterator.hasNext();)
                     {
-                        startProcessingFiles(f.getPath());
-                    } else
-                    {
-                        p.doWork(f);
+                        Provider p = (Provider) iterator.next();
+                        boolean success = p.doWork(f);
+                        if (success)
+                        {
+                            cleanup(f);
+                            break;
+                        }
                     }
                 }
             }
         }
+    }
+    
+    private void cleanup(File f)
+    {
+        FileStruct fs = new FileStruct(f, false);
+        String[] files = findFilesTocleanupInDir(f, fs.getFullNameNoExt());
+        for (int i = 0; i < files.length; i++)
+        {
+            String delName = files[i];
+            File del = new File(f.getParent(), delName);
+            del.delete();
+        }
+    }
+    
+    private String[] findFilesTocleanupInDir(File f, final String nameStarter)
+    {
+        File dir = new File(f.getParent());
+        if (dir.isDirectory())
+        {
+            FilenameFilter filter = new FilenameFilter()
+            {
+                public boolean accept(File dir, String name)
+                {
+                    if (name.endsWith(".dowork"))
+                    {
+                        return true;
+                    }
+                    String n = nameStarter+".srt";
+                    if (name.startsWith(n) 
+                            && name.length() > n.length())
+                    {
+                        return true;
+                    }
+                    return false;
+                }
+            };
+            return dir.list(filter);
+        } else
+        {
+            return null;
+        }
+    }
+    
+    private void cleanup()
+    {
+        // TODO Auto-generated method stub
+        
     }
 
     private String[] findFilesInDir(String src)
@@ -135,7 +197,7 @@ public class Subs4me
     {
         new Torec();
         new OpenSubs();
-        new  Subscene();
+        new Subscene();
         
         providers = new LinkedList<Provider>();
         if (provNames == null)
@@ -162,7 +224,7 @@ public class Subs4me
         for (Iterator iterator2 = availableProviders.iterator(); iterator2.hasNext();)
         {
             Provider availProv = (Provider) iterator2.next();
-            if (availProv.getName().equals(name))
+            if (availProv.getName().toLowerCase().equals(name.toLowerCase()))
             {
                 return availProv;
             }

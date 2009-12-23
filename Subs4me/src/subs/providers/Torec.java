@@ -42,6 +42,8 @@ public class Torec implements Provider
     @Override
     public boolean doWork(File fi)
     {
+        boolean suc = false;
+        Results subsID = null;
         try
         {
             currentFile = new FileStruct(fi);
@@ -56,14 +58,14 @@ public class Torec implements Provider
             if (success)
             {
                 Utils.unzipSubs(currentFile, Utils.escape(f)+ ".zip", true);
-                return true;
+                suc = true;
             }
             else
             {
                 System.out.println("Could not find:" + Utils.escape(f) + ".zip on Torec"); 
             }
 
-            Results subsID = searchByActualName(currentFile);
+            subsID = searchByActualName(currentFile);
             if (subsID != null && subsID.getResults().size() > 0)
             {
                 for (String subID : subsID.getResults())
@@ -72,7 +74,6 @@ public class Torec implements Provider
                             + Utils.escape(subID) + ".zip", Utils.escape(subID) + ".zip");
                     if (success)
                     {
-                        
                         Utils.unzipSubs(currentFile, Utils.escape(subID) + ".zip", subsID.isCorrectResults());
                     }
                 }
@@ -87,6 +88,11 @@ public class Torec implements Provider
             System.out.println("******** Error - cannot get subs for "
                     + currentFile.getFullFileName());
             // e.printStackTrace();
+        }
+        
+        if (subsID != null && subsID.isCorrectResults())
+        {
+            return true;
         }
         
         return false;
@@ -416,14 +422,14 @@ public class Torec implements Provider
                 e.printStackTrace();
             }
     
-            try
-            {
-                Runtime.getRuntime().exec(baseUrl + "/" + subid);
-            } catch (IOException e1)
-            {
-                // TODO Auto-generated catch block
-                e1.printStackTrace();
-            }
+//            try
+//            {
+//                Runtime.getRuntime().exec(baseUrl + "/" + subid);
+//            } catch (IOException e1)
+//            {
+//                // TODO Auto-generated catch block
+//                e1.printStackTrace();
+//            }
             /*
              * Now we get to a dillema:
              * 1. the user did not specify all and there is more than 1 proposal to download
