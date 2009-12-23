@@ -164,6 +164,8 @@ public class Torec implements Provider
                             continue;
                         
                         String[] namess = node.toPlainTextString().split("/");
+                        if (namess.length < 2)
+                            continue;
                         
                         if (!Utils.isSameMovie(new FileStruct(namess[1]), new FileStruct(currentFile.getNormalizedName())))
                             continue;
