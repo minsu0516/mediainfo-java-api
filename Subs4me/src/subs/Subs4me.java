@@ -296,9 +296,8 @@ public class Subs4me
         sb.append("Params:\n");
         sb.append("  c: If an srt file exists do not try to get the subtitels for this file\n");
         sb.append("  r: Recurse over all the files in all the directories\n");
-        sb.append("  p: select providers, /p=torec,opensubs will select these two providers, default is opensubs,torec \n");
+        sb.append("  p: select providers, /p=torec,opensubs will select these two providers (order is important), default is opensubs,torec \n");
         sb.append("     Currently supporting: torec, opensubs, subscene");
-//        sb.append("  intense: Download all the subs that correspond to the same group, uzip, and rename to be: original_fileName.zip entry.srt\n");
         sb.append("  all: Download all the subtitles for this title and unzip with the above schema\n");
         sb.append("\nCreated by ilank\nEnjoy...");
         System.out.println(sb.toString());

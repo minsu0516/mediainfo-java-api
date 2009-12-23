@@ -1,3 +1,6 @@
+Version 0.8.3
+ added: support 2 more providers - subscene and opensubs, thanks to http://filebot.sourceforge.net/ (Reinhard)
+ 	    /p=opensubs,torec,subscene (order is important).
 Version 0.8.2
  fixed: if season does not exist do not try to download the subtitle (either no such series or no such season)
  fixed: Use the temp directory (not c:\temp)for downloading zipped files to.
