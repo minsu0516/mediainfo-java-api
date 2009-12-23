@@ -11,18 +11,18 @@ import org.json.JSONObject;
 public class GoogleQuery {
 
  // Put your website here
- private final String HTTP_REFERER = "http://www.tvrage.com/";
+ private static final String HTTP_REFERER = "http://www.tvrage.com/";
 
  public GoogleQuery() {
-  makeQuery("Inglourious.Basterds.720p.BluRay.x264-METiS.mkv www.imdb.com");
+  makeQuery("In.the.Valley.Of.Elah.2007.720p.BluRay.x264-Chakra.mkv www.imdb.com inurl:com");
 //  makeQuery("info:http://frankmccown.blogspot.com/");
 //  makeQuery("site:frankmccown.blogspot.com");
  }
 
- private void makeQuery(String query) {
+ public static JSONObject makeQuery(String query) {
 
   System.out.println("Querying Google for " + query);
-
+  JSONObject json = null;
   try
   {
    // Convert spaces to +, etc. to make a valid URL
@@ -41,7 +41,7 @@ public class GoogleQuery {
    }
 
    String response = builder.toString();
-   JSONObject json = new JSONObject(response);
+   json = new JSONObject(response);
 
    System.out.println("Total results = " +
      json.getJSONObject("responseData")
@@ -63,6 +63,8 @@ public class GoogleQuery {
    System.err.println("Something went wrong...");
    e.printStackTrace();
   }
+  
+  return json;
  }
 
  public static void main(String args[]) {

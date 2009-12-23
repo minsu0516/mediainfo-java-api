@@ -1,3 +1,5 @@
+Version 0.8.4
+ fixed: better search for imdb url, it could be text or url in the google result, but I will find it!!! (refined-pactivity-720p.mkv)
 Version 0.8.3a
  change: DO NOT CHECK SAMPLES - it's a waste of time!!!
 Version 0.8.3

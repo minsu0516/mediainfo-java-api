@@ -15,7 +15,7 @@ import utils.FileStruct;
 public class Subs4me
 {
     public static final String SRT_EXISTS = "/c";
-    public static final String VERSION = "0.8.3a";
+    public static final String VERSION = "0.8.4";
     public static final String RECURSIVE_SEARCH = "/r";
     public static final String FULL_DOWNLOAD = "/all";
     public static final String PROVIDERS = "/p";
@@ -27,9 +27,9 @@ public class Subs4me
 //    private static boolean intense = false;
     private static boolean fullDownload = false;
     
-    private static LinkedList<Provider> availableProviders = new LinkedList<Provider>();
+    private static LinkedList<Provider> _availableProviders = new LinkedList<Provider>();
     
-    private static LinkedList<Provider> providers = null;
+    public static LinkedList<Provider> _providers = null;
     
     private static Subs4me instance = new Subs4me();
     
@@ -55,7 +55,7 @@ public class Subs4me
             // this is a file and not a directory
             File fi = new File(src);
             // String f = fi.getName();
-            for (Iterator iterator = providers.iterator(); iterator.hasNext();)
+            for (Iterator iterator = _providers.iterator(); iterator.hasNext();)
             {
                 Provider p = (Provider) iterator.next();
                 boolean success = p.doWork(fi);
@@ -75,7 +75,7 @@ public class Subs4me
                     startProcessingFiles(f.getPath());
                 } else
                 {
-                    for (Iterator iterator = providers.iterator(); iterator.hasNext();)
+                    for (Iterator iterator = _providers.iterator(); iterator.hasNext();)
                     {
                         Provider p = (Provider) iterator.next();
                         boolean success = p.doWork(f);
@@ -205,11 +205,11 @@ public class Subs4me
         new OpenSubs();
         new Subscene();
         
-        providers = new LinkedList<Provider>();
+        _providers = new LinkedList<Provider>();
         if (provNames == null)
         {
-            providers.add(getProvider("opensubs"));
-            providers.add(getProvider("torec"));
+            _providers.add(getProvider("opensubs"));
+            _providers.add(getProvider("torec"));
         }
         else
         {
@@ -219,7 +219,7 @@ public class Subs4me
                 Provider prov = getProvider(p);
                 if (prov != null)
                 {
-                    providers.add(prov);
+                    _providers.add(prov);
                 }
             }
         }
@@ -227,7 +227,7 @@ public class Subs4me
     
     private Provider getProvider(String name)
     {
-        for (Iterator iterator2 = availableProviders.iterator(); iterator2.hasNext();)
+        for (Iterator iterator2 = _availableProviders.iterator(); iterator2.hasNext();)
         {
             Provider availProv = (Provider) iterator2.next();
             if (availProv.getName().toLowerCase().equals(name.toLowerCase()))
@@ -285,6 +285,13 @@ public class Subs4me
         }
         Subs4me as = Subs4me.getInstance();
         as.initProviders(providers);
+        StringBuilder sb = new StringBuilder();
+        for (Iterator iterator = _providers.iterator(); iterator.hasNext();)
+        {
+            Provider p = (Provider) iterator.next();
+            sb.append(p.getName() + ",");
+        }
+        System.out.println("subs4me version " + VERSION + ", the selected providers are:" + sb.toString());
         as.startProcessingFiles(args[0]);
     }
 
@@ -298,12 +305,12 @@ public class Subs4me
         sb.append(VERSION);
         sb.append("\n");
         sb.append("Example:\n");
-        sb.append("\tautosubs \"C:\\movies\" /r /all \n\n");
+        sb.append("\tsubs4me \"C:\\movies\" /r /all \n\n");
         sb.append("Params:\n");
         sb.append("  c: If an srt file exists do not try to get the subtitels for this file\n");
         sb.append("  r: Recurse over all the files in all the directories\n");
-        sb.append("  p: select providers, /p=torec,opensubs will select these two providers (order is important), default is opensubs,torec \n");
-        sb.append("     Currently supporting: torec, opensubs, subscene");
+        sb.append("  p: select providers, /p=torec,opensubs will select these two providers\n     (order is important), default is opensubs,torec \n");
+        sb.append("     Currently supporting: torec, opensubs, subscene\n");
         sb.append("  all: Download all the subtitles for this title and unzip with the above schema\n");
         sb.append("\nCreated by ilank\nEnjoy...");
         System.out.println(sb.toString());
@@ -312,11 +319,11 @@ public class Subs4me
     
     public static void registerProvider(Provider provider)
     {
-        if (availableProviders.contains(provider))
+        if (_availableProviders.contains(provider))
         {
             return;
         }
-        availableProviders.add(provider);
+        _availableProviders.add(provider);
     }
 }
 

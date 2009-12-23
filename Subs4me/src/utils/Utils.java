@@ -27,7 +27,11 @@ import org.htmlparser.Node;
 import org.htmlparser.NodeFilter;
 import org.htmlparser.Parser;
 import org.htmlparser.filters.LinkRegexFilter;
+import org.htmlparser.filters.OrFilter;
+import org.htmlparser.filters.RegexFilter;
+import org.htmlparser.filters.StringFilter;
 import org.htmlparser.filters.TagNameFilter;
+import org.htmlparser.nodes.TextNode;
 import org.htmlparser.tags.LinkTag;
 import org.htmlparser.util.NodeIterator;
 import org.htmlparser.util.NodeList;
@@ -39,7 +43,7 @@ import org.json.JSONObject;
 public class Utils
 {
     private static final String TEMP_SUBS_ZIPPED_FILE = "temp";
-    private static final String HTTP_REFERER = "http://www.example.com/";
+    private static final String HTTP_REFERER = "http://www.tvrage.com/";
 
     public static HttpURLConnection createPost(String urlString,
             StringBuffer extraProps)
@@ -392,13 +396,12 @@ public class Utils
     {
         String query = fileName + " " + searchForCritiria; 
         System.out.println("Querying Google for " + query);
-
         try
         {
             // Convert spaces to +, etc. to make a valid URL
             query = URLEncoder.encode(query, "UTF-8");
             URL url = new URL(
-                    "http://ajax.googleapis.com/ajax/services/search/web?gl=us&hl=en&start=0&rsz=small&v=1.0&q="
+                    "http://ajax.googleapis.com/ajax/services/search/web?v=1.0&q="
                             + query);
             URLConnection connection = url.openConnection();
             connection.addRequestProperty("Referer", HTTP_REFERER);
@@ -416,13 +419,15 @@ public class Utils
             String response = builder.toString();
             JSONObject json = new JSONObject(response);
 
+            JSONArray ja = json.getJSONObject("responseData").getJSONArray("results");
+
 //            System.out.println("Total results = "
 //                    + json.getJSONObject("responseData")
 //                            .getJSONObject("cursor").getString(
 //                                    "estimatedResultCount"));
 
-            JSONArray ja = json.getJSONObject("responseData").getJSONArray(
-                    "results");
+//            JSONArray ja = json.getJSONObject("responseData").getJSONArray(
+//                    "results");
 
 //            System.out.println(" Results:");
             if (ja != null && ja.length() > 0)
@@ -471,7 +476,9 @@ public class Utils
             {
                 parser = new Parser(imdbPointingUrl);
                 parser.setEncoding("UTF-8");
-                NodeFilter filter = new LinkRegexFilter(critiria);
+                NodeFilter filter = new OrFilter( 
+                                        new RegexFilter(critiria), 
+                                        new LinkRegexFilter(critiria));
                 
                 NodeList list = new NodeList();
                 for (NodeIterator e = parser.elements(); e.hasMoreNodes();)
@@ -484,7 +491,15 @@ public class Utils
                 if (nodes.length == 0)
                     return null;
                 
-                String imdbTitleUrl = ((LinkTag)nodes[0]).getLink();
+                String imdbTitleUrl = null;
+                if (nodes[0] instanceof LinkRegexFilter)
+                {
+                    imdbTitleUrl = ((LinkTag)nodes[0]).getLink();
+                }
+                else
+                {
+                    imdbTitleUrl = ((TextNode)nodes[0]).getText();
+                }
                 parser = new Parser(imdbTitleUrl);
                 parser.setEncoding("UTF-8");
                 filter = new TagNameFilter("title");
