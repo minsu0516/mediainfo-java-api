@@ -288,7 +288,7 @@ public class FileStruct
         StringBuffer sb = new StringBuffer();
         sb.append("File=");
         sb.append(getFullFileName());
-        sb.append(", ext= ");
+        sb.append(", ext=");
         sb.append(getExt());
         if (isTV())
         {

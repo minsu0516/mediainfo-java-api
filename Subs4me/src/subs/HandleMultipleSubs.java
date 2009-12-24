@@ -11,6 +11,7 @@ public class HandleMultipleSubs
 {
     public static final String RECURSIVE_SEARCH = "/r";
     public static final String DO_WORK_EXT = "dowork";
+    public static final String VERSION = "0.2";
     
     private static boolean recursive = false;
     private FileStruct currentFile;
@@ -138,7 +139,10 @@ public class HandleMultipleSubs
                 File ff = new File(currentFile.getFile().getParent(), files[sel-1]);
                 File dest = new File(currentFile.getFile().getParent(), currentFile.getFullNameNoExt() + ".srt");
                 ff.renameTo(dest);
-                currentFile.getFile().delete();
+                if (!currentFile.isVideoFile())
+                {
+                    currentFile.getFile().delete();
+                }
                 
                 for (int i = 0; i < files.length; i++)
                 {
@@ -146,6 +150,13 @@ public class HandleMultipleSubs
                     if (i == sel-1)
                         continue;
                     File del = new File(currentFile.getFile().getParent(), delName);
+                    del.delete();
+                }
+                
+                //cleanup dowrok file
+                if (!currentFile.getExt().equals("dowork"))
+                {
+                    File del = new File(currentFile.getFile().getParent(), currentFile.getFullNameNoExt() + ".dowork");
                     del.delete();
                 }
                 break;
@@ -163,6 +174,13 @@ public class HandleMultipleSubs
         {
             String delName = files[i];
             File del = new File(currentFile.getFile().getParent(), delName);
+            del.delete();
+        }
+        
+        //cleanup dowrok file
+        if (!currentFile.getExt().equals("dowork"))
+        {
+            File del = new File(currentFile.getFile().getParent(), currentFile.getFullNameNoExt() + ".dowork");
             del.delete();
         }
     }
@@ -228,7 +246,9 @@ public class HandleMultipleSubs
     private static void exitShowMessage()
     {
         StringBuffer sb = new StringBuffer("Usage: HandleMultipleSubs \"[file]\" | \"[directory]\" [/params]");
-        sb.append("\nVersion 0.1\n");
+        sb.append("\nVersion ");
+        sb.append(VERSION);
+        sb.append("\n");
         sb.append("Example:\n");
         sb.append("\tHandleMultipleSubs \"C:\\movies\" \n\n");
         sb.append("Params:\n");

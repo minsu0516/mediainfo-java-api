@@ -167,7 +167,7 @@ public class Torec implements Provider
                         if (namess.length < 2)
                             continue;
                         
-                        if (!Utils.isSameMovie(new FileStruct(namess[1]), currentFile))
+                        if (!Utils.isSameMovie2(namess[1], currentFile.getNormalizedName()))
                             continue;
 //                        System.out.println(node.toPlainTextString());
                         String ref = ((TagNode) node).getAttribute("href");

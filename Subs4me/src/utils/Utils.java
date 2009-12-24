@@ -16,7 +16,9 @@ import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLConnection;
+import java.net.URLDecoder;
 import java.net.URLEncoder;
+import java.text.ParseException;
 import java.util.Enumeration;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -368,6 +370,19 @@ public class Utils
 
         return false;
     }
+    
+    public static boolean isSameMovie2(String ff1, String ff2)
+    {
+        if (ff1.equals(ff2))
+            return true;
+
+        String f1 = ff1.replaceAll("[.]", "").replaceAll(" ", "").replaceAll("-", "");
+        String f2 = ff2.replaceAll("[.]", "").replaceAll(" ", "").replaceAll("-", "");
+        if (f1.equalsIgnoreCase(f2))
+            return true;
+
+        return false;
+    }
 
  // Get the contents of a URL and return it as an image
     public static Image fetchimage(String address, Component c)
@@ -433,7 +448,9 @@ public class Utils
             if (ja != null && ja.length() > 0)
             {
                 JSONObject j = ja.getJSONObject(0);
-                return j.getString("url");
+                String urlTemp = j.getString("url");
+                urlTemp = URLDecoder.decode(urlTemp, "UTF-8");
+                return urlTemp;
             }
 //            for (int i = 0; i < ja.length(); i++)
 //            {
@@ -499,7 +516,16 @@ public class Utils
                 else
                 {
                     Pattern p = Pattern.compile("http://.*title/.*/");
-                    Matcher m = p.matcher(((TextNode)nodes[0]).getText());
+                    String url = "";
+                    if (nodes[0] instanceof TextNode)
+                    {
+                        url = ((TextNode)nodes[0]).getText();
+                    }
+                    else if (nodes[0] instanceof LinkTag)
+                    {
+                        url = ((LinkTag)nodes[0]).getText();
+                    }
+                    Matcher m = p.matcher(url);
                     if (m.find())
                     {
                         imdbTitleUrl = m.group();

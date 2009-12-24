@@ -257,6 +257,9 @@ public class Subs4me
             exitShowMessage();
         }
         
+        Subs4me as = Subs4me.getInstance();
+        as.loadIni();
+        
         LinkedList<String> providers = null;
         for (int i = 1; i < args.length; i++)
         {
@@ -283,7 +286,6 @@ public class Subs4me
                 }
             }
         }
-        Subs4me as = Subs4me.getInstance();
         as.initProviders(providers);
         StringBuilder sb = new StringBuilder();
         for (Iterator iterator = _providers.iterator(); iterator.hasNext();)
@@ -324,6 +326,14 @@ public class Subs4me
             return;
         }
         _availableProviders.add(provider);
+    }
+    
+    public void loadIni()
+    {
+        File ini = new File("subs4me.ini");
+        if (!ini.exists())
+            return;
+        
     }
 }
 
