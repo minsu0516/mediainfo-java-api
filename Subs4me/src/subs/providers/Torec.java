@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -254,11 +255,24 @@ public class Torec implements Provider
             
             list.removeAll();
             parser.reset();
-            int seNum = Integer.parseInt(currentFile.getSeasonSimple());
-            String se = null;
-            if (seNum <= seasons.size())
+            String seNum = currentFile.getSeasonSimple();
+            
+            //The Simpsons S19E01 He Loves to Fly and He D'ohs.avi
+            int firstKnownSeason = Integer.parseInt(seasons.get(0).substring(7));
+            if (firstKnownSeason == 0)
             {
-                 se = seasons.get(seNum-1);
+                //if the first known season starts at 0, decreas the season number to suit it
+                seNum = Integer.toString(Integer.parseInt(seNum)-1);
+            }
+            String se = null;
+            for (Iterator iterator = seasons.iterator(); iterator.hasNext();)
+            {
+                String seTmp = (String) iterator.next();
+                if (seTmp.substring(7).equals(seNum))
+                {
+                    se = seTmp;
+                    break;
+                }
             }
             
             if (se == null)
