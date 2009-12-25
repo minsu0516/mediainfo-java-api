@@ -2,10 +2,12 @@ package subs;
 
 import java.io.File;
 import java.io.FilenameFilter;
+import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.Scanner;
 
 import utils.FileStruct;
+import utils.Utils;
 
 public class HandleMultipleSubs
 {
@@ -86,8 +88,8 @@ public class HandleMultipleSubs
                 currentFile.getFile().delete();
             }
             return;
-//            exitShowMessage();
         }
+        
         StringBuilder sb = new StringBuilder();
         sb.append("Found ");
         sb.append(currentFile.getFile().getParent() + "\\" + currentFile.getFullNameNoExt());
@@ -192,7 +194,9 @@ public class HandleMultipleSubs
         {
             public boolean accept(File dir, String name)
             {
-                if (name.startsWith(currentFile.getNameNoExt()+".srt") && name.endsWith(".srt"))
+                if (name.startsWith(currentFile.getNameNoExt()+".srt") 
+                        && name.endsWith(".srt")
+                        && (name.length() > (currentFile.getNameNoExt()+".srt").length()))
                 {
                     return true;
                 }

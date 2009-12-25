@@ -558,4 +558,15 @@ public class Utils
         return null;
     }
     
+    public static boolean isMovieFile(FileStruct file)
+    {
+        if (file.getExt().equalsIgnoreCase("mkv")
+                || file.getExt().equalsIgnoreCase("avi"))
+        {
+            return true;
+        }
+        
+        return false;
+    }
+    
 }

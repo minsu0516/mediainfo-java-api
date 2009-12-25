@@ -1,3 +1,5 @@
+Version 0.8.5.2
+ fixed: when running HandleMultiplesubs.bat on a video file which has the correct srt file already, gave an exception.  
 Version 0.8.5.1
  fixed: problem with The Simpsons S19E01 He Loves to Fly and He D'ohs.avi, needed to take into account that not all the seasons have translations.
         make sure it does work with Paradox.S01E01.720p.HDTV.x264-FoV.srt becuase it is season 0 in torec.
