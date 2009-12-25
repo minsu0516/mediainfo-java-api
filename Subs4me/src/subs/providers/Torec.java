@@ -256,6 +256,11 @@ public class Torec implements Provider
             parser.reset();
             String seNum = currentFile.getSeasonSimple();
             
+            //there are times where there are no season translations, in that case do not continue
+            if (seasons.size() == 0)
+            {
+                return null;
+            }
             //The Simpsons S19E01 He Loves to Fly and He D'ohs.avi
             int firstKnownSeason = Integer.parseInt(seasons.get(0).substring(7));
             if (firstKnownSeason == 0)

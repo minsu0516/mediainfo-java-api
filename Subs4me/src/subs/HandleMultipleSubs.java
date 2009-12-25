@@ -2,18 +2,16 @@ package subs;
 
 import java.io.File;
 import java.io.FilenameFilter;
-import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.Scanner;
 
 import utils.FileStruct;
-import utils.Utils;
 
 public class HandleMultipleSubs
 {
     public static final String RECURSIVE_SEARCH = "/r";
     public static final String DO_WORK_EXT = "dowork";
-    public static final String VERSION = "0.3";
+    public static final String VERSION = "0.4";
     
     private static boolean recursive = false;
     private FileStruct currentFile;
@@ -31,7 +29,14 @@ public class HandleMultipleSubs
             // this is a file and not a directory
             File fi = new File(src);
             // String f = fi.getName();
-            doWork(fi);
+            try
+            {
+                doWork(fi);
+            } catch (Exception e)
+            {
+                System.err.println(" ****** HandleMultipleSubs error handling:" + fi.getName());
+                e.printStackTrace();
+            }
         } else
         {
             for (int j = 0; j < sources.length; j++)
@@ -42,7 +47,14 @@ public class HandleMultipleSubs
                     processFiles(f.getPath());
                 } else
                 {
-                    doWork(f);
+                    try
+                    {
+                        doWork(f);
+                    } catch (Exception e)
+                    {
+                        System.err.println(" ****** HandleMultipleSubs error handling:" + f.getName());
+                        e.printStackTrace();
+                    }
                 }
             }
         }
