@@ -13,7 +13,7 @@ public class HandleMultipleSubs
 {
     public static final String RECURSIVE_SEARCH = "/r";
     public static final String DO_WORK_EXT = "dowork";
-    public static final String VERSION = "0.2";
+    public static final String VERSION = "0.3";
     
     private static boolean recursive = false;
     private FileStruct currentFile;
@@ -21,7 +21,6 @@ public class HandleMultipleSubs
     public HandleMultipleSubs(String srcDirOrFile)
     {
         processFiles(srcDirOrFile);
-        System.out.println("THE END");
     }
 
     private void processFiles(String src)
@@ -243,8 +242,9 @@ public class HandleMultipleSubs
         {
             exitShowMessage();
         }
-        
+        System.out.println("       *** HandleMultipleSubs version " + VERSION);
         new HandleMultipleSubs(args[0]);
+        System.out.println("******* Thanks for using HandleMultipleSubs *******");
     }
     
     private static void exitShowMessage()

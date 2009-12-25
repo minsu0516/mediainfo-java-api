@@ -43,8 +43,7 @@ public class Torec implements Provider
     @Override
     public boolean doWork(File fi)
     {
-        boolean suc = false;
-        Results subsID = null;
+         Results subsID = null;
         try
         {
             currentFile = new FileStruct(fi);
@@ -59,7 +58,7 @@ public class Torec implements Provider
             if (success)
             {
                 Utils.unzipSubs(currentFile, Utils.escape(f)+ ".zip", true);
-                suc = true;
+                return true;
             }
             else
             {

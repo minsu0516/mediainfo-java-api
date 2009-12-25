@@ -293,8 +293,10 @@ public class Subs4me
             Provider p = (Provider) iterator.next();
             sb.append(p.getName() + ",");
         }
-        System.out.println("subs4me version " + VERSION + ", the selected providers are:" + sb.toString());
+        System.out.println("Subs4me version " + VERSION + ", the selected providers are:" + sb.toString());
         as.startProcessingFiles(args[0]);
+        
+        System.out.println("******* Thanks for using subs4me, hope you enjoy the results *******");
     }
 
     /**
