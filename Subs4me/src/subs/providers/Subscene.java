@@ -12,12 +12,14 @@ import java.util.List;
 import net.sourceforge.filebot.ui.panel.subtitle.MemoryFile;
 import net.sourceforge.filebot.ui.panel.subtitle.ZipArchive;
 import net.sourceforge.filebot.web.SearchResult;
+import net.sourceforge.filebot.web.SeasonOutOfBoundsException;
 import net.sourceforge.filebot.web.SubsceneSubtitleClient;
 import net.sourceforge.filebot.web.SubtitleDescriptor;
 import subs.Provider;
 import subs.Results;
 import subs.Subs4me;
 import utils.FileStruct;
+import utils.Utils;
 
 public class Subscene implements Provider
 {
@@ -44,12 +46,45 @@ public class Subscene implements Provider
                     .hasNext();)
             {
                 SearchResult searchResult = (SearchResult) iterator.next();
+                if (!Utils.isSameMovie3(searchResult.getName(), currentFile.getNormalizedName()))
+                {
+                    continue;
+                }
                 List<SubtitleDescriptor> descs = subsceneClient.getSubtitleList(searchResult, "Hebrew");
                 for (Iterator<SubtitleDescriptor> iterator2 = descs.iterator(); iterator2.hasNext();)
                 {
                     SubtitleDescriptor sub = (SubtitleDescriptor) iterator2
                             .next();
-                    if (sub.getName().toLowerCase().indexOf(currentFile.getFullNameNoExt().toLowerCase()) > -1)
+                    
+                    if (currentFile.isTV() && 
+                            (   sub.getName().indexOf("Entire Season") > -1 
+                                || sub.getName().indexOf("Subpack") > -1 ))
+                    {
+                        ByteBuffer subFileBuffer = sub.fetch();
+                        ZipArchive zip = new ZipArchive(subFileBuffer);
+                        List<MemoryFile> list = zip.extract();
+                        boolean seasonPrinted = false;
+                        for (Iterator iterator3 = list.iterator(); iterator.hasNext();)
+                        {
+                            MemoryFile memFile = (MemoryFile) iterator3.next();
+                            FileStruct fs = new FileStruct(memFile.getName());
+                            if (fs.getSeason() != currentFile.getSeason())
+                            {
+                                break;
+                            }
+                            else if (!seasonPrinted)
+                            {
+                                System.out.println("Subscene found correct season:" + sub.getName());
+                                seasonPrinted = true;
+                            }
+                            if (memFile.getName().endsWith("srt"))
+                            {
+                                System.out.println("Enitre season:" + memFile.getName());
+                            }
+                        }
+//                        subs.add(sub);
+                    }
+                    else if (sub.getName().toLowerCase().indexOf(currentFile.getNormalizedName()) > -1)
                     {
                         System.out.println("Subscene found:" + sub.getName());
                         subs.add(sub);
@@ -98,7 +133,7 @@ public class Subscene implements Provider
             try         
             {
                 List<MemoryFile> list = zip.extract();
-                 for (Iterator iterator = list.iterator(); iterator.hasNext();)
+                for (Iterator iterator = list.iterator(); iterator.hasNext();)
                 {
                     MemoryFile memFile = (MemoryFile) iterator.next();
                     if (memFile.getName().endsWith("srt"))

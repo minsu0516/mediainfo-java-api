@@ -384,6 +384,25 @@ public class Utils
         return false;
     }
 
+    /**
+     * chekc if a movie starts with the same name
+     * @param ff1
+     * @param ff2
+     * @return
+     */
+    public static boolean isSameMovie3(String ff1, String original)
+    {
+        if (ff1.equals(original))
+            return true;
+
+        String f1 = ff1.replaceAll("[.]", "").replaceAll(" ", "").replaceAll("-", "").toLowerCase();
+        String f2 = original.replaceAll("[.]", "").replaceAll(" ", "").replaceAll("-", "").toLowerCase();
+        if (f1.startsWith(f2))
+            return true;
+
+        return false;
+    }
+    
  // Get the contents of a URL and return it as an image
     public static Image fetchimage(String address, Component c)
             throws MalformedURLException, IOException

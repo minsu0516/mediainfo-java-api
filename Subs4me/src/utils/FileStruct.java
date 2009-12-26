@@ -50,12 +50,17 @@ public class FileStruct
         this(f, true);
     }
     
-    public FileStruct(String fileName)
+    public FileStruct(String fileName, boolean isRealFile)
     {
         //because there is usually no ext on the file created like this
         // and we need an extension for the normalize procedure, I am adding it manually
         //time will tell if this is the right move
         normalizedName = normalizeMovieName(fileName + ".srt");
+    }
+    
+    public FileStruct(String fileName)
+    {
+        this(fileName, true);
     }
     
     public FileStruct(File f, boolean searchGoogle)
