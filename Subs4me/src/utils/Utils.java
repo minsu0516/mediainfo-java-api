@@ -260,6 +260,9 @@ public class Utils
 
     public static boolean isInRange(String num, String range)
     {
+        if (range == null)
+            return false;
+        
         if (num.equals(range))
         {
             return true;

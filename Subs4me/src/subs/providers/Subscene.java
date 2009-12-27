@@ -8,8 +8,11 @@ import java.nio.channels.FileChannel;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import net.sourceforge.filebot.ui.panel.subtitle.MemoryFile;
+import net.sourceforge.filebot.ui.panel.subtitle.RarArchive;
 import net.sourceforge.filebot.ui.panel.subtitle.ZipArchive;
 import net.sourceforge.filebot.web.SearchResult;
 import net.sourceforge.filebot.web.SeasonOutOfBoundsException;
@@ -56,19 +59,45 @@ public class Subscene implements Provider
                     SubtitleDescriptor sub = (SubtitleDescriptor) iterator2
                             .next();
                     
+                    String episodes = null;
+                    Pattern p = Pattern.compile("(?i)s([\\d]{2}).e([\\d]{2}-[\\d]{2})"); 
+                    Matcher m = p.matcher(sub.getName());
+                    if (m.find() && currentFile.isTV())
+                    {
+                        if (Integer.parseInt(m.group(1)) != Integer.parseInt((currentFile.getSeasonSimple())))
+                            continue;
+                        
+                        episodes = m.group(2);
+                    }
                     if (currentFile.isTV() && 
                             (   sub.getName().indexOf("Entire Season") > -1 
-                                || sub.getName().indexOf("Subpack") > -1 ))
+                                || sub.getName().indexOf("Subpack") > -1 )
+                                || Utils.isInRange(currentFile.getEpisode(), episodes))
                     {
                         ByteBuffer subFileBuffer = sub.fetch();
-                        ZipArchive zip = new ZipArchive(subFileBuffer);
-                        List<MemoryFile> list = zip.extract();
+                        List<MemoryFile> list = null;
+                        if (sub.getType().equals("zip"))
+                        {
+                            ZipArchive zip = new ZipArchive(subFileBuffer);
+                            list = zip.extract();
+                        }
+                        else if (sub.getType().equals("rar"))
+                        {
+                            RarArchive zip = new RarArchive(subFileBuffer);
+                            list = zip.extract();
+                        }
+                            
                         boolean seasonPrinted = false;
                         for (Iterator iterator3 = list.iterator(); iterator.hasNext();)
                         {
                             MemoryFile memFile = (MemoryFile) iterator3.next();
+                            //handle Lost S03 Subpack
+//                            if (memFile.getName().s)
+//                            {
+//                                
+//                            }
                             FileStruct fs = new FileStruct(memFile.getName());
-                            if (fs.getSeason() != currentFile.getSeason())
+                            if (!fs.getSeason().equals(currentFile.getSeason()))
                             {
                                 break;
                             }
