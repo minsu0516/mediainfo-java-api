@@ -5,10 +5,17 @@ import java.awt.GridLayout;
 import java.awt.Label;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.io.IOException;
+import java.io.PrintWriter;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.net.URLConnection;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.StringTokenizer;
 
+import javax.imageio.ImageIO;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JFrame;
@@ -19,20 +26,26 @@ import javax.swing.JTextField;
 
 import org.htmlparser.Parser;
 import org.htmlparser.http.ConnectionManager;
+import org.htmlparser.http.ConnectionMonitor;
+import org.htmlparser.http.HttpHeader;
 import org.htmlparser.util.ParserException;
-
-import utils.Utils;
 
 class Login extends JFrame implements ActionListener
 {
-    public static final String baseUrl ="http://sratim.co.il";
+    public static final String baseUrl = "http://sratim.co.il";
+    private static final String SET_COOKIE = "Set-Cookie";
+    private static final String COOKIE_VALUE_DELIMITER = ";";
+    private static final char NAME_VALUE_SEPARATOR = '=';
+    private static final char DOT = '.';
     
-    JButton SUBMIT;
-    JPanel  panel;
-    JLabel  label1, label2;
-    final JTextField text1, text2, capatchText;
-    JButton btn;
-    JPanel capatcha;
+    static ConnectionManager _manager;
+
+    JButton                    SUBMIT;
+    JPanel                     panel;
+    JLabel                     label1, label2;
+    final JTextField           text1, text2, capatchText;
+    JButton                    btn;
+    JPanel                     capatcha;
 
     Login()
     {
@@ -43,9 +56,9 @@ class Login extends JFrame implements ActionListener
         label2 = new JLabel();
         label2.setText("Password:");
         text2 = new JTextField("Y5TfTT5W", 15);
-        capatchText = new JTextField("", 15); 
+        capatchText = new JTextField("", 15);
         btn = new JButton();
-        btn.setSize(100,100);
+        btn.setSize(100, 100);
         SUBMIT = new JButton("SUBMIT");
 
         panel = new JPanel(new GridLayout(5, 1));
@@ -62,20 +75,35 @@ class Login extends JFrame implements ActionListener
         SUBMIT.addActionListener(this);
         setTitle("LOGIN FORM");
         getImage();
-        
+//        getImage();
     }
-    
+
     private void getImage()
     {
-        Parser parser;
         try
         {
-            parser = new Parser(baseUrl + "/users/login.aspx");
+            _manager = Parser.getConnectionManager();
+            ConnectionMonitor monitor = new ConnectionMonitor()
+            {
+                public void preConnect(HttpURLConnection connection)
+                {
+                    System.out.println(HttpHeader.getRequestHeader(connection));
+                }
+
+                public void postConnect(HttpURLConnection connection)
+                {
+                    System.out
+                            .println(HttpHeader.getResponseHeader(connection));
+                }
+            };
+            _manager.setMonitor(monitor);
+            _manager.setCookieProcessingEnabled(true);
+            // perform the connection
+            Parser parser = new Parser(baseUrl + "/users/login.aspx");
             parser.setEncoding("UTF-8");
-            
-//            parser = new Parser(baseUrl + "/" + "verificationimage.aspx");
-            URL url = new URL(baseUrl + "/verificationimage.aspx");
-            ImageIcon icon = new ImageIcon(url);
+            parser = new Parser(baseUrl + "/verificationimage.aspx");
+            URLConnection con = parser.getConnection();
+            ImageIcon icon = new ImageIcon(ImageIO.read(con.getInputStream()));
             btn.setIcon(icon);
         }
         catch (ParserException e)
@@ -83,15 +111,59 @@ class Login extends JFrame implements ActionListener
             // TODO Auto-generated catch block
             e.printStackTrace();
         }
-        catch (MalformedURLException e)
+        catch (IOException e)
         {
             // TODO Auto-generated catch block
             e.printStackTrace();
         }
     }
+    
+    public static HttpURLConnection createPost(String urlString,
+            StringBuffer extraProps)
+    {
+        URL url;
+        HttpURLConnection connection = null;
+        PrintWriter out;
 
+        try
+        {
+            url = new URL(urlString);
+            connection = (HttpURLConnection) url.openConnection();
+            connection.setRequestMethod("POST");
+            _manager.addCookies(connection);
 
+            connection.setDoOutput(true);
+            connection.setDoInput(true);
+            connection.setUseCaches(false);
 
+            // more or less of these may be required
+            // see Request Header Definitions:
+            // http://www.ietf.org/rfc/rfc2616.txt
+            connection.setRequestProperty("Accept-Charset", "*");
+            connection.setRequestProperty("Accept_Languaget", "en-us,en;q=0.5");
+            connection.setRequestProperty("Accept-Encoding", "gzip,deflate");
+            connection.setRequestProperty("Accept-Charset", "ISO-8859-1,utf-8;q=0.7,*;q=0.7");
+            connection.setRequestProperty("X-Requested-With", "XMLHttpRequest");
+            connection.setRequestProperty("Referer", "www.torec.net");
+
+            out = new PrintWriter(connection.getOutputStream());
+            out.print(extraProps);
+            out.close();
+        }
+        catch (MalformedURLException e)
+        {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
+        catch (IOException e1)
+        {
+            // TODO Auto-generated catch block
+            e1.printStackTrace();
+        }
+        
+        return connection;
+    }
+    
     public void actionPerformed(ActionEvent ae)
     {
         String value1 = text1.getText();
@@ -103,38 +175,73 @@ class Login extends JFrame implements ActionListener
         sb.append(value2);
         sb.append("&VerificationCode=");
         sb.append(capatchText.getText());
-//        sb.append("&Referrer=%2Fdefault.aspx%3F");
+        // sb.append("&Referrer=%2Fdefault.aspx%3F");
         sb.append("&Referrer=www.sratim.co.il");
-        HttpURLConnection connection =  Utils.createPost(baseUrl + "/users/login.aspx", sb);
+        HttpURLConnection connection = createPost(baseUrl
+                + "/users/login.aspx", sb);
         Parser parser;
         try
         {
             parser = new Parser(connection);
-            parser.setEncoding("UTF-8");
-            ConnectionManager manager = Parser.getConnectionManager ();
-            manager.setCookieProcessingEnabled(true);
-            
-            
         }
         catch (ParserException e)
         {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
+//            // TODO Auto-generated catch block
+//            e.printStackTrace();
         }
-        
+
         if (value1.equals("roseindia") && value2.equals("roseindia"))
         {
-//            NextPage page = new NextPage();
-//            page.setVisible(true);
-//            JLabel label = new JLabel("Welcome:" + value1);
-//            page.getContentPane().add(label);
+            // NextPage page = new NextPage();
+            // page.setVisible(true);
+            // JLabel label = new JLabel("Welcome:" + value1);
+            // page.getContentPane().add(label);
         }
         else
         {
-            System.out.println("enter the valid username and password");
-            JOptionPane.showMessageDialog(this, "Incorrect login or password",
-                    "Error", JOptionPane.ERROR_MESSAGE);
-            getImage();
+//            System.out.println("enter the valid username and password");
+//            JOptionPane.showMessageDialog(this, "Incorrect login or password",
+//                    "Error", JOptionPane.ERROR_MESSAGE);
+//            getImage();
+        }
+        _manager.parseCookies(connection);
+        String headerName=null;
+        Map cookie = new HashMap();
+        for (int i=1; (headerName = connection.getHeaderFieldKey(i)) != null; i++) {
+            StringTokenizer st = null;
+            if (headerName.equalsIgnoreCase(SET_COOKIE)) 
+            {
+                st = new StringTokenizer(connection.getHeaderField(i), COOKIE_VALUE_DELIMITER);
+            }
+            else if (headerName.equalsIgnoreCase("Cookie")) 
+            {
+                st = new StringTokenizer(connection.getHeaderField(i), COOKIE_VALUE_DELIMITER);
+            }
+
+            if (st != null)
+            {                
+                // the specification dictates that the first name/value pair
+                // in the string is the cookie name and value, so let's handle
+                // them as a special case: 
+
+                if (st.hasMoreTokens()) {
+                    String token  = st.nextToken();
+                    String name = token.substring(0, token.indexOf(NAME_VALUE_SEPARATOR));
+                    String value = token.substring(token.indexOf(NAME_VALUE_SEPARATOR) + 1, token.length());
+                    //                domainStore.put(name, cookie);
+                    cookie.put(name, value);
+                }
+
+                while (st.hasMoreTokens()) {
+                    String token  = st.nextToken();
+                    if (token.indexOf(NAME_VALUE_SEPARATOR) == -1)
+                    {
+                        continue;
+                    }
+                    cookie.put(token.substring(0, token.indexOf(NAME_VALUE_SEPARATOR)).toLowerCase(),
+                            token.substring(token.indexOf(NAME_VALUE_SEPARATOR) + 1));
+                }
+            }
         }
     }
 }
