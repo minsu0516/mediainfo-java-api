@@ -24,6 +24,10 @@ import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
 
+import org.apache.commons.httpclient.Header;
+import org.apache.commons.httpclient.HttpClient;
+import org.apache.commons.httpclient.HttpException;
+import org.apache.commons.httpclient.methods.PostMethod;
 import org.htmlparser.Parser;
 import org.htmlparser.http.ConnectionManager;
 import org.htmlparser.http.ConnectionMonitor;
@@ -204,6 +208,35 @@ class Login extends JFrame implements ActionListener
 //                    "Error", JOptionPane.ERROR_MESSAGE);
 //            getImage();
         }
+        
+        String appURL="http:///..login.aspx";
+        PostMethod post= new PostMethod(appURL);
+        post.addRequestHeader("Cookie", "ASP.NET_SessionId=ahdoxxfc4df5jlbjvpqzpz55");
+        post.setRequestBody("Username=crouprat&Password=Y5TfTT5W&VerificationCode=55kt&Referrer=www.sratim.co.il");
+        HttpClient _httpClient=new HttpClient();
+        try
+        {
+            _httpClient.executeMethod(post);
+            Header[] headers = post.getResponseHeaders();
+            for (int i = 0; i < headers.length; i++)
+            {
+                Header headerName = headers[i];
+                if (headerName.getName().equalsIgnoreCase(SET_COOKIE))
+                {
+                    
+                }
+            }
+        } catch (HttpException e)
+        {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        } catch (IOException e)
+        {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
+        
+        
         _manager.parseCookies(connection);
         String headerName=null;
         Map cookie = new HashMap();
