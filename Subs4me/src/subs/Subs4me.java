@@ -8,6 +8,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import subs.providers.OpenSubs;
+import subs.providers.Sratim;
 import subs.providers.Subscene;
 import subs.providers.Torec;
 import utils.FileStruct;
@@ -202,6 +203,7 @@ public class Subs4me
     private void initProviders(LinkedList<String> provNames)
     {
         new Torec();
+        new Sratim();
         new OpenSubs();
         new Subscene();
         

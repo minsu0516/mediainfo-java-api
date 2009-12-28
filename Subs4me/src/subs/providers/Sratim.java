@@ -17,6 +17,10 @@ import org.htmlparser.filters.HasParentFilter;
 import org.htmlparser.filters.LinkRegexFilter;
 import org.htmlparser.filters.LinkStringFilter;
 import org.htmlparser.filters.TagNameFilter;
+import org.htmlparser.http.ConnectionManager;
+import org.htmlparser.http.ConnectionMonitor;
+import org.htmlparser.http.Cookie;
+import org.htmlparser.http.HttpHeader;
 import org.htmlparser.nodes.TagNode;
 import org.htmlparser.util.NodeIterator;
 import org.htmlparser.util.NodeList;
@@ -32,17 +36,51 @@ public class Sratim implements Provider
 {
     public static final String baseUrl ="http://sratim.co.il";
     FileStruct currentFile = null;
+    static ConnectionManager _manager;
+    
+    static final Sratim instance = new Sratim();
+    static
+    {
+        Subs4me.registerProvider(instance);
+    }
     
     public Sratim()
     {
+       
+        login();
     }
     
     public Sratim(FileStruct fs)
     {
         currentFile = fs;
         searchByActualName(currentFile);
+        
     }
     
+    private void login()
+    {
+        _manager = Parser.getConnectionManager();
+        ConnectionMonitor monitor = new ConnectionMonitor()
+        {
+            public void preConnect(HttpURLConnection connection)
+            {
+                System.out.println(HttpHeader.getRequestHeader(connection));
+            }
+
+            public void postConnect(HttpURLConnection connection)
+            {
+                System.out
+                        .println(HttpHeader.getResponseHeader(connection));
+            }
+        };
+        _manager.setMonitor(monitor);
+        _manager.setCookieProcessingEnabled(true);
+//        __utma=232448605.1886441988.1259765317.1260782837.1262007008.7; __utmz=232448605.1259765317.1.1.utmcsr=(direct)|utmccn=(direct)|utmcmd=(none); LI=49672A9B9602BD9D; LP=356B2A1DE4CE8A87567E81856DEA59E8;
+        Cookie cookie = new Cookie ("ASP.NET_SessionId", "y3ezok45xclwcrqbuyl4ri55");
+        _manager.setCookie (cookie, "www.sratim.co.il");
+        
+    }
+
     public Results searchByActualName(FileStruct currentFile)
     {
         StringBuffer buffer = new StringBuffer(1024);
@@ -147,15 +185,15 @@ public class Sratim implements Provider
                         Node node = nodes[i];
                         String subid = searchForCorrectSubidOfSeries(((TagNode) node)
                                 .getAttribute("href"), currentFile);
-//                        if (subid != null)
-//                        {
-//                        Results subFiles = locateFileInFilePageOnTorec(subid
-//                                .substring(1), movieName);
-//                        if (subFiles != null)
-//                        {
-//                            return subFiles;
-//                        }
-//                        }
+                        if (subid != null)
+                        {
+                            Results subFiles = locateFileInFilePage(subid
+                                    .substring(1), currentFile.getNameNoExt());
+                            if (subFiles != null)
+                            {
+                                return subFiles;
+                            }
+                        }
                     }
                 }
             }
@@ -276,10 +314,17 @@ public class Sratim implements Provider
             {
                 for (String subID : subsID.getResults())
                 {
-                    success = Utils.downloadZippedSubs(baseUrl + subID, subID+".zip");
+                    Pattern p = Pattern.compile("ID=([\\d]*)");
+                    Matcher m = p.matcher(subID);
+                    String name = subID;
+                    if (m.find())
+                    {
+                        name = m.group(1);
+                    }
+                    success = Utils.downloadZippedSubs(baseUrl + subID, name + ".zip");
                     if (success)
                     {
-                        Utils.unzipSubs(currentFile, subID+".zip", subsID.isCorrectResults());
+                        Utils.unzipSubs(currentFile, name + ".zip", subsID.isCorrectResults());
                         return true;
                     }
                 }
@@ -367,7 +412,8 @@ public class Sratim implements Provider
                 {
                     i++;
                     name = name.trim();
-                    if (Utils.isSameMovie(new FileStruct(name), new FileStruct(movieName)))
+                    if (Utils.isSameMovie(new FileStruct(name.trim()), new FileStruct(movieName)))
+//                    if (Utils.isSameMovie(new FileStruct(name), new FileStruct(movieName)))
                     {
                         displayNames.add(name);
 //                        String dlPlease = Utils.postForFileName(subid.substring(15),

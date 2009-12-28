@@ -250,21 +250,7 @@ class Login extends JFrame implements ActionListener
             // TODO Auto-generated catch block
             e1.printStackTrace();
         }
-//        ContentProducer cp = new ContentProducer() {
-//            public void writeTo(OutputStream outstream) throws IOException {
-//                Writer writer = new OutputStreamWriter(outstream, "UTF-8");
-//                writer.write("Username=");
-//                writer.write(value1);
-//                writer.write("&Password=");
-//                writer.write(value2);
-//                writer.write("&VerificationCode=");
-//                writer.write(capatchText.getText());
-//                writer.write("&Referrer=");
-//                writer.write("www.sratim.co.il");
-//                writer.flush();
-//            }
-//        };
-//        HttpEntity entity = new EntityTemplate(cp);
+        
         HttpPost httppost = new HttpPost(appURL);
         httppost.addHeader("Cookie", cookie.get(0));
         httppost.setEntity(stEntity);
