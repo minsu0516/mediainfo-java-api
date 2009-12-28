@@ -6,12 +6,18 @@ import java.awt.Label;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.IOException;
+import java.io.OutputStream;
+import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
+import java.io.UnsupportedEncodingException;
+import java.io.Writer;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLConnection;
 import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
 import java.util.StringTokenizer;
 
@@ -24,10 +30,18 @@ import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
 
-import org.apache.commons.httpclient.Header;
-import org.apache.commons.httpclient.HttpClient;
-import org.apache.commons.httpclient.HttpException;
-import org.apache.commons.httpclient.methods.PostMethod;
+import org.apache.http.Header;
+import org.apache.http.HeaderElementIterator;
+import org.apache.http.HttpEntity;
+import org.apache.http.HttpResponse;
+import org.apache.http.client.ClientProtocolException;
+import org.apache.http.client.HttpClient;
+import org.apache.http.client.methods.HttpPost;
+import org.apache.http.entity.ContentProducer;
+import org.apache.http.entity.EntityTemplate;
+import org.apache.http.entity.StringEntity;
+import org.apache.http.impl.client.DefaultHttpClient;
+import org.apache.http.message.BasicHeaderElementIterator;
 import org.htmlparser.Parser;
 import org.htmlparser.http.ConnectionManager;
 import org.htmlparser.http.ConnectionMonitor;
@@ -41,7 +55,7 @@ class Login extends JFrame implements ActionListener
     private static final String COOKIE_VALUE_DELIMITER = ";";
     private static final char NAME_VALUE_SEPARATOR = '=';
     private static final char DOT = '.';
-    
+    private List<String> cookie = new LinkedList<String>();
     static ConnectionManager _manager;
 
     JButton                    SUBMIT;
@@ -105,8 +119,49 @@ class Login extends JFrame implements ActionListener
             // perform the connection
             Parser parser = new Parser(baseUrl + "/users/login.aspx");
             parser.setEncoding("UTF-8");
-            parser = new Parser(baseUrl + "/verificationimage.aspx");
             URLConnection con = parser.getConnection();
+            String headerName=null;
+//            Map cookie = new HashMap();
+            for (int i=1; (headerName = con.getHeaderFieldKey(i)) != null; i++) {
+                StringTokenizer st = null;
+                if (headerName.equalsIgnoreCase(SET_COOKIE)) 
+                {
+                    cookie.add(con.getHeaderField(i));
+                }
+//                    st = new StringTokenizer(con.getHeaderField(i), COOKIE_VALUE_DELIMITER);
+//                }
+//
+//                if (st != null)
+//                {                
+//                    // the specification dictates that the first name/value pair
+//                    // in the string is the cookie name and value, so let's handle
+//                    // them as a special case: 
+//
+//                    if (st.hasMoreTokens()) {
+//                        String token  = st.nextToken();
+//                        String name = token.substring(0, token.indexOf(NAME_VALUE_SEPARATOR));
+//                        String value = token.substring(token.indexOf(NAME_VALUE_SEPARATOR) + 1, token.length());
+//                        //                domainStore.put(name, cookie);
+//                        cookie.put(name, value);
+//                    }
+//
+//                    while (st.hasMoreTokens())
+//                    {
+//                        String token = st.nextToken();
+//                        if (token.indexOf(NAME_VALUE_SEPARATOR) == -1)
+//                        {
+//                            continue;
+//                        }
+//                        cookie.put(token.substring(0,
+//                                token.indexOf(NAME_VALUE_SEPARATOR))
+//                                .toLowerCase(), token.substring(token
+//                                .indexOf(NAME_VALUE_SEPARATOR) + 1));
+//                    }
+//                }
+            }
+            
+            parser = new Parser(baseUrl + "/verificationimage.aspx");
+            con = parser.getConnection();
             ImageIcon icon = new ImageIcon(ImageIO.read(con.getInputStream()));
             btn.setIcon(icon);
         }
@@ -170,8 +225,8 @@ class Login extends JFrame implements ActionListener
     
     public void actionPerformed(ActionEvent ae)
     {
-        String value1 = text1.getText();
-        String value2 = text2.getText();
+        final String value1 = text1.getText();
+        final String value2 = text2.getText();
         StringBuffer sb = new StringBuffer();
         sb.append("Username=");
         sb.append(value1);
@@ -179,20 +234,84 @@ class Login extends JFrame implements ActionListener
         sb.append(value2);
         sb.append("&VerificationCode=");
         sb.append(capatchText.getText());
-        // sb.append("&Referrer=%2Fdefault.aspx%3F");
+//        // sb.append("&Referrer=%2Fdefault.aspx%3F");
         sb.append("&Referrer=www.sratim.co.il");
-        HttpURLConnection connection = createPost(baseUrl
-                + "/users/login.aspx", sb);
-        Parser parser;
+//        HttpURLConnection connection = createPost(baseUrl
+//                + "/users/login.aspx", sb);
+        
+        String appURL=baseUrl + "/users/login.aspx";
+        HttpPost post = new HttpPost(appURL);
+        StringEntity stEntity = null;
         try
         {
-            parser = new Parser(connection);
-        }
-        catch (ParserException e)
+            stEntity = new StringEntity(sb.toString());
+        } catch (UnsupportedEncodingException e1)
         {
-//            // TODO Auto-generated catch block
-//            e.printStackTrace();
+            // TODO Auto-generated catch block
+            e1.printStackTrace();
         }
+//        ContentProducer cp = new ContentProducer() {
+//            public void writeTo(OutputStream outstream) throws IOException {
+//                Writer writer = new OutputStreamWriter(outstream, "UTF-8");
+//                writer.write("Username=");
+//                writer.write(value1);
+//                writer.write("&Password=");
+//                writer.write(value2);
+//                writer.write("&VerificationCode=");
+//                writer.write(capatchText.getText());
+//                writer.write("&Referrer=");
+//                writer.write("www.sratim.co.il");
+//                writer.flush();
+//            }
+//        };
+//        HttpEntity entity = new EntityTemplate(cp);
+        HttpPost httppost = new HttpPost(appURL);
+        httppost.addHeader("Cookie", cookie.get(0));
+        httppost.setEntity(stEntity);
+        
+        DefaultHttpClient httpclient = new DefaultHttpClient();
+        HttpResponse response;
+        try
+        {
+            response = httpclient.execute(httppost);
+            Header[] headers = response.getHeaders(SET_COOKIE);
+            for (int i = 0; i < headers.length; i++)
+            {
+                Header header = headers[i];
+                if (header.getName().equalsIgnoreCase(SET_COOKIE))
+                {
+
+                }
+            }
+        } catch (ClientProtocolException e)
+        {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        } catch (IOException e)
+        {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
+        
+//        post.addRequestHeader("Cookie", "ASP.NET_SessionId=ahdoxxfc4df5jlbjvpqzpz55");
+//        NameValuePair[] data = {
+//                new NameValuePair("Username", value1),
+//                new NameValuePair("Password", value2),
+//                new NameValuePair("VerificationCode", capatchText.getText()),
+//                new NameValuePair("Referrer", "www.sratim.co.il")
+//        };
+//        post.setRequestBody(data);
+        
+//        Parser parser;
+//        try
+//        {
+//            parser = new Parser(connection);
+//        }
+//        catch (ParserException e)
+//        {
+////            // TODO Auto-generated catch block
+////            e.printStackTrace();
+//        }
 
         if (value1.equals("roseindia") && value2.equals("roseindia"))
         {
@@ -207,74 +326,6 @@ class Login extends JFrame implements ActionListener
 //            JOptionPane.showMessageDialog(this, "Incorrect login or password",
 //                    "Error", JOptionPane.ERROR_MESSAGE);
 //            getImage();
-        }
-        
-        String appURL="http:///..login.aspx";
-        PostMethod post= new PostMethod(appURL);
-        post.addRequestHeader("Cookie", "ASP.NET_SessionId=ahdoxxfc4df5jlbjvpqzpz55");
-        post.setRequestBody("Username=crouprat&Password=Y5TfTT5W&VerificationCode=55kt&Referrer=www.sratim.co.il");
-        HttpClient _httpClient=new HttpClient();
-        try
-        {
-            _httpClient.executeMethod(post);
-            Header[] headers = post.getResponseHeaders();
-            for (int i = 0; i < headers.length; i++)
-            {
-                Header headerName = headers[i];
-                if (headerName.getName().equalsIgnoreCase(SET_COOKIE))
-                {
-                    
-                }
-            }
-        } catch (HttpException e)
-        {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        } catch (IOException e)
-        {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        }
-        
-        
-        _manager.parseCookies(connection);
-        String headerName=null;
-        Map cookie = new HashMap();
-        for (int i=1; (headerName = connection.getHeaderFieldKey(i)) != null; i++) {
-            StringTokenizer st = null;
-            if (headerName.equalsIgnoreCase(SET_COOKIE)) 
-            {
-                st = new StringTokenizer(connection.getHeaderField(i), COOKIE_VALUE_DELIMITER);
-            }
-            else if (headerName.equalsIgnoreCase("Cookie")) 
-            {
-                st = new StringTokenizer(connection.getHeaderField(i), COOKIE_VALUE_DELIMITER);
-            }
-
-            if (st != null)
-            {                
-                // the specification dictates that the first name/value pair
-                // in the string is the cookie name and value, so let's handle
-                // them as a special case: 
-
-                if (st.hasMoreTokens()) {
-                    String token  = st.nextToken();
-                    String name = token.substring(0, token.indexOf(NAME_VALUE_SEPARATOR));
-                    String value = token.substring(token.indexOf(NAME_VALUE_SEPARATOR) + 1, token.length());
-                    //                domainStore.put(name, cookie);
-                    cookie.put(name, value);
-                }
-
-                while (st.hasMoreTokens()) {
-                    String token  = st.nextToken();
-                    if (token.indexOf(NAME_VALUE_SEPARATOR) == -1)
-                    {
-                        continue;
-                    }
-                    cookie.put(token.substring(0, token.indexOf(NAME_VALUE_SEPARATOR)).toLowerCase(),
-                            token.substring(token.indexOf(NAME_VALUE_SEPARATOR) + 1));
-                }
-            }
         }
     }
 }
