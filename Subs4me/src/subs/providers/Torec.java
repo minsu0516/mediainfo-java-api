@@ -34,10 +34,15 @@ public class Torec implements Provider
     public static final String baseUrl ="http://www.torec.net";
     private FileStruct currentFile = null;
     
-    static final Torec instance = new Torec();
+    private static final Torec instance = new Torec();
     static
     {
         Subs4me.registerProvider(instance);
+    }
+    
+    public static Torec getInstance()
+    {
+        return instance;
     }
 
     @Override

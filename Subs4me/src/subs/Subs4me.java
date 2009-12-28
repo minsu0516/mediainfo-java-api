@@ -202,8 +202,8 @@ public class Subs4me
     
     private void initProviders(LinkedList<String> provNames)
     {
-        new Torec();
-        new Sratim();
+        Torec.getInstance();
+        Sratim.getInstance();
         new OpenSubs();
         new Subscene();
         

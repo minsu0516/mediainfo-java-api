@@ -186,6 +186,17 @@ public class Utils
      */
     public static boolean downloadZippedSubs(String file, String fileName)
     {
+        return downloadZippedSubs(file, fileName, null);
+    }
+    /**
+     * 
+     * @param file
+     * @param fileName 
+     * @param cookie
+     * @return succeeded true or false
+     */
+    public static boolean downloadZippedSubs(String file, String fileName, String cookie)
+    {
         StringBuffer sb = new StringBuffer(file);
         BufferedInputStream bis = null;
         BufferedOutputStream bos = null;
@@ -204,7 +215,11 @@ public class Utils
             destination = new File(tempDir + fileName);
             url = new URL(sb.toString());
             URLConnection urlc = url.openConnection();
-
+            if (cookie != null)
+            {
+                urlc.addRequestProperty("Cookie", cookie);
+            }
+            
             bis = new BufferedInputStream(urlc.getInputStream());
             bos = new BufferedOutputStream(new FileOutputStream(destination));
 
@@ -588,5 +603,42 @@ public class Utils
         
         return false;
     }
+    
+    final static int BUFF_SIZE = 100000;
+    final static byte[] buffer = new byte[BUFF_SIZE];
+    public static int copy(InputStream is, OutputStream os) throws IOException {
+        int bytesCopied = 0;
+        try {
+            while (true) {
+                synchronized (buffer) {
+                    int amountRead = is.read(buffer);
+                    if (amountRead == -1) {
+                        break;
+                    }
+                    else {
+                        bytesCopied += amountRead;
+                    }
+                    os.write(buffer, 0, amountRead);
+                }
+            }
+        } finally {
+            try {
+                if (is != null) {
+                    is.close();
+                }
+            } catch (IOException error) {
+                // ignore
+            }
+            try {
+                if (os != null) {
+                    os.close();
+                }
+            } catch (IOException error) {
+                // ignore
+            }
+        }
+        return bytesCopied;
+    }
+
     
 }

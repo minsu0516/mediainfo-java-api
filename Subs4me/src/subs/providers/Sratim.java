@@ -2,12 +2,21 @@ package subs.providers;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.PrintWriter;
+import java.io.UnsupportedEncodingException;
 import java.net.HttpURLConnection;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.apache.http.HttpResponse;
+import org.apache.http.client.ClientProtocolException;
+import org.apache.http.client.methods.HttpPost;
+import org.apache.http.entity.StringEntity;
+import org.apache.http.impl.client.DefaultHttpClient;
 import org.htmlparser.Node;
 import org.htmlparser.NodeFilter;
 import org.htmlparser.Parser;
@@ -18,9 +27,6 @@ import org.htmlparser.filters.LinkRegexFilter;
 import org.htmlparser.filters.LinkStringFilter;
 import org.htmlparser.filters.TagNameFilter;
 import org.htmlparser.http.ConnectionManager;
-import org.htmlparser.http.ConnectionMonitor;
-import org.htmlparser.http.Cookie;
-import org.htmlparser.http.HttpHeader;
 import org.htmlparser.nodes.TagNode;
 import org.htmlparser.util.NodeIterator;
 import org.htmlparser.util.NodeList;
@@ -37,16 +43,21 @@ public class Sratim implements Provider
     public static final String baseUrl ="http://sratim.co.il";
     FileStruct currentFile = null;
     static ConnectionManager _manager;
+    static String seassionId = ""; 
     
-    static final Sratim instance = new Sratim();
+    private static final Sratim instance = new Sratim();
     static
     {
         Subs4me.registerProvider(instance);
     }
     
+    public static Sratim getInstance()
+    {
+        return instance;
+    }
+
     public Sratim()
     {
-       
         login();
     }
     
@@ -60,24 +71,24 @@ public class Sratim implements Provider
     private void login()
     {
         _manager = Parser.getConnectionManager();
-        ConnectionMonitor monitor = new ConnectionMonitor()
-        {
-            public void preConnect(HttpURLConnection connection)
-            {
-                System.out.println(HttpHeader.getRequestHeader(connection));
-            }
-
-            public void postConnect(HttpURLConnection connection)
-            {
-                System.out
-                        .println(HttpHeader.getResponseHeader(connection));
-            }
-        };
-        _manager.setMonitor(monitor);
+//        ConnectionMonitor monitor = new ConnectionMonitor()
+//        {
+//            public void preConnect(HttpURLConnection connection)
+//            {
+//                System.out.println(HttpHeader.getRequestHeader(connection));
+//            }
+//
+//            public void postConnect(HttpURLConnection connection)
+//            {
+//                System.out
+//                        .println(HttpHeader.getResponseHeader(connection));
+//            }
+//        };
+//        _manager.setMonitor(monitor);
         _manager.setCookieProcessingEnabled(true);
 //        __utma=232448605.1886441988.1259765317.1260782837.1262007008.7; __utmz=232448605.1259765317.1.1.utmcsr=(direct)|utmccn=(direct)|utmcmd=(none); LI=49672A9B9602BD9D; LP=356B2A1DE4CE8A87567E81856DEA59E8;
-        Cookie cookie = new Cookie ("ASP.NET_SessionId", "y3ezok45xclwcrqbuyl4ri55");
-        _manager.setCookie (cookie, "www.sratim.co.il");
+//        Cookie cookie = new Cookie ("Cookie", "ASP.NET_SessionId=y3ezok45xclwcrqbuyl4ri55; __utma=232448605.1886441988.1259765317.1260782837.1262007008.7; __utmz=232448605.1259765317.1.1.utmcsr=(direct)|utmccn=(direct)|utmcmd=(none); LI=49672A9B9602BD9D; LP=356B2A1DE4CE8A87567E81856DEA59E8;");
+//        _manager.setCookie (cookie, "www.sratim.co.il");
         
     }
 
@@ -97,15 +108,23 @@ public class Sratim implements Provider
             buffer.append(part);
         }
         
-        HttpURLConnection connection = Utils.createPost(
+        HttpURLConnection connection = createPost(
                 baseUrl + "/movies/search.aspx", buffer);
-
+//        Cookie cookie = new Cookie ("ASP.NET_SessionId", "y3ezok45xclwcrqbuyl4ri55");
+//        _manager.setCookie (cookie, "www.sratim.co.il");
+//        _manager.addCookies(connection);
         Parser parser;
         try
         {
             parser = new Parser(connection);
             parser.setEncoding("UTF-8");
-            
+            String res = "";
+            Pattern p = Pattern.compile("ASP.NET_SessionId=[\\w]+;");
+            Matcher m = p.matcher(parser.getConnection().getHeaderField("Set-Cookie"));
+            if (m.find())
+            {
+                seassionId = m.group();
+            }
             NodeList list = new NodeList();
             // check if we need tvseries
             NodeFilter filter = null;
@@ -321,7 +340,8 @@ public class Sratim implements Provider
                     {
                         name = m.group(1);
                     }
-                    success = Utils.downloadZippedSubs(baseUrl + subID, name + ".zip");
+                    String cookie = "ASP.NET_SessionId=v01vyd45nwkw5055ploypxuj;" + " __utma=232448605.116403591.1262033049.1262033049.1262033049.1; __utmb=232448605.3.10.1262033049; __utmc=232448605; __utmz=232448605.1262033049.1.1.utmcsr=guide.opendns.com|utmccn=(referral)|utmcmd=referral|utmcct=/controller.php; LI=3AC876718DF117EF; LP=D7DAA0FD27091DE10153688A220D1EEA";
+                    success = Utils.downloadZippedSubs(baseUrl + subID, name + ".zip", cookie);
                     if (success)
                     {
                         Utils.unzipSubs(currentFile, name + ".zip", subsID.isCorrectResults());
@@ -496,5 +516,96 @@ public class Sratim implements Provider
 
             return null;
         }
+        
+        public static HttpURLConnection createPost2(String urlString,
+                StringBuffer sb)
+        {
+            StringEntity stEntity = null;
+            try
+            {
+                stEntity = new StringEntity(sb.toString());
+            } catch (UnsupportedEncodingException e1)
+            {
+                // TODO Auto-generated catch block
+                e1.printStackTrace();
+            }
+            
+            HttpPost httppost = new HttpPost(urlString);
+            httppost.addHeader("Cookie", "ASP.NET_SessionId=y3ezok45xclwcrqbuyl4ri55");
+            httppost.setEntity(stEntity);
+            
+            DefaultHttpClient httpclient = new DefaultHttpClient();
+            HttpResponse response;
+            try
+            {
+                response = httpclient.execute(httppost);
+//                Header[] headers = response.getHeaders(SET_COOKIE);
+//                for (int i = 0; i < headers.length; i++)
+//                {
+//                    Header header = headers[i];
+//                    if (header.getName().equalsIgnoreCase(SET_COOKIE))
+//                    {
+//
+//                    }
+//                }
+            } catch (ClientProtocolException e)
+            {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
+            } catch (IOException e)
+            {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
+            }
+            
+            return null;
+        }
 
+        public static HttpURLConnection createPost(String urlString,
+                StringBuffer extraProps)
+        {
+            URL url;
+            HttpURLConnection connection = null;
+            PrintWriter out;
+
+            try
+            {
+                url = new URL(urlString);
+                connection = (HttpURLConnection) url.openConnection();
+                connection.setRequestMethod("POST");
+                _manager.addCookies(connection);
+
+                connection.setDoOutput(true);
+                connection.setDoInput(true);
+                connection.setUseCaches(false);
+
+                // more or less of these may be required
+                // see Request Header Definitions:
+                // http://www.ietf.org/rfc/rfc2616.txt
+                connection.setRequestProperty("Accept-Charset", "*");
+                connection.setRequestProperty("Accept_Languaget", "en-us,en;q=0.5");
+                connection.setRequestProperty("Accept-Encoding", "gzip,deflate");
+                connection.setRequestProperty("Accept-Charset", "ISO-8859-1,utf-8;q=0.7,*;q=0.7");
+                connection.setRequestProperty("X-Requested-With", "XMLHttpRequest");
+                connection.setRequestProperty("Referer", "www.torec.net");
+//                connection.setRequestProperty("Cookie", "ASP.NET_SessionId=y3ezok45xclwcrqbuyl4ri55; __utma=232448605.1886441988.1259765317.1260782837.1262007008.7; __utmz=232448605.1259765317.1.1.utmcsr=(direct)|utmccn=(direct)|utmcmd=(none); LI=49672A9B9602BD9D; LP=356B2A1DE4CE8A87567E81856DEA59E8;");
+
+                out = new PrintWriter(connection.getOutputStream());
+                out.print(extraProps);
+                out.close();
+            }
+            catch (MalformedURLException e)
+            {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
+            }
+            catch (IOException e1)
+            {
+                // TODO Auto-generated catch block
+                e1.printStackTrace();
+            }
+            
+            return connection;
+        }
+        
 }
