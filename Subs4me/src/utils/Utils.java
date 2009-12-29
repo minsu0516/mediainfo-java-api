@@ -215,10 +215,7 @@ public class Utils
             destination = new File(tempDir + fileName);
             url = new URL(sb.toString());
             URLConnection urlc = url.openConnection();
-            if (cookie != null)
-            {
-                urlc.addRequestProperty("Cookie", cookie);
-            }
+            urlc.setRequestProperty("Cookie", cookie);
             
             bis = new BufferedInputStream(urlc.getInputStream());
             bos = new BufferedOutputStream(new FileOutputStream(destination));

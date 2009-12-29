@@ -12,6 +12,7 @@ import subs.providers.Sratim;
 import subs.providers.Subscene;
 import subs.providers.Torec;
 import utils.FileStruct;
+import utils.PropertiesUtil;
 
 public class Subs4me
 {
@@ -27,6 +28,8 @@ public class Subs4me
     private static boolean recursive = false;
 //    private static boolean intense = false;
     private static boolean fullDownload = false;
+    
+    private static String propertiesName = "./subs4me.properties";
     
     private static LinkedList<Provider> _availableProviders = new LinkedList<Provider>();
     
@@ -94,7 +97,7 @@ public class Subs4me
     private void cleanup(File f)
     {
         FileStruct fs = new FileStruct(f, false);
-        String[] files = findFilesTocleanupInDir(f, fs.getFullNameNoExt());
+        String[] files = findFilesTocleanupInDir(fs);
         for (int i = 0; i < files.length; i++)
         {
             String delName = files[i];
@@ -103,20 +106,20 @@ public class Subs4me
         }
     }
     
-    private String[] findFilesTocleanupInDir(File f, final String nameStarter)
+    private String[] findFilesTocleanupInDir(final FileStruct fs)
     {
-        File dir = new File(f.getParent());
+        File dir = new File(fs.getFile().getParent());
         if (dir.isDirectory())
         {
             FilenameFilter filter = new FilenameFilter()
             {
                 public boolean accept(File dir, String name)
                 {
-                    if (name.endsWith(".dowork"))
+                    if (name.equals(fs.getNameNoExt() + ".dowork"))
                     {
                         return true;
                     }
-                    String n = nameStarter+".srt";
+                    String n = fs.getNameNoExt() + ".srt";
                     if (name.startsWith(n) 
                             && name.length() > n.length())
                     {
@@ -221,6 +224,13 @@ public class Subs4me
                 Provider prov = getProvider(p);
                 if (prov != null)
                 {
+                    if (prov.getName().equals(Sratim.getInstance().getName()))
+                    {
+                        if (!Sratim.getInstance().loadSratimCookie())
+                        {
+                            System.exit(-1);
+                        }
+                    }
                     _providers.add(prov);
                 }
             }
@@ -260,7 +270,16 @@ public class Subs4me
         }
         
         Subs4me as = Subs4me.getInstance();
-        as.loadIni();
+        
+     // Load the sub4me-default.properties file
+        if (!PropertiesUtil.setPropertiesStreamName("./properties/subs4me-default.properties")) {
+            return;
+        }
+
+        // Load the user properties file "moviejukebox.properties"
+        // No need to abort if we don't find this file
+        // Must be read before the skin, because this may contain an override skin
+        PropertiesUtil.setPropertiesStreamName(propertiesName);
         
         LinkedList<String> providers = null;
         for (int i = 1; i < args.length; i++)
@@ -330,14 +349,6 @@ public class Subs4me
             return;
         }
         _availableProviders.add(provider);
-    }
-    
-    public void loadIni()
-    {
-        File ini = new File("subs4me.ini");
-        if (!ini.exists())
-            return;
-        
     }
 }
 

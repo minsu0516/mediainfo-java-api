@@ -1,7 +1,14 @@
 package subs.providers;
 
+import java.io.BufferedReader;
+import java.io.DataOutputStream;
 import java.io.File;
+import java.io.FileOutputStream;
+import java.io.FileReader;
+import java.io.FileWriter;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.io.UnsupportedEncodingException;
 import java.net.HttpURLConnection;
@@ -9,6 +16,9 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -36,14 +46,25 @@ import subs.Provider;
 import subs.Results;
 import subs.Subs4me;
 import utils.FileStruct;
+import utils.PropertiesUtil;
 import utils.Utils;
 
+/**
+ * Some code here, for getting the correct cookie was adapted from YAMJ: http://code.google.com/p/moviejukebox/
+ * @author iklein
+ */
 public class Sratim implements Provider
 {
     public static final String baseUrl ="http://sratim.co.il";
     FileStruct currentFile = null;
     static ConnectionManager _manager;
     static String seassionId = ""; 
+    private static String cookieHeader="";
+    private static Logger logger = Logger.getLogger("SratimProvider");
+    
+    String login = null;
+    String pass = null;
+    String code = null;
     
     private static final Sratim instance = new Sratim();
     static
@@ -58,37 +79,15 @@ public class Sratim implements Provider
 
     public Sratim()
     {
-        login();
+        login = PropertiesUtil.getProperty("sratim.username", "");
+        pass = PropertiesUtil.getProperty("sratim.password", "");
+        code = PropertiesUtil.getProperty("sratim.code", "");
     }
     
     public Sratim(FileStruct fs)
     {
         currentFile = fs;
         searchByActualName(currentFile);
-        
-    }
-    
-    private void login()
-    {
-        _manager = Parser.getConnectionManager();
-//        ConnectionMonitor monitor = new ConnectionMonitor()
-//        {
-//            public void preConnect(HttpURLConnection connection)
-//            {
-//                System.out.println(HttpHeader.getRequestHeader(connection));
-//            }
-//
-//            public void postConnect(HttpURLConnection connection)
-//            {
-//                System.out
-//                        .println(HttpHeader.getResponseHeader(connection));
-//            }
-//        };
-//        _manager.setMonitor(monitor);
-        _manager.setCookieProcessingEnabled(true);
-//        __utma=232448605.1886441988.1259765317.1260782837.1262007008.7; __utmz=232448605.1259765317.1.1.utmcsr=(direct)|utmccn=(direct)|utmcmd=(none); LI=49672A9B9602BD9D; LP=356B2A1DE4CE8A87567E81856DEA59E8;
-//        Cookie cookie = new Cookie ("Cookie", "ASP.NET_SessionId=y3ezok45xclwcrqbuyl4ri55; __utma=232448605.1886441988.1259765317.1260782837.1262007008.7; __utmz=232448605.1259765317.1.1.utmcsr=(direct)|utmccn=(direct)|utmcmd=(none); LI=49672A9B9602BD9D; LP=356B2A1DE4CE8A87567E81856DEA59E8;");
-//        _manager.setCookie (cookie, "www.sratim.co.il");
         
     }
 
@@ -110,21 +109,12 @@ public class Sratim implements Provider
         
         HttpURLConnection connection = createPost(
                 baseUrl + "/movies/search.aspx", buffer);
-//        Cookie cookie = new Cookie ("ASP.NET_SessionId", "y3ezok45xclwcrqbuyl4ri55");
-//        _manager.setCookie (cookie, "www.sratim.co.il");
-//        _manager.addCookies(connection);
         Parser parser;
         try
         {
             parser = new Parser(connection);
             parser.setEncoding("UTF-8");
             String res = "";
-            Pattern p = Pattern.compile("ASP.NET_SessionId=[\\w]+;");
-            Matcher m = p.matcher(parser.getConnection().getHeaderField("Set-Cookie"));
-            if (m.find())
-            {
-                seassionId = m.group();
-            }
             NodeList list = new NodeList();
             // check if we need tvseries
             NodeFilter filter = null;
@@ -315,7 +305,6 @@ public class Sratim implements Provider
             e.printStackTrace();
         }
     
-        // System.out.println("Did not find a file to download");
         return null;
     }
 
@@ -340,12 +329,11 @@ public class Sratim implements Provider
                     {
                         name = m.group(1);
                     }
-                    String cookie = "ASP.NET_SessionId=v01vyd45nwkw5055ploypxuj;" + " __utma=232448605.116403591.1262033049.1262033049.1262033049.1; __utmb=232448605.3.10.1262033049; __utmc=232448605; __utmz=232448605.1262033049.1.1.utmcsr=guide.opendns.com|utmccn=(referral)|utmcmd=referral|utmcct=/controller.php; LI=3AC876718DF117EF; LP=D7DAA0FD27091DE10153688A220D1EEA";
-                    success = Utils.downloadZippedSubs(baseUrl + subID, name + ".zip", cookie);
+                    success = Utils.downloadZippedSubs(baseUrl + subID, name + ".zip", cookieHeader);
                     if (success)
                     {
                         Utils.unzipSubs(currentFile, name + ".zip", subsID.isCorrectResults());
-                        return true;
+                        return subsID.isCorrectResults();
                     }
                 }
             }
@@ -517,6 +505,221 @@ public class Sratim implements Provider
             return null;
         }
         
+        public boolean loadSratimCookie() {
+
+            // Check if we already logged in and got the correct cookie        
+            if (!cookieHeader.equals(""))
+                return false;
+
+
+            // Check if cookie file exist
+            try {            
+                FileReader cookieFile = new FileReader("sratim.cookie");
+                BufferedReader in = new BufferedReader(cookieFile);
+                cookieHeader = in.readLine();
+                in.close();
+            } catch (Exception error) {
+            }
+
+            if (!cookieHeader.equals(""))
+            {
+                // Verify cookie by loading main page
+                try {            
+                    URL url = new URL("http://www.sratim.co.il/");
+                    HttpURLConnection connection = (HttpURLConnection) (url.openConnection());
+                    connection.setRequestProperty("Cookie", cookieHeader);
+
+                    //Get Response    
+                    InputStream is = connection.getInputStream();
+                    BufferedReader rd = new BufferedReader(new InputStreamReader(is));
+                    String line;
+                    StringBuffer response = new StringBuffer(); 
+                    while((line = rd.readLine()) != null) {
+                        response.append(line);
+                    }
+                    rd.close();
+                    String xml=response.toString();
+
+                    if (xml.indexOf("logout=1")!=-1) {
+                        logger.finest("Sratim Subtitles Cookies Valid");
+                        return true;
+                    }
+
+                } catch (Exception error) {
+                    logger.severe("Error : " + error.getMessage());
+                    return false;
+                }
+
+                logger.severe("Sratim Cookie Use Failed - Creating new session and jpg files");
+
+                cookieHeader = "";
+                File dcookieFile = new File("sratim.cookie");
+                dcookieFile.delete();
+            }
+
+
+            // Check if session file exist
+            try {            
+                FileReader sessionFile = new FileReader("sratim.session");
+                BufferedReader in = new BufferedReader(sessionFile);
+                cookieHeader = in.readLine();
+                in.close();
+            } catch (Exception error) {
+            }
+
+
+            // Check if we don't have the verification code yet
+            if (!cookieHeader.equals("")) {
+                try {            
+                    logger.finest("cookieHeader: " + cookieHeader);
+
+                    // Build the post request
+                    String post;
+                    post = "Username=" + login + "&Password=" + pass + "&VerificationCode=" + code + "&Referrer=%2Fdefault.aspx%3F";
+
+                    logger.finest("post: " + post);
+
+
+                    URL url = new URL("http://www.sratim.co.il/users/login.aspx");
+                    HttpURLConnection connection = (HttpURLConnection) (url.openConnection());
+                    connection.setRequestMethod("POST");
+                    connection.setRequestProperty("Content-Type", "application/x-www-form-urlencoded");
+                    connection.setRequestProperty("Content-Length", "" + Integer.toString(post.getBytes().length));
+                    connection.setRequestProperty("Accept-Language", "en-us,en;q=0.5");
+                    connection.setRequestProperty("Accept-Charset", "ISO-8859-1,utf-8;q=0.7,*;q=0.7");
+                    connection.setRequestProperty("Referer", "http://www.sratim.co.il/users/login.aspx");
+
+                    connection.setRequestProperty("Cookie", cookieHeader);
+                    connection.setUseCaches (false);
+                    connection.setDoInput(true);
+                    connection.setDoOutput(true);
+                    connection.setInstanceFollowRedirects(false);
+
+                    //Send request
+                    DataOutputStream wr = new DataOutputStream (connection.getOutputStream ());
+                    wr.writeBytes (post);
+                    wr.flush ();
+                    wr.close ();
+
+
+                    cookieHeader = "";
+
+                    // read new cookies and update our cookies
+                    for (Map.Entry<String, List<String>> header : connection.getHeaderFields().entrySet()) {
+                        if ("Set-Cookie".equals(header.getKey())) {
+                            for (String rcookieHeader : header.getValue()) {
+                                String[] cookieElements = rcookieHeader.split(" *; *");
+                                if (cookieElements.length >= 1) {
+                                    String[] firstElem = cookieElements[0].split(" *= *");
+                                    String cookieName = firstElem[0];
+                                    String cookieValue = firstElem.length > 1 ? firstElem[1] : null;
+
+                                    logger.finest("cookieName:" + cookieName);
+                                    logger.finest("cookieValue:" + cookieValue);
+
+                                    if (!cookieHeader.equals(""))
+                                        cookieHeader = cookieHeader + "; ";
+                                    cookieHeader = cookieHeader + cookieName + "=" + cookieValue;
+                                }
+                            }
+                        }
+                    }
+
+                    //Get Response    
+                    InputStream is = connection.getInputStream();
+                    BufferedReader rd = new BufferedReader(new InputStreamReader(is));
+                    String line;
+                    StringBuffer response = new StringBuffer(); 
+                    while((line = rd.readLine()) != null) {
+                        response.append(line);
+                    }
+                    rd.close();
+                    String xml=response.toString();
+
+                    if (xml.indexOf("<h2>Object moved to <a href=\"%2fdefault.aspx%3f\">here</a>.</h2>")!=-1) {
+
+                        // write the session cookie to a file
+                        FileWriter cookieFile = new FileWriter("sratim.cookie");
+                        cookieFile.write(cookieHeader);
+                        cookieFile.close();
+
+                        // delete the old session and jpg files
+                        File dimageFile = new File("sratim.jpg");
+                        dimageFile.delete();
+
+                        File dsessionFile = new File("sratim.session");
+                        dsessionFile.delete();
+
+                        return true;
+                    }
+
+                    logger.severe("Sratim Login Failed - Creating new session and jpg files");
+
+                } catch (Exception error) {
+                    logger.severe("Error : " + error.getMessage());
+                    return false;
+                }
+
+            }
+
+            try {            
+                URL url = new URL("http://www.sratim.co.il/users/login.aspx");
+                HttpURLConnection connection = (HttpURLConnection) (url.openConnection());
+
+                cookieHeader = "";
+
+                // read new cookies and update our cookies
+                for (Map.Entry<String, List<String>> header : connection.getHeaderFields().entrySet()) {
+                    if ("Set-Cookie".equals(header.getKey())) {
+                        for (String rcookieHeader : header.getValue()) {
+                            String[] cookieElements = rcookieHeader.split(" *; *");
+                            if (cookieElements.length >= 1) {
+                                String[] firstElem = cookieElements[0].split(" *= *");
+                                String cookieName = firstElem[0];
+                                String cookieValue = firstElem.length > 1 ? firstElem[1] : null;
+
+                                logger.finest("cookieName:" + cookieName);
+                                logger.finest("cookieValue:" + cookieValue);
+
+                                if (!cookieHeader.equals(""))
+                                    cookieHeader = cookieHeader + "; ";
+                                cookieHeader = cookieHeader + cookieName + "=" + cookieValue;
+                            }
+                        }
+                    }
+                }
+
+
+                // write the session cookie to a file
+                FileWriter sessionFile = new FileWriter("sratim.session");
+                sessionFile.write(cookieHeader);
+                sessionFile.close();
+
+
+
+                // Get the jpg code
+                url = new URL("http://www.sratim.co.il/verificationimage.aspx");
+                connection = (HttpURLConnection) (url.openConnection());
+                connection.setRequestProperty("Cookie", cookieHeader);
+
+                // Write the jpg code to the file
+                File imageFile = new File("sratim.jpg");
+                Utils.copy(connection.getInputStream(), new FileOutputStream(imageFile));
+
+
+                // Exit and wait for the user to type the jpg code
+                logger.severe("#############################################################################");
+                logger.severe("### Open \"sratim.jpg\" file, and write the code in the sratim.code field ###");
+                logger.severe("#############################################################################");
+                return false;
+
+            } catch (Exception error) {
+                logger.severe("Error : " + error.getMessage());
+                return false;
+            }
+
+        }
+
         public static HttpURLConnection createPost2(String urlString,
                 StringBuffer sb)
         {
@@ -573,7 +776,7 @@ public class Sratim implements Provider
                 url = new URL(urlString);
                 connection = (HttpURLConnection) url.openConnection();
                 connection.setRequestMethod("POST");
-                _manager.addCookies(connection);
+//                _manager.addCookies(connection);
 
                 connection.setDoOutput(true);
                 connection.setDoInput(true);
@@ -588,7 +791,7 @@ public class Sratim implements Provider
                 connection.setRequestProperty("Accept-Charset", "ISO-8859-1,utf-8;q=0.7,*;q=0.7");
                 connection.setRequestProperty("X-Requested-With", "XMLHttpRequest");
                 connection.setRequestProperty("Referer", "www.torec.net");
-//                connection.setRequestProperty("Cookie", "ASP.NET_SessionId=y3ezok45xclwcrqbuyl4ri55; __utma=232448605.1886441988.1259765317.1260782837.1262007008.7; __utmz=232448605.1259765317.1.1.utmcsr=(direct)|utmccn=(direct)|utmcmd=(none); LI=49672A9B9602BD9D; LP=356B2A1DE4CE8A87567E81856DEA59E8;");
+                connection.setRequestProperty("Cookie", cookieHeader);
 
                 out = new PrintWriter(connection.getOutputStream());
                 out.print(extraProps);
