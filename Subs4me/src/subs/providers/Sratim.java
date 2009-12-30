@@ -9,12 +9,18 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.io.UnsupportedEncodingException;
+import java.io.Writer;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.net.URLConnection;
+import java.net.URLEncoder;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -35,12 +41,15 @@ import org.htmlparser.filters.HasAttributeFilter;
 import org.htmlparser.filters.HasParentFilter;
 import org.htmlparser.filters.LinkRegexFilter;
 import org.htmlparser.filters.LinkStringFilter;
+import org.htmlparser.filters.StringFilter;
 import org.htmlparser.filters.TagNameFilter;
 import org.htmlparser.http.ConnectionManager;
 import org.htmlparser.nodes.TagNode;
+import org.htmlparser.tags.LinkTag;
 import org.htmlparser.util.NodeIterator;
 import org.htmlparser.util.NodeList;
 import org.htmlparser.util.ParserException;
+import org.htmlparser.util.SimpleNodeIterator;
 
 import subs.Provider;
 import subs.Results;
@@ -48,6 +57,7 @@ import subs.Subs4me;
 import utils.FileStruct;
 import utils.PropertiesUtil;
 import utils.Utils;
+import utils.WebBrowser;
 
 /**
  * Some code here, for getting the correct cookie was adapted from YAMJ: http://code.google.com/p/moviejukebox/
@@ -61,6 +71,16 @@ public class Sratim implements Provider
     static String seassionId = ""; 
     private static String cookieHeader="";
     private static Logger logger = Logger.getLogger("SratimProvider");
+    
+    private static final String ARGUMENT_VIEWSTATE = "__VIEWSTATE";
+    private static final String SEASON_FORM_NAME = "__EVENTTARGET";
+    private static final String SEASON_FORM_VALUE = "ctl00$ctl00$Body$Body$Box$Menu_";
+    private static final String ARGUMENT_FORM_NAME = "__EVENTARGUMENT";
+    private static final String ARGUMENT_FORM_VALUE = "lbl";
+    
+    private static Pattern subIdPattern = Pattern.compile("ID=([\\d]*)");
+    
+    protected WebBrowser webBrowser;
     
     String login = null;
     String pass = null;
@@ -82,6 +102,7 @@ public class Sratim implements Provider
         login = PropertiesUtil.getProperty("sratim.username", "");
         pass = PropertiesUtil.getProperty("sratim.password", "");
         code = PropertiesUtil.getProperty("sratim.code", "");
+        webBrowser                  = new WebBrowser();
     }
     
     public Sratim(FileStruct fs)
@@ -224,82 +245,52 @@ public class Sratim implements Provider
         {
             if (seriesInfo.startsWith("/"))
                 seriesInfo = seriesInfo.substring(1);
-            Parser parser = new Parser(baseUrl + "/" + seriesInfo);
+            String sratimUrl = baseUrl + "/" + seriesInfo;
+            Parser parser = new Parser(sratimUrl);
             parser.setEncoding("UTF-8");
-            NodeFilter filter = new AndFilter(new TagNameFilter("a"),
-                    new HasParentFilter(new AndFilter(new TagNameFilter("div"),
-                            new HasAttributeFilter("id", "ctl00_ctl00_Body_Body_Box_EpisodesList"
-                                    + currentFile.getSeasonSimple())), true));
-    
-            NodeList list = new NodeList();
-            for (NodeIterator e = parser.elements(); e.hasMoreNodes();)
+            NodeFilter filter = new AndFilter(new TagNameFilter("input"),
+                    new HasAttributeFilter("id", "__VIEWSTATE"));
+            
+            String viewState = "";
+            NodeList list = parser.parse(filter);
+            for (SimpleNodeIterator iterator = list.elements(); iterator.hasMoreNodes();)
             {
-                Node node = e.nextNode();
-                node.collectInto(list, filter);
-                // System.out.println(node.toHtml());
+                Node node = (Node) iterator.nextNode();
+                viewState = ((TagNode)node).getAttribute("value");
             }
-    
-            Node[] nodes = list.toNodeArray();
-            for (int i = 0; i < nodes.length; i++)
+            String seasonUrl = buildSeasonUrl(sratimUrl, Integer.parseInt(currentFile.getSeason()), viewState);
+            HttpURLConnection conn = postRequest(seasonUrl);
+            
+            filter = new LinkRegexFilter("");
+            parser = new Parser(conn);
+            list = parser.parse(filter);
+            for (SimpleNodeIterator iterator = list.elements(); iterator.hasMoreNodes();)
             {
-                Node node = nodes[i];
-                // just get the ep number
+                Node node = (Node) iterator.nextNode();
                 String epi = "";
-                Pattern p = Pattern.compile("([\\d]+ - [\\d]+)|(\\b[\\d]+\\b)");
+//                 System.out.println(node.toPlainTextString());
+                Pattern p = Pattern.compile("(פרק ([\\d]*))");
                 Matcher m = p.matcher(node.toPlainTextString());
                 if (m.find())
-                    epi = m.group();
+                    epi = m.group(2);
     
                 if (Utils.isInRange(currentFile.getEpisodeSimple(), epi))
                 {
                     // found the ep number, return the subid
-                    return ((TagNode) node).getAttribute("href");
+                    return ((LinkTag) node).getAttribute("href");
                 }
-                // System.out.println(node.toPlainTextString());
             }
-            //            
-            list = new NodeList();
-            //            
-            // //bring the table for display names
-            // parser = new Parser("http://www.torec.net/" + subid);
-            // parser.setEncoding("UTF-8");
-            //            
-            // filter =
-            // new AndFilter (
-            // new TagNameFilter ("span"),
-            // new HasParentFilter (
-            // new TagNameFilter("p")));
-            //            
-            // for (NodeIterator e = parser.elements(); e.hasMoreNodes();)
-            // {
-            // e.nextNode().collectInto(list, filter);
-            // }
-            //            
-            // ArrayList<String> displayNames = new ArrayList<String>();
-            // nodes = list.toNodeArray();
-            // for (int i = 0; i < nodes.length; i++)
-            // {
-            // Node node = nodes[i];
-            // // System.out.println(node.toPlainTextString().trim());
-            //                
-            // if (node.toPlainTextString().trim().equals(movieName))
-            // {
-            // String dlPlease = filesTodl.get(filesTodl.size()-i -1);
-            // displayNames.add(node.toPlainTextString().trim());
-            // System.out.println("found movie name proceeding to dl: " +
-            // dlPlease);
-            // return dlPlease;
-            // }
-            // else if (node.toPlainTextString().trim().startsWith(movieName))
-            // {
-            // String dlPlease = node.toPlainTextString().trim();
-            // displayNames.add(node.toPlainTextString().trim());
-            // System.out.println("found movie name proceeding to dl: " +
-            // dlPlease);
-            // return dlPlease;
-            // }
-            // }
         } catch (ParserException e)
+        {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
+        catch (NumberFormatException e)
+        {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
+        catch (UnsupportedEncodingException e)
         {
             // TODO Auto-generated catch block
             e.printStackTrace();
@@ -320,21 +311,30 @@ public class Sratim implements Provider
             Results subsID = searchByActualName(currentFile);
             if (subsID != null && subsID.getResults().size() > 0)
             {
-                for (String subID : subsID.getResults())
+                
+                if (!subsID.isCorrectResults())
                 {
-                    Pattern p = Pattern.compile("ID=([\\d]*)");
-                    Matcher m = p.matcher(subID);
-                    String name = subID;
-                    if (m.find())
+                    handleMoreThanOneSub(subsID);
+                    
+                    return subsID.isCorrectResults();
+                }
+                else
+                {
+                    for (String subID : subsID.getResults())
                     {
-                        name = m.group(1);
+                        Matcher m = subIdPattern.matcher(subID);
+                        String name = subID;
+                        if (m.find())
+                        {
+                            name = m.group(1);
+                        }
+                        success = Utils.downloadZippedSubs(baseUrl + subID, name + ".zip", cookieHeader);
+                        if (success)
+                        {
+                            Utils.unzipSubs(currentFile, name + ".zip", subsID.isCorrectResults());
+                        }
                     }
-                    success = Utils.downloadZippedSubs(baseUrl + subID, name + ".zip", cookieHeader);
-                    if (success)
-                    {
-                        Utils.unzipSubs(currentFile, name + ".zip", subsID.isCorrectResults());
-                        return subsID.isCorrectResults();
-                    }
+                    return subsID.isCorrectResults();
                 }
             }
             else
@@ -350,6 +350,40 @@ public class Sratim implements Provider
         }
         
         return false;
+    }
+
+    private void handleMoreThanOneSub(Results subsID)
+    {
+        StringBuilder sb = new StringBuilder();
+        for (String subID : subsID.getResults())
+        {
+            Matcher m = subIdPattern.matcher(subID);
+            String name = subID;
+            if (m.find())
+            {
+                name = m.group(1);
+            }
+            String st = baseUrl + subID + "," + name + ".zip";
+            sb.append(st);
+            sb.append("\n");
+//            success = Utils.downloadZippedSubs(baseUrl + subID, name + ".zip", cookieHeader);
+//            if (success)
+//            {
+//                Utils.unzipSubs(currentFile, name + ".zip", subsID.isCorrectResults());
+//            }
+        }
+        File f = new File(currentFile.getFile().getParent(), currentFile.getFullNameNoExt() + ".dowork");
+        try
+        {
+            FileWriter dowrkFile = new FileWriter(f);
+            dowrkFile.write(sb.toString());
+            dowrkFile.close();
+        }
+        catch (IOException e)
+        {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
     }
 
     @Override
@@ -369,6 +403,10 @@ public class Sratim implements Provider
          */
         private Results locateFileInFilePage(String subid, String movieName)
         {
+            if (!subid.startsWith("/"))
+            {
+                subid = "/" + subid;
+            }
             LinkedList<String> intenseFilesList = new LinkedList<String>();
             LinkedList<String> longerFilesList = new LinkedList<String>();
             Parser parser;
@@ -421,7 +459,6 @@ public class Sratim implements Provider
                     i++;
                     name = name.trim();
                     if (Utils.isSameMovie(new FileStruct(name.trim()), new FileStruct(movieName)))
-//                    if (Utils.isSameMovie(new FileStruct(name), new FileStruct(movieName)))
                     {
                         displayNames.add(name);
 //                        String dlPlease = Utils.postForFileName(subid.substring(15),
@@ -436,9 +473,6 @@ public class Sratim implements Provider
                     } else
                     {
                         String remoteName = name;
-//                        String dlPlease = Utils.postForFileName(subid.substring(15),
-//                                filesTodl.get(i));
-                        //                    String dlPlease = node.toPlainTextString().trim();
                         //add the file to longer list
                         if (Subs4me.isFullDownload())
                         {
@@ -460,7 +494,7 @@ public class Sratim implements Provider
                     }
                 }
                 /*
-               * Now we get to a dillema:
+               * Now we get to a dilema:
                * 1. the user did not specify all and there is more than 1 proposal to download
                * 2. the user did specify all
                */
@@ -719,50 +753,6 @@ public class Sratim implements Provider
 
         }
 
-        public static HttpURLConnection createPost2(String urlString,
-                StringBuffer sb)
-        {
-            StringEntity stEntity = null;
-            try
-            {
-                stEntity = new StringEntity(sb.toString());
-            } catch (UnsupportedEncodingException e1)
-            {
-                // TODO Auto-generated catch block
-                e1.printStackTrace();
-            }
-            
-            HttpPost httppost = new HttpPost(urlString);
-            httppost.addHeader("Cookie", "ASP.NET_SessionId=y3ezok45xclwcrqbuyl4ri55");
-            httppost.setEntity(stEntity);
-            
-            DefaultHttpClient httpclient = new DefaultHttpClient();
-            HttpResponse response;
-            try
-            {
-                response = httpclient.execute(httppost);
-//                Header[] headers = response.getHeaders(SET_COOKIE);
-//                for (int i = 0; i < headers.length; i++)
-//                {
-//                    Header header = headers[i];
-//                    if (header.getName().equalsIgnoreCase(SET_COOKIE))
-//                    {
-//
-//                    }
-//                }
-            } catch (ClientProtocolException e)
-            {
-                // TODO Auto-generated catch block
-                e.printStackTrace();
-            } catch (IOException e)
-            {
-                // TODO Auto-generated catch block
-                e.printStackTrace();
-            }
-            
-            return null;
-        }
-
         public static HttpURLConnection createPost(String urlString,
                 StringBuffer extraProps)
         {
@@ -808,6 +798,81 @@ public class Sratim implements Provider
             }
             
             return connection;
+        }
+        
+        protected HttpURLConnection postRequest(String url){
+            StringBuilder content = new StringBuilder();
+            try {
+                int queryStart = url.indexOf('&');
+                if(queryStart==-1)
+                    queryStart = url.length();
+                String baseUrl = url.substring(0, queryStart);
+                URL ourl = new URL(baseUrl);
+                String data="";
+                if(queryStart>-1)
+                    data = url.substring(queryStart+1);
+
+                // Send data
+                HttpURLConnection conn = (HttpURLConnection) ourl.openConnection();
+                conn.setDoOutput(true);
+
+                conn.setRequestProperty("Host", "www.sratim.co.il");
+                conn.setRequestProperty("User-Agent", "Mozilla/5.0 (Windows; U; Windows NT 5.2; en-US; rv:1.9.0.11) Gecko/2009060215 Firefox/3.0.11");
+                conn.setRequestProperty("Accept","*/*");
+                conn.setRequestProperty("Accept-Language","he");
+                conn.setRequestProperty("Accept-Encoding","deflate");
+                conn.setRequestProperty("Content-Type", "application/x-www-form-urlencoded; charset=utf-8");
+                conn.setRequestProperty("Accept-Charset","utf-8");
+                conn.setRequestProperty("Referer",baseUrl);
+
+                OutputStreamWriter wr = new OutputStreamWriter(conn.getOutputStream());
+                wr.write(data); //post data
+                wr.flush();
+
+//                conn.getHeaderFields(); //unused
+//                // Get the response
+//                BufferedReader rd = new BufferedReader(new InputStreamReader(conn.getInputStream(),"UTF-8"));
+//                String line;
+//
+//                while ((line = rd.readLine()) != null) {
+//                    content.append(line);
+//                }
+                wr.close();
+//                rd.close();
+                return conn;
+            } catch (Exception error) {
+                logger.severe("Failed retrieving sratim season episodes information.");
+                final Writer eResult = new StringWriter();
+                final PrintWriter printWriter = new PrintWriter(eResult);
+                error.printStackTrace(printWriter);
+                logger.severe(eResult.toString());
+            }
+            return null;
+        }
+        
+        protected String buildSeasonUrl(String baseUrl, int i, String viewState) throws UnsupportedEncodingException {
+            StringBuilder surl = new StringBuilder();
+
+            surl.append(baseUrl);
+            if(baseUrl.indexOf('?')>-1)
+                surl.append('&');
+            else
+                surl.append('?');
+
+            surl.append("ctl00$ctl00$Body$ScriptManager=ctl00$ctl00$Body$Body$Box$UpdatePanel|");
+            surl.append(SEASON_FORM_VALUE);
+            surl.append(i);
+
+            surl.append('&').append(SEASON_FORM_NAME).append('=').append(SEASON_FORM_VALUE).append(i);
+            surl.append('&').append(ARGUMENT_FORM_NAME).append('=').append(ARGUMENT_FORM_VALUE);
+            surl.append("&ctl00$ctl00$Body$Body$Box$Comments$Header=");
+            surl.append("&ctl00$ctl00$Body$Body$Box$Comments$Body=");
+            surl.append("&__LASTFOCUS=");
+            surl.append('&').append(ARGUMENT_VIEWSTATE).append('=').append(URLEncoder.encode(viewState,"UTF-8"));
+            surl.append("&ctl00$ctl00$Body$Body$Box$SubtitlesLanguage=1"); //hebrew subtitles
+            surl.append("&__ASYNCPOST=true");
+
+            return surl.toString();
         }
         
 }
