@@ -15,6 +15,13 @@ public class Results
         _isCorrectResult = isCorrectResult;
     }
     
+    public Results(LinkedList<String> results, LinkedList<String> names, boolean isCorrectResult)
+    {
+        _results = results;
+        _names = names;
+        _isCorrectResult = isCorrectResult;
+    }
+    
     public LinkedList<String> getResults()
     {
         return _results;

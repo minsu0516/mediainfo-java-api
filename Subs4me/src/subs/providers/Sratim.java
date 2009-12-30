@@ -17,10 +17,8 @@ import java.io.Writer;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.net.URLConnection;
 import java.net.URLEncoder;
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -28,11 +26,6 @@ import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.apache.http.HttpResponse;
-import org.apache.http.client.ClientProtocolException;
-import org.apache.http.client.methods.HttpPost;
-import org.apache.http.entity.StringEntity;
-import org.apache.http.impl.client.DefaultHttpClient;
 import org.htmlparser.Node;
 import org.htmlparser.NodeFilter;
 import org.htmlparser.Parser;
@@ -41,7 +34,6 @@ import org.htmlparser.filters.HasAttributeFilter;
 import org.htmlparser.filters.HasParentFilter;
 import org.htmlparser.filters.LinkRegexFilter;
 import org.htmlparser.filters.LinkStringFilter;
-import org.htmlparser.filters.StringFilter;
 import org.htmlparser.filters.TagNameFilter;
 import org.htmlparser.http.ConnectionManager;
 import org.htmlparser.nodes.TagNode;
@@ -355,15 +347,17 @@ public class Sratim implements Provider
     private void handleMoreThanOneSub(Results subsID)
     {
         StringBuilder sb = new StringBuilder();
+        int i = -1;
         for (String subID : subsID.getResults())
         {
+            i++;
             Matcher m = subIdPattern.matcher(subID);
             String name = subID;
             if (m.find())
             {
                 name = m.group(1);
             }
-            String st = baseUrl + subID + "," + name + ".zip";
+            String st = baseUrl + subID + ", " + subsID.getNames().get(i);
             sb.append(st);
             sb.append("\n");
 //            success = Utils.downloadZippedSubs(baseUrl + subID, name + ".zip", cookieHeader);
@@ -408,7 +402,9 @@ public class Sratim implements Provider
                 subid = "/" + subid;
             }
             LinkedList<String> intenseFilesList = new LinkedList<String>();
+            LinkedList<String> intenseFilesListNames = new LinkedList<String>();
             LinkedList<String> longerFilesList = new LinkedList<String>();
+            LinkedList<String> longerFilesListNames = new LinkedList<String>();
             Parser parser;
             try
             {
@@ -477,6 +473,7 @@ public class Sratim implements Provider
                         if (Subs4me.isFullDownload())
                         {
                             longerFilesList.add(filesTodl.get(i));
+                            longerFilesListNames.add(displayNames.get(i));
                         }
                         
                         //check group
@@ -490,6 +487,7 @@ public class Sratim implements Provider
                         if (!Subs4me.isFullDownload())
                         {
                             intenseFilesList.add(filesTodl.get(i));
+                            intenseFilesList.add(displayNames.get(i));
                         }
                     }
                 }
@@ -513,7 +511,7 @@ public class Sratim implements Provider
                           e.printStackTrace();
                       }
                   }
-                  return new Results(longerFilesList, false);
+                  return new Results(longerFilesList, longerFilesListNames, false);
               }
               else if (intenseFilesList.size() > 0)
               {
@@ -526,7 +524,7 @@ public class Sratim implements Provider
                       // TODO Auto-generated catch block
                       e.printStackTrace();
                   }
-                  return new Results(intenseFilesList, false);
+                  return new Results(intenseFilesList, intenseFilesListNames, false);
               }
 
                 
@@ -875,4 +873,14 @@ public class Sratim implements Provider
             return surl.toString();
         }
         
+        
+        public void downloadFile(String url, String dstZipFilename, FileStruct fs)
+        {
+            loadSratimCookie();
+            boolean success = Utils.downloadZippedSubs(url, dstZipFilename + ".zip", cookieHeader);
+            if (success)
+            {
+                Utils.unzipSubs(currentFile, dstZipFilename + ".zip", true);
+            }
+        }
 }
