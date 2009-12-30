@@ -673,7 +673,8 @@ public class Sratim implements Provider
                     if ("Set-Cookie".equals(header.getKey())) {
                         for (String rcookieHeader : header.getValue()) {
                             String[] cookieElements = rcookieHeader.split(" *; *");
-                            if (cookieElements.length >= 1) {
+                            if (cookieElements.length >= 1) 
+                            {
                                 String[] firstElem = cookieElements[0].split(" *= *");
                                 String cookieName = firstElem[0];
                                 String cookieValue = firstElem.length > 1 ? firstElem[1] : null;
@@ -694,8 +695,6 @@ public class Sratim implements Provider
                 FileWriter sessionFile = new FileWriter("sratim.session");
                 sessionFile.write(cookieHeader);
                 sessionFile.close();
-
-
 
                 // Get the jpg code
                 url = new URL("http://www.sratim.co.il/verificationimage.aspx");
