@@ -1,3 +1,6 @@
+Version 0.9
+ Added: Support for sratim.co.il
+ fixed: better support for subscene
 Version 0.8.5.3
  fixed: when in a tv series and there is no season at all, fixed the exception
  some better error handling for HandleMultipleSubs
