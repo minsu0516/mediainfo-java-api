@@ -1,14 +1,18 @@
 package subs;
 
+import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
 import java.io.FilenameFilter;
+import java.io.IOException;
+import java.io.Reader;
 import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Scanner;
 
+import subs.providers.Sratim;
 import utils.FileStruct;
 
 public class HandleMultipleSubs
@@ -96,7 +100,8 @@ public class HandleMultipleSubs
         currentFile = new FileStruct(file, false);
         String f = currentFile.getNameNoExt();
         String[] files = findSrtFilesInDir(currentFile.getFile().getParent());
-        if (files.length == 0)
+        LinkedList<ProviderResult> pResults = loadDoWorkFile();
+        if (files.length == 0 && pResults == null)
         {
             if (currentFile.getExt().equals(Subs4me.DO_WORK_EXT.substring(1)))
             {
@@ -119,10 +124,24 @@ public class HandleMultipleSubs
             sb.append(fNmae.substring(currentFile.getNameNoExt().length() + 5));
             sb.append("\n");
         }
+        if (pResults != null)
+        {
+            for (int j = 0; j < pResults.size(); j++)
+            {
+                sb.append("   Enter ");
+                sb.append( j + files.length +1);
+                sb.append(" for p:");
+                sb.append(pResults.get(j).getProviderName());
+                sb.append(" - ");
+                sb.append(pResults.get(j).getDestFileName());
+                sb.append("\n");
+            }
+        }
+        
         System.out.println(sb.toString());
      // get their input
         int sel = -1;
-        while (sel == -1 || sel > files.length)
+        while (sel == -1 || sel > (files.length + (pResults == null ? 0 : pResults.size())))
         {
             Scanner scanner = new Scanner(System.in);
             // there are several ways to get the input, this is 
@@ -135,7 +154,7 @@ public class HandleMultipleSubs
             catch (NumberFormatException e)
             {
             }
-            if (sel == -1 || sel > files.length)
+            if (sel == -1 || sel > files.length + (pResults == null ? 0 : pResults.size()))
             {
                 System.out.println("Your selection \"" + selection + "\" is not a valid option, plesae select again...\n");
                 System.out.println(sb.toString());
@@ -152,22 +171,34 @@ public class HandleMultipleSubs
                 break;
             default:
                 boolean ok = false;
-                System.out.println("You chose " + sel + ", renaming file to " + files[sel-1].substring(currentFile.getNameNoExt().length() + 5) + "\n");
-                File ff = new File(currentFile.getFile().getParent(), files[sel-1]);
-                File dest = new File(currentFile.getFile().getParent(), currentFile.getFullNameNoExt() + ".srt");
-                ff.renameTo(dest);
-                if (!currentFile.isVideoFile())
-                {
-                    currentFile.getFile().delete();
-                }
+                System.out.println("You chose " + sel + ", renaming file to " + currentFile.getNameNoExt() + ".srt\n");
                 
-                for (int i = 0; i < files.length; i++)
+                if (sel > files.length)
                 {
-                    String delName = files[i];
-                    if (i == sel-1)
-                        continue;
-                    File del = new File(currentFile.getFile().getParent(), delName);
-                    del.delete();
+                    ProviderResult p = pResults.get(sel - files.length);
+                    if (p.getProviderName().equalsIgnoreCase("sratim"))
+                    {
+                        Sratim.getInstance().downloadFile(p.getFileURL(), p.getDestFileName());
+                    }
+                }
+                else
+                {
+                    File ff = new File(currentFile.getFile().getParent(), files[sel-1]);
+                    File dest = new File(currentFile.getFile().getParent(), currentFile.getFullNameNoExt() + ".srt");
+                    ff.renameTo(dest);
+                    if (!currentFile.isVideoFile())
+                    {
+                        currentFile.getFile().delete();
+                    }
+                    
+                    for (int i = 0; i < files.length; i++)
+                    {
+                        String delName = files[i];
+                        if (i == sel-1)
+                            continue;
+                        File del = new File(currentFile.getFile().getParent(), delName);
+                        del.delete();
+                    }
                 }
                 
                 //cleanup dowrok file
@@ -279,5 +310,39 @@ public class HandleMultipleSubs
         sb.append("\nCreated by ilank\nEnjoy...");
         System.out.println(sb.toString());
         System.exit(-1);
+    }
+    
+    private LinkedList<ProviderResult> loadDoWorkFile()
+    {
+        LinkedList<ProviderResult> ret = new LinkedList<ProviderResult>();
+        File f = new File(currentFile.getFile().getParent(), currentFile.getFullNameNoExt() + Subs4me.DO_WORK_EXT);
+        if (!f.exists())
+            return null;
+        
+        try
+        {
+            BufferedReader in = new BufferedReader(new FileReader(f));
+            String str;
+            while ((str = in.readLine()) != null) 
+            {
+                String[] split = str.split(", ");
+                ProviderResult p = new ProviderResult(split[0], split[1], split[2]);
+                ret.add(p);
+            }
+            in.close();
+            return ret;
+        }
+        catch (FileNotFoundException e)
+        {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
+        catch (IOException e)
+        {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
+        
+        return null;
     }
 }

@@ -13,11 +13,16 @@
 
 package utils;
 
+import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.OutputStreamWriter;
 import java.io.Reader;
+import java.io.UnsupportedEncodingException;
 import java.util.Properties;
 import java.util.Set;
 import java.util.Map.Entry;
@@ -33,6 +38,7 @@ public class PropertiesUtil {
     private static final String PROPERTIES_CHARSET = "UTF-8";
     private static Logger logger = Logger.getLogger("moviejukebox");
     private static Properties props = new Properties();
+    public static final String PROPERTIES = "subs4me.properties";
 
     public static boolean setPropertiesStreamName(String streamName) {
         logger.fine("Using properties file " + streamName);
@@ -76,5 +82,44 @@ public class PropertiesUtil {
     
     public static void setProperty(String key, String value) {
         props.setProperty(key, value);
+    }
+    
+    public static void updatePropertyToDisk(String key, String value) 
+    {
+        File f = new File("./" + PROPERTIES);
+        if (!f.exists())
+        {
+            try
+            {
+                f.createNewFile();
+            }
+            catch (IOException e)
+            {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
+            }
+        }
+        
+//        InputStream propertiesStream = ClassLoader.getSystemResourceAsStream("./" + PROPERTIES);
+        Reader reader;
+        try
+        {
+            reader = new FileReader(f);
+            Properties tempProps = new Properties();
+            tempProps.load(reader);
+            tempProps.setProperty(key, value);
+            tempProps.store(new FileOutputStream(PROPERTIES), null);
+            reader.close();
+        }
+        catch (UnsupportedEncodingException e)
+        {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
+        catch (IOException e)
+        {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
     }
 }

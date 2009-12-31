@@ -357,7 +357,7 @@ public class Sratim implements Provider
             {
                 name = m.group(1);
             }
-            String st = baseUrl + subID + ", " + subsID.getNames().get(i);
+            String st = getName() + ", " + baseUrl + subID + ", " + subsID.getNames().get(i);
             sb.append(st);
             sb.append("\n");
 //            success = Utils.downloadZippedSubs(baseUrl + subID, name + ".zip", cookieHeader);
@@ -537,8 +537,8 @@ public class Sratim implements Provider
             return null;
         }
         
-        public boolean loadSratimCookie() {
-
+        public boolean loadSratimCookie()
+        {
             // Check if we already logged in and got the correct cookie        
             if (!cookieHeader.equals(""))
                 return false;
@@ -737,11 +737,10 @@ public class Sratim implements Provider
                 File imageFile = new File("sratim.jpg");
                 Utils.copy(connection.getInputStream(), new FileOutputStream(imageFile));
 
-
-                // Exit and wait for the user to type the jpg code
-                logger.severe("#############################################################################");
-                logger.severe("### Open \"sratim.jpg\" file, and write the code in the sratim.code field ###");
-                logger.severe("#############################################################################");
+//                // Exit and wait for the user to type the jpg code
+//                logger.severe("#############################################################################");
+//                logger.severe("### Open \"sratim.jpg\" file, and write the code in the sratim.code field ###");
+//                logger.severe("#############################################################################");
                 return false;
 
             } catch (Exception error) {
@@ -799,7 +798,6 @@ public class Sratim implements Provider
         }
         
         protected HttpURLConnection postRequest(String url){
-            StringBuilder content = new StringBuilder();
             try {
                 int queryStart = url.indexOf('&');
                 if(queryStart==-1)
@@ -826,17 +824,7 @@ public class Sratim implements Provider
                 OutputStreamWriter wr = new OutputStreamWriter(conn.getOutputStream());
                 wr.write(data); //post data
                 wr.flush();
-
-//                conn.getHeaderFields(); //unused
-//                // Get the response
-//                BufferedReader rd = new BufferedReader(new InputStreamReader(conn.getInputStream(),"UTF-8"));
-//                String line;
-//
-//                while ((line = rd.readLine()) != null) {
-//                    content.append(line);
-//                }
                 wr.close();
-//                rd.close();
                 return conn;
             } catch (Exception error) {
                 logger.severe("Failed retrieving sratim season episodes information.");
@@ -874,7 +862,7 @@ public class Sratim implements Provider
         }
         
         
-        public void downloadFile(String url, String dstZipFilename, FileStruct fs)
+        public void downloadFile(String url, String dstZipFilename)
         {
             loadSratimCookie();
             boolean success = Utils.downloadZippedSubs(url, dstZipFilename + ".zip", cookieHeader);

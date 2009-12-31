@@ -229,7 +229,17 @@ public class Subs4me
                     {
                         if (!Sratim.getInstance().loadSratimCookie())
                         {
-                            System.exit(-1);
+//                            JOptionPane.showMessageDialog(null,
+//                                    "Eggs are not supposed to be green.",
+//                                    "Inane warning",
+//                                    JOptionPane.WARNING_MESSAGE);
+
+                            
+                            Login login = new Login();
+                            if (!login.isLoginOk())
+                            {
+                                System.exit(-1);
+                            }
                         }
                     }
                     _providers.add(prov);
