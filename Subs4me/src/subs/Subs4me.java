@@ -215,6 +215,7 @@ public class Subs4me
         if (provNames == null)
         {
             _providers.add(getProvider("opensubs"));
+            _providers.add(getProvider("sratim"));
             _providers.add(getProvider("torec"));
         }
         else

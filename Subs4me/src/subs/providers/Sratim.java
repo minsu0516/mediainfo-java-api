@@ -43,6 +43,7 @@ import org.htmlparser.util.NodeList;
 import org.htmlparser.util.ParserException;
 import org.htmlparser.util.SimpleNodeIterator;
 
+import subs.Login;
 import subs.Provider;
 import subs.Results;
 import subs.Subs4me;
@@ -861,14 +862,27 @@ public class Sratim implements Provider
             return surl.toString();
         }
         
-        
-        public void downloadFile(String url, String dstZipFilename)
+        /**
+         * 
+         * @param url where to download from
+         * @param dstZipFilename downloaded zip name
+         * @param curr the current file working on so we know where to download and what to rename to
+         */
+        public void downloadFile(String url, String dstZipFilename, FileStruct curr)
         {
-            loadSratimCookie();
+            boolean cookieOk = loadSratimCookie();
+            if (!cookieOk)
+            {
+                Login login = new Login();
+                if (!login.isLoginOk())
+                {
+                    return;
+                }
+            }
             boolean success = Utils.downloadZippedSubs(url, dstZipFilename + ".zip", cookieHeader);
             if (success)
             {
-                Utils.unzipSubs(currentFile, dstZipFilename + ".zip", true);
+                Utils.unzipSubs(curr, dstZipFilename + ".zip", true);
             }
         }
 }

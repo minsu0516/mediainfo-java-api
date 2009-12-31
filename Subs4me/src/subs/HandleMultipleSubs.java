@@ -31,7 +31,12 @@ public class HandleMultipleSubs
     private void processFiles(String src)
     {
         String[] sources = findFilesInDir(src);
-        List<String> sourcesList = Arrays.asList(sources);
+        List<String> sourcesList = null;
+        if (sources != null)
+        {
+            sourcesList = Arrays.asList(sources);
+        }
+        
         if (sources == null)
         {
             // this is a file and not a directory
@@ -175,10 +180,14 @@ public class HandleMultipleSubs
                 
                 if (sel > files.length)
                 {
-                    ProviderResult p = pResults.get(sel - files.length);
+                    ProviderResult p = pResults.get(sel - files.length -1);
                     if (p.getProviderName().equalsIgnoreCase("sratim"))
                     {
-                        Sratim.getInstance().downloadFile(p.getFileURL(), p.getDestFileName());
+                        Sratim.getInstance().downloadFile(p.getFileURL(), p.getDestFileName(), currentFile);
+                        if (!currentFile.isVideoFile())
+                        {
+                            currentFile.getFile().delete();
+                        }
                     }
                 }
                 else

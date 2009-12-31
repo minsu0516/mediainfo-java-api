@@ -1,6 +1,18 @@
 Version 0.9
- Added: Support for sratim.co.il
- fixed: better support for subscene
+ added: Support for sratim.co.il thanks to code adapted from YAMJ http://code.google.com/p/moviejukebox/
+ fixed: better support for subscene, still less then fully functional
+ change: rename the .dowork to .run_HandleMultiplesubs, so now maybe the users will know better what
+ 		to do with this file
+ change: Added sratim, and now because of this, there is now content in the .run_HandleMultiplesubs,
+ 		so sratim (and soon all) will not download all the subs (if there was not a dircet match found), 
+ 		but instead write their location in the .run_HandleMultiplesubs file, when HandleMultiplesubs is 
+ 		run, and a file is selected from sratim, it will be downloaded on the spot.
+ added: Sratim requires a login, so a login screen was introduced, to be run whenever sratim is selected
+ 		as source, and we did not login prior to that.
+ added: properties file, located in ./properties/subs4me-default.properties, this (taken from YAMJ) is
+ 		a default file that can be changed at any new iteration of the program.
+ 		The user is encouraged to place his own properties (not the default) in ./subs4me.properties
+ change: default providers are now opensubs,sratim.torec
 Version 0.8.5.3
  fixed: when in a tv series and there is no season at all, fixed the exception
  some better error handling for HandleMultipleSubs

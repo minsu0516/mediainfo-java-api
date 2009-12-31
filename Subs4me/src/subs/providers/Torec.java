@@ -3,6 +3,8 @@ package subs.providers;
 import java.io.File;
 import java.io.IOException;
 import java.net.HttpURLConnection;
+import java.net.URLDecoder;
+import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.LinkedList;
@@ -59,7 +61,7 @@ public class Torec implements Provider
             // try brute force, just try to get the filename - ext + .zip
             boolean success = false;
             success = Utils.downloadZippedSubs(baseUrl + "/zip_versions/"
-                    + Utils.escape(f) + ".zip", Utils.escape(f)+ ".zip");
+                    + Utils.escape(f) + ".zip", f+ ".zip");
             if (success)
             {
                 Utils.unzipSubs(currentFile, Utils.escape(f)+ ".zip", true);
@@ -76,10 +78,10 @@ public class Torec implements Provider
                 for (String subID : subsID.getResults())
                 {
                     success = Utils.downloadZippedSubs(baseUrl + "/zip_versions/"
-                            + Utils.escape(subID) + ".zip", Utils.escape(subID) + ".zip");
+                            + Utils.escape(subID) + ".zip", subID + ".zip");
                     if (success)
                     {
-                        Utils.unzipSubs(currentFile, Utils.escape(subID) + ".zip", subsID.isCorrectResults());
+                        Utils.unzipSubs(currentFile, subID + ".zip", subsID.isCorrectResults());
                     }
                 }
             }
