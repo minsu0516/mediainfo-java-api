@@ -131,7 +131,7 @@ public class Subscene implements Provider
             }
             else
             {
-                File f = new File(currentFile.getFile().getParent(), currentFile.getFullNameNoExt() + ".dowork");
+                File f = new File(currentFile.getFile().getParent(), currentFile.getFullNameNoExt() + Subs4me.DO_WORK_EXT);
                 f.createNewFile();
                 for (Iterator iterator = subs.iterator(); iterator.hasNext();)
                 {

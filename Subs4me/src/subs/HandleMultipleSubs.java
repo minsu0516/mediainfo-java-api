@@ -2,7 +2,11 @@ package subs;
 
 import java.io.File;
 import java.io.FilenameFilter;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.LinkedList;
+import java.util.List;
 import java.util.Scanner;
 
 import utils.FileStruct;
@@ -10,7 +14,6 @@ import utils.FileStruct;
 public class HandleMultipleSubs
 {
     public static final String RECURSIVE_SEARCH = "/r";
-    public static final String DO_WORK_EXT = "dowork";
     public static final String VERSION = "0.5";
     
     private static boolean recursive = false;
@@ -24,6 +27,7 @@ public class HandleMultipleSubs
     private void processFiles(String src)
     {
         String[] sources = findFilesInDir(src);
+        List<String> sourcesList = Arrays.asList(sources);
         if (sources == null)
         {
             // this is a file and not a directory
@@ -39,9 +43,9 @@ public class HandleMultipleSubs
             }
         } else
         {
-            for (int j = 0; j < sources.length; j++)
+            for (String source : sourcesList)
             {
-                File f = new File(src + File.separator + sources[j]);
+                File f = new File(src + File.separator + source);
                 if (f.isDirectory())
                 {
                     processFiles(f.getPath());
@@ -73,7 +77,7 @@ public class HandleMultipleSubs
                     {
                         return true;
                     }
-                    if (name.endsWith(".dowork"))
+                    if (name.endsWith(Subs4me.DO_WORK_EXT))
                     {
                         return true;
                     }
@@ -94,7 +98,7 @@ public class HandleMultipleSubs
         String[] files = findSrtFilesInDir(currentFile.getFile().getParent());
         if (files.length == 0)
         {
-            if (currentFile.getExt().equals(DO_WORK_EXT))
+            if (currentFile.getExt().equals(Subs4me.DO_WORK_EXT.substring(1)))
             {
                 currentFile.getFile().delete();
             }
@@ -167,9 +171,9 @@ public class HandleMultipleSubs
                 }
                 
                 //cleanup dowrok file
-                if (!currentFile.getExt().equals("dowork"))
+                if (!currentFile.getExt().equals(Subs4me.DO_WORK_EXT.substring(1)))
                 {
-                    File del = new File(currentFile.getFile().getParent(), currentFile.getFullNameNoExt() + ".dowork");
+                    File del = new File(currentFile.getFile().getParent(), currentFile.getFullNameNoExt() + Subs4me.DO_WORK_EXT);
                     del.delete();
                 }
                 break;
@@ -191,9 +195,9 @@ public class HandleMultipleSubs
         }
         
         //cleanup dowrok file
-        if (!currentFile.getExt().equals("dowork"))
+        if (!currentFile.getExt().equals(Subs4me.DO_WORK_EXT.substring(1)))
         {
-            File del = new File(currentFile.getFile().getParent(), currentFile.getFullNameNoExt() + ".dowork");
+            File del = new File(currentFile.getFile().getParent(), currentFile.getFullNameNoExt() + Subs4me.DO_WORK_EXT);
             del.delete();
         }
     }

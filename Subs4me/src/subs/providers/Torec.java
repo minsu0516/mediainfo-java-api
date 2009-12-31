@@ -465,7 +465,7 @@ public class Torec implements Provider
             {
                 if (longerFilesList.size()>0)
                 {
-                    File f = new File(currentFile.getFile().getParent(), currentFile.getFullNameNoExt()+".dowork");
+                    File f = new File(currentFile.getFile().getParent(), currentFile.getFullNameNoExt()+ Subs4me.DO_WORK_EXT);
                     try
                     {
                         f.createNewFile();
@@ -479,7 +479,7 @@ public class Torec implements Provider
             }
             else if (intenseFilesList.size() > 0)
             {
-                File f = new File(currentFile.getFile().getParent(), currentFile.getFullNameNoExt()+".dowork");
+                File f = new File(currentFile.getFile().getParent(), currentFile.getFullNameNoExt()+ Subs4me.DO_WORK_EXT);
                 try
                 {
                     f.createNewFile();

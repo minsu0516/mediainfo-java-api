@@ -21,6 +21,7 @@ public class Subs4me
     public static final String RECURSIVE_SEARCH = "/r";
     public static final String FULL_DOWNLOAD = "/all";
     public static final String PROVIDERS = "/p";
+    public static final String DO_WORK_EXT = ".run_HandleMultiplesubs";
     
     String srcDir = new String();
     // private String _group = "";
@@ -115,7 +116,7 @@ public class Subs4me
             {
                 public boolean accept(File dir, String name)
                 {
-                    if (name.equals(fs.getNameNoExt() + ".dowork"))
+                    if (name.equals(fs.getNameNoExt() + Subs4me.DO_WORK_EXT))
                     {
                         return true;
                     }

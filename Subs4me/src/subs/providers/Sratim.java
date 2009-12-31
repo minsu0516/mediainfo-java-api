@@ -366,7 +366,7 @@ public class Sratim implements Provider
 //                Utils.unzipSubs(currentFile, name + ".zip", subsID.isCorrectResults());
 //            }
         }
-        File f = new File(currentFile.getFile().getParent(), currentFile.getFullNameNoExt() + ".dowork");
+        File f = new File(currentFile.getFile().getParent(), currentFile.getFullNameNoExt() + Subs4me.DO_WORK_EXT);
         try
         {
             FileWriter dowrkFile = new FileWriter(f);
@@ -501,7 +501,7 @@ public class Sratim implements Provider
               {
                   if (longerFilesList.size()>0)
                   {
-                      File f = new File(currentFile.getFile().getParent(), currentFile.getFullNameNoExt()+".dowork");
+                      File f = new File(currentFile.getFile().getParent(), currentFile.getFullNameNoExt() + Subs4me.DO_WORK_EXT);
                       try
                       {
                           f.createNewFile();
@@ -515,7 +515,7 @@ public class Sratim implements Provider
               }
               else if (intenseFilesList.size() > 0)
               {
-                  File f = new File(currentFile.getFile().getParent(), currentFile.getFullNameNoExt()+".dowork");
+                  File f = new File(currentFile.getFile().getParent(), currentFile.getFullNameNoExt()+ Subs4me.DO_WORK_EXT);
                   try
                   {
                       f.createNewFile();
