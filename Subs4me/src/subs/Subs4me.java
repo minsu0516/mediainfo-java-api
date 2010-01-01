@@ -23,6 +23,12 @@ public class Subs4me
     public static final String PROVIDERS = "/p";
     public static final String DO_WORK_EXT = ".run_HandleMultiplesubs";
     
+    public static final String PROVIDERS_PROPEERTY = "get_subs_providers";
+    public static final String SUBS_CHECK_ALL_PROPEERTY = "get_subs_check_exists";
+    public static final String SUBS_RECURSIVE_PROPEERTY = "get_subs_recursive";
+    public static final String SUBS_GET_ALL_PROPEERTY = "get_subs_all";
+    
+    
     String srcDir = new String();
     // private String _group = "";
     public static boolean checkSrtExists = false;
@@ -286,8 +292,10 @@ public class Subs4me
         // No need to abort if we don't find this file
         // Must be read before the skin, because this may contain an override skin
         PropertiesUtil.setPropertiesStreamName(propertiesName);
-        
         LinkedList<String> providers = null;
+        
+        providers = initProperties();
+        
         for (int i = 1; i < args.length; i++)
         {
             String arg = args[i];
@@ -304,13 +312,7 @@ public class Subs4me
             }
             else if (arg.startsWith(PROVIDERS))
             {
-                providers = new LinkedList<String>();
-                String[] pros = arg.substring(PROVIDERS.length()+1).split(",");
-                for (int j = 0; j < pros.length; j++)
-                {
-                    String p = pros[j];
-                    providers.add(p);
-                }
+                providers = parseProviderNames(arg);
             }
         }
         as.initProviders(providers);
@@ -324,6 +326,63 @@ public class Subs4me
         as.startProcessingFiles(args[0]);
         
         System.out.println("******* Thanks for using subs4me, hope you enjoy the results *******");
+    }
+
+    private static LinkedList<String> initProperties()
+    {
+        LinkedList<String> providers = null;
+        
+        String pp = PropertiesUtil.getProperty(PROVIDERS_PROPEERTY, "opensubs,sratim,torec");
+        if (pp != null)
+        {
+            providers = parseProviderNames(pp);
+        }
+        
+        String subCheck = PropertiesUtil.getProperty(SUBS_CHECK_ALL_PROPEERTY, "true");
+        if (subCheck != null)
+        {
+            checkSrtExists = Boolean.getBoolean(subCheck);
+        }
+        
+        String subRecursive = PropertiesUtil.getProperty(SUBS_RECURSIVE_PROPEERTY, "true");
+        if (subRecursive != null)
+        {
+            setRecursive(Boolean.getBoolean(subRecursive));
+        }
+        
+        String subGetAll = PropertiesUtil.getProperty(SUBS_GET_ALL_PROPEERTY, "true");
+        if (subGetAll != null)
+        {
+            fullDownload = Boolean.getBoolean(subGetAll);
+        }
+        
+        return providers;
+    }
+
+    private static LinkedList<String> parseProviderNames(String providers)
+    {
+        if (providers == null || providers.isEmpty())
+        {
+            return null;
+        }
+        
+        LinkedList<String> ret = new LinkedList<String>();
+        String[] pros = null;
+        if (providers.startsWith(PROVIDERS))
+        {
+            pros = providers.substring(PROVIDERS.length()+1).split(",");
+        }
+        else
+        {
+            pros = providers.split(",");
+        }
+        for (int j = 0; j < pros.length; j++)
+        {
+            String p = pros[j];
+            ret.add(p);
+        }
+        
+        return ret;
     }
 
     /**
