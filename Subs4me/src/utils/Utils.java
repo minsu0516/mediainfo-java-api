@@ -24,6 +24,13 @@ import java.util.regex.Pattern;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 
+import org.apache.http.HttpResponse;
+import org.apache.http.client.ClientProtocolException;
+import org.apache.http.client.HttpClient;
+import org.apache.http.client.ResponseHandler;
+import org.apache.http.client.methods.HttpGet;
+import org.apache.http.impl.client.BasicResponseHandler;
+import org.apache.http.impl.client.DefaultHttpClient;
 import org.htmlparser.Node;
 import org.htmlparser.NodeFilter;
 import org.htmlparser.Parser;
@@ -482,10 +489,17 @@ public class Utils
 //            System.out.println(" Results:");
             if (ja != null && ja.length() > 0)
             {
-                JSONObject j = ja.getJSONObject(0);
-                String urlTemp = j.getString("url");
-                urlTemp = URLDecoder.decode(urlTemp, "UTF-8");
-                return urlTemp;
+                for (int i = 0; i < ja.length(); i++)
+                {
+                    JSONObject j = ja.getJSONObject(i);
+                    String urlTemp = j.getString("url");
+                    urlTemp = URLDecoder.decode(urlTemp, "UTF-8");
+                    if (checkURLOk(urlTemp))
+                    {
+                        return urlTemp;
+                    }
+                }
+               
             }
 //            for (int i = 0; i < ja.length(); i++)
 //            {
@@ -500,6 +514,35 @@ public class Utils
             e.printStackTrace();
         }
         return null;
+    }
+    
+    public static boolean checkURLOk(String url)
+    {
+        boolean ret = false;
+        HttpClient httpclient = new DefaultHttpClient();
+        HttpGet httpget = new HttpGet(url); 
+     // Create a response handler
+//        ResponseHandler<String> responseHandler = new BasicResponseHandler();
+        try
+        {
+            HttpResponse response = httpclient.execute(httpget);
+            if (response.getStatusLine().getStatusCode() == 200)
+            {
+                ret = true;
+            }
+            // When HttpClient instance is no longer needed, 
+            // shut down the connection manager to ensure
+            // immediate deallocation of all system resources
+            httpclient.getConnectionManager().shutdown();        
+        } 
+        catch (ClientProtocolException e)
+        {
+        } 
+        catch (IOException e)
+        {
+        }
+        
+        return ret;
     }
     
     public static String locateRealNameUsingGoogle(String fullName)
