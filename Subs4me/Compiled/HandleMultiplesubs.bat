@@ -1,1 +1,1 @@
-java -classpath subs4me.jar subs.HandleMultipleSubs %1 /r
+java -classpath subs4me.jar subs.HandleMultipleSubs %1

@@ -1,1 +1,1 @@
-java -jar subs4me.jar %1 /r /c /all
+java -jar subs4me.jar %1

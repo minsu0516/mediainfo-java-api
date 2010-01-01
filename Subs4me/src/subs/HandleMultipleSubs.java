@@ -20,6 +20,7 @@ public class HandleMultipleSubs
 {
     public static final String RECURSIVE_SEARCH = "/r";
     public static final String VERSION = "0.5";
+    public static final String RECURSIVE_SEARCH_PROPEERTY = "handle_multipule_subtitles_recursive";
     
     private static boolean recursive = false;
     private FileStruct currentFile;
@@ -287,6 +288,17 @@ public class HandleMultipleSubs
             exitShowMessage();
         }
         
+        // Load the sub4me-default.properties file
+        if (!PropertiesUtil.setPropertiesStreamName("./properties/subs4me-default.properties")) {
+            return;
+        }
+
+        // Load the user properties file "moviejukebox.properties"
+        // No need to abort if we don't find this file
+        // Must be read before the skin, because this may contain an override skin
+        PropertiesUtil.setPropertiesStreamName(Subs4me.propertiesName);
+        initProperties();
+        
         for (int i = 1; i < args.length; i++)
         {
             String arg = args[i];
@@ -302,8 +314,18 @@ public class HandleMultipleSubs
             exitShowMessage();
         }
         System.out.println("       *** HandleMultipleSubs version " + VERSION);
+        System.out.println("       *** HandleMultipleSubs recursive = " + recursive);
         new HandleMultipleSubs(args[0]);
         System.out.println("******* Thanks for using HandleMultipleSubs *******");
+    }
+    
+    private static void initProperties()
+    {
+        String handleRecursive = PropertiesUtil.getProperty(RECURSIVE_SEARCH_PROPEERTY, "true");
+        if (handleRecursive != null)
+        {
+            setRecursive(Boolean.getBoolean(handleRecursive));
+        }
     }
     
     private static void exitShowMessage()

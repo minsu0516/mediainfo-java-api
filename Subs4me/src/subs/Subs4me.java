@@ -322,7 +322,11 @@ public class Subs4me
             Provider p = (Provider) iterator.next();
             sb.append(p.getName() + ",");
         }
-        System.out.println("Subs4me version " + VERSION + ", the selected providers are:" + sb.toString());
+        System.out.println("Subs4me version " + VERSION);
+        System.out.println("        selected providers are:" + sb.toString());
+        System.out.println("        check recursively = " + isRecursive());
+        System.out.println("        do not check if srt exists = " + checkSrtExists);
+        System.out.println("        download everything = " + isFullDownload());
         as.startProcessingFiles(args[0]);
         
         System.out.println("******* Thanks for using subs4me, hope you enjoy the results *******");
@@ -399,8 +403,8 @@ public class Subs4me
         sb.append("Params:\n");
         sb.append("  c: If an srt file exists do not try to get the subtitels for this file\n");
         sb.append("  r: Recurse over all the files in all the directories\n");
-        sb.append("  p: select providers, /p=torec,opensubs will select these two providers\n     (order is important), default is opensubs,torec \n");
-        sb.append("     Currently supporting: torec, opensubs, subscene\n");
+        sb.append("  p: select providers, /p=torec,opensubs will select these two providers\n     (order is important), default is opensubs,sratim,torec \n");
+        sb.append("     Currently supporting: torec, opensubs, sratim, subscene\n");
         sb.append("  all: Download all the subtitles for this title and unzip with the above schema\n");
         sb.append("\nCreated by ilank\nEnjoy...");
         System.out.println(sb.toString());
