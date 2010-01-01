@@ -337,7 +337,7 @@ public class Sratim implements Provider
 
         } catch (Exception e)
         {
-            System.out.println("******** Error - cannot get subs for "
+            System.out.println("******** " + getName() + ": Error - cannot get subs for "
                     + currentFile.getFullFileName());
             // e.printStackTrace();
         }
@@ -488,7 +488,7 @@ public class Sratim implements Provider
                         if (!Subs4me.isFullDownload())
                         {
                             intenseFilesList.add(filesTodl.get(i));
-                            intenseFilesList.add(displayNames.get(i));
+                            intenseFilesListNames.add(displayNames.get(i));
                         }
                     }
                 }
