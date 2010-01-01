@@ -324,7 +324,7 @@ public class HandleMultipleSubs
         String handleRecursive = PropertiesUtil.getProperty(RECURSIVE_SEARCH_PROPEERTY, "true");
         if (handleRecursive != null)
         {
-            setRecursive(Boolean.getBoolean(handleRecursive));
+            setRecursive(handleRecursive.equalsIgnoreCase("true"));
         }
     }
     

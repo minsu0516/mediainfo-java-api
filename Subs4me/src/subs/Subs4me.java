@@ -345,19 +345,19 @@ public class Subs4me
         String subCheck = PropertiesUtil.getProperty(SUBS_CHECK_ALL_PROPEERTY, "true");
         if (subCheck != null)
         {
-            checkSrtExists = Boolean.getBoolean(subCheck);
+            checkSrtExists = subCheck.equalsIgnoreCase("true");
         }
         
         String subRecursive = PropertiesUtil.getProperty(SUBS_RECURSIVE_PROPEERTY, "true");
         if (subRecursive != null)
         {
-            setRecursive(Boolean.getBoolean(subRecursive));
+            setRecursive(subRecursive.equalsIgnoreCase("true"));
         }
         
         String subGetAll = PropertiesUtil.getProperty(SUBS_GET_ALL_PROPEERTY, "true");
         if (subGetAll != null)
         {
-            fullDownload = Boolean.getBoolean(subGetAll);
+            fullDownload = subGetAll.equalsIgnoreCase("true");
         }
         
         return providers;
