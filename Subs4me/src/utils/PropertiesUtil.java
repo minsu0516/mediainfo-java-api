@@ -108,7 +108,7 @@ public class PropertiesUtil {
             Properties tempProps = new Properties();
             tempProps.load(reader);
             tempProps.setProperty(key, value);
-            tempProps.store(new FileOutputStream(PROPERTIES), null);
+            tempProps.store(new FileOutputStream("./" + PROPERTIES), null);
             reader.close();
         }
         catch (UnsupportedEncodingException e)

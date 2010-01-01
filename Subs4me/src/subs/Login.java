@@ -101,7 +101,7 @@ public class Login extends JDialog
         label2 = new JLabel();
         label2.setText("Password:");
         text2 = new JTextField(pass, 15);
-        capatchText = new JTextField(code, 15);
+        capatchText = new JTextField("", 15);
         captchaImage = new JLabel();
         captchaImage.setSize(100, 60);
 
@@ -264,7 +264,7 @@ public class Login extends JDialog
 
                 // Build the post request
                 String post;
-                post = "Username=" + login + "&Password=" + pass
+                post = "Username=" + value1 + "&Password=" + value2
                         + "&VerificationCode=" + capatchText.getText()
                         + "&Referrer=%2Fdefault.aspx%3F";
 

@@ -540,8 +540,13 @@ public class Sratim implements Provider
         
         public boolean loadSratimCookie()
         {
+            return loadSratimCookie(false);
+        }
+        
+        public boolean loadSratimCookie(boolean checkalways)
+        {
             // Check if we already logged in and got the correct cookie        
-            if (!cookieHeader.equals(""))
+            if (!checkalways && !cookieHeader.equals(""))
                 return false;
 
 
@@ -870,13 +875,34 @@ public class Sratim implements Provider
          */
         public void downloadFile(String url, String dstZipFilename, FileStruct curr)
         {
-            boolean cookieOk = loadSratimCookie();
+            try {            
+                FileReader cookieFile = new FileReader("sratim.cookie");
+                BufferedReader in = new BufferedReader(cookieFile);
+                cookieHeader = in.readLine();
+                in.close();
+            } catch (Exception error) 
+            {
+            }
+            boolean cookieOk = loadSratimCookie(true);
             if (!cookieOk)
             {
                 Login login = new Login();
                 if (!login.isLoginOk())
                 {
                     return;
+                }
+                else
+                {
+                    cookieOk = true;
+                 // Check if cookie file exist
+                    try {            
+                        FileReader cookieFile = new FileReader("sratim.cookie");
+                        BufferedReader in = new BufferedReader(cookieFile);
+                        cookieHeader = in.readLine();
+                        in.close();
+                    } catch (Exception error) 
+                    {
+                    }
                 }
             }
             boolean success = Utils.downloadZippedSubs(url, dstZipFilename + ".zip", cookieHeader);

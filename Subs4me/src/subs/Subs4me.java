@@ -30,7 +30,7 @@ public class Subs4me
 //    private static boolean intense = false;
     private static boolean fullDownload = false;
     
-    private static String propertiesName = "./subs4me.properties";
+    public static String propertiesName = "./subs4me.properties";
     
     private static LinkedList<Provider> _availableProviders = new LinkedList<Provider>();
     
@@ -230,12 +230,6 @@ public class Subs4me
                     {
                         if (!Sratim.getInstance().loadSratimCookie())
                         {
-//                            JOptionPane.showMessageDialog(null,
-//                                    "Eggs are not supposed to be green.",
-//                                    "Inane warning",
-//                                    JOptionPane.WARNING_MESSAGE);
-
-                            
                             Login login = new Login();
                             if (!login.isLoginOk())
                             {

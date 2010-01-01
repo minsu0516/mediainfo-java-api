@@ -14,6 +14,7 @@ import java.util.Scanner;
 
 import subs.providers.Sratim;
 import utils.FileStruct;
+import utils.PropertiesUtil;
 
 public class HandleMultipleSubs
 {
@@ -25,6 +26,8 @@ public class HandleMultipleSubs
     
     public HandleMultipleSubs(String srcDirOrFile)
     {
+        PropertiesUtil.setPropertiesStreamName("./properties/subs4me-default.properties");
+        PropertiesUtil.setPropertiesStreamName(Subs4me.propertiesName);
         processFiles(srcDirOrFile);
     }
 
