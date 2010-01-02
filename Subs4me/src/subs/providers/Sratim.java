@@ -165,9 +165,16 @@ public class Sratim implements Provider
                         if (node.toPlainTextString() == null || node.toPlainTextString().equals(""))
                             continue;
                         
-                        if (!node.toPlainTextString().equalsIgnoreCase(currentFile.getNormalizedName()))
+                        //sratim allows for the | sign, so we can try and parse it
+                        String sName = node.toPlainTextString();
+                        String sNames[] = sName.split("|");
+                        for (int j = 0; j < sNames.length; j++)
                         {
-                            continue;
+                            String name = sNames[j];
+                            if (!name.equalsIgnoreCase(currentFile.getNormalizedName()))
+                            {
+                                continue;
+                            }
                         }
                         
                         String ref = ((TagNode) node).getAttribute("href");
@@ -417,6 +424,10 @@ public class Sratim implements Provider
                 //get the number of subs for the hebrew lang
                 filter = new AndFilter(new TagNameFilter("label"), new HasAttributeFilter("for", "S_1"));  
                 NodeList list = parser.parse(filter);
+                if (list.size() == 0)
+                {
+                    return null;
+                }
                 Pattern p1 = Pattern.compile("(\\d+)");
                 //need to remove the ext 
                 Matcher m1 = p1.matcher(list.elementAt(0).toPlainTextString());
