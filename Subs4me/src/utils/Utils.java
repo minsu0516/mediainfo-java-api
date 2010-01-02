@@ -522,14 +522,17 @@ public class Utils
         HttpClient httpclient = new DefaultHttpClient();
         HttpGet httpget = new HttpGet(url); 
      // Create a response handler
-//        ResponseHandler<String> responseHandler = new BasicResponseHandler();
+        ResponseHandler<String> responseHandler = new BasicResponseHandler();
         try
         {
+            String responseBody = httpclient.execute(httpget, responseHandler);
             HttpResponse response = httpclient.execute(httpget);
-            if (response.getStatusLine().getStatusCode() == 200)
+            if (response.getStatusLine().getStatusCode() == 200
+                    && responseBody.indexOf("www.imdb.com/title") >-1)
             {
                 ret = true;
             }
+            
             // When HttpClient instance is no longer needed, 
             // shut down the connection manager to ensure
             // immediate deallocation of all system resources
