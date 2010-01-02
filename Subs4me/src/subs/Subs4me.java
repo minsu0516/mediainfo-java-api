@@ -17,7 +17,7 @@ import utils.PropertiesUtil;
 public class Subs4me
 {
     public static final String SRT_EXISTS = "/c";
-    public static final String VERSION = "0.9";
+    public static final String VERSION = "0.9.1";
     public static final String RECURSIVE_SEARCH = "/r";
     public static final String FULL_DOWNLOAD = "/all";
     public static final String PROVIDERS = "/p";
