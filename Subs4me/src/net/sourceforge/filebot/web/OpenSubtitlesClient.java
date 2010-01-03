@@ -247,6 +247,7 @@ public class OpenSubtitlesClient implements SubtitleProvider, VideoHashSubtitleS
 				
 				// some additional special handling
 				subLanguageCache.put("Brazilian", "pob");
+				subLanguageCache.put("all", "all");
 			}
 		}
 		

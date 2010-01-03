@@ -114,7 +114,14 @@ public class OpenSubtitlesSubtitleDescriptor implements SubtitleDescriptor {
 		return getProperty(Property.MovieHash);
 	}
 	
-
+	public String getMovieName() {
+        return getProperty(Property.MovieName);
+    }
+	
+	public String getMovieNameEng() {
+        return getProperty(Property.MovieNameEng);
+    }
+	
 	public long getMovieByteSize() {
 		return Long.parseLong(getProperty(Property.MovieByteSize));
 	}

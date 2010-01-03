@@ -4,6 +4,8 @@ import java.io.File;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import subs.providers.OpenSubs;
+
 public class FileStruct
 {
     private String srcDir = "";
@@ -71,6 +73,7 @@ public class FileStruct
         normalizedName = normalizeMovieName(fullFileName);
         if (!isTV() && searchGoogle)
         {
+            String[] names = OpenSubs.getInstance().getMovieNames(f);
             String realName = Utils.locateRealNameUsingGoogle(fullFileName, "www.imdb.com");
             if (realName == null)
             {
