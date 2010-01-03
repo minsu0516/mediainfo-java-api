@@ -111,7 +111,6 @@ public class Torec implements Provider
         return "Torec";
     }
 
-    @Override
     public Results searchByActualName(FileStruct currentFile)
     {
         StringBuffer buffer;
@@ -234,7 +233,6 @@ public class Torec implements Provider
         return null;
     }
 
-    @Override
     public String searchForCorrectSubidOfSeries(String seriesInfo,
             FileStruct currentFile)
     {

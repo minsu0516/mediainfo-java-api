@@ -93,20 +93,4 @@ public class OpenSubs implements Provider
     {
         return "opensubs";
     }
-
-    @Override
-    public Results searchByActualName(FileStruct currentFile)
-    {
-        // TODO Auto-generated method stub
-        return null;
-    }
-
-    @Override
-    public String searchForCorrectSubidOfSeries(String seriesInfo,
-            FileStruct currentFile)
-    {
-        // TODO Auto-generated method stub
-        return null;
-    }
-
 }

@@ -441,7 +441,7 @@ public class Sratim implements Provider
                 ArrayList<String> displayNames = new ArrayList<String>();
                 
                 parser.reset();
-                filter = new AndFilter(new TagNameFilter("tr"), new HasAttributeFilter("title", ""));
+                filter = new AndFilter(new TagNameFilter("tr"), new HasAttributeFilter("title"));
                 list = parser.parse(filter);
                 if (list.size() == 0)
                 {
