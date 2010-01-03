@@ -97,7 +97,7 @@ public class OpenSubs implements Provider
     public static String[] getMovieNames(File fi)
     {
         String[] ret = null;
-        System.out.println("   Opensubs trying to get movie name:" + fi.getName());
+        System.out.println("   Opensubs trying to get movie name for:" + fi.getName());
         Map<File, List<SubtitleDescriptor>> list;
         try
         {

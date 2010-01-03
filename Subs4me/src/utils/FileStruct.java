@@ -71,15 +71,24 @@ public class FileStruct
         srcDir = f.getParent();
         fullFileName = f.getName();
         normalizedName = normalizeMovieName(fullFileName);
-        if (!isTV() && searchGoogle)
+        String[] names = OpenSubs.getInstance().getMovieNames(f);
+        if (names != null && names[0] != null)
         {
-            String[] names = OpenSubs.getInstance().getMovieNames(f);
-            String realName = Utils.locateRealNameUsingGoogle(fullFileName, "www.imdb.com");
-            if (realName == null)
+            normalizedName = names[0];
+        }
+        else
+        {
+            System.out.println("   Opensubs was unable to find the movie name" );
+            if (!isTV() && searchGoogle)
             {
-                return;
+                System.out.println("*** Search using Google for Movie's real name");
+                String realName = Utils.locateRealNameUsingGoogle(fullFileName, "www.imdb.com");
+                if (realName == null)
+                {
+                    return;
+                }
+                normalizedName = realName;
             }
-            normalizedName = realName;
         }
     }
     
