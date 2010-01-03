@@ -193,6 +193,13 @@ public class HandleMultipleSubs
                             currentFile.getFile().delete();
                         }
                     }
+                    
+                    for (int i = 0; i < files.length; i++)
+                    {
+                        String delName = files[i];
+                        File del = new File(currentFile.getFile().getParent(), delName);
+                        del.delete();
+                    }
                 }
                 else
                 {
