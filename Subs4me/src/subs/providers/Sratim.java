@@ -443,7 +443,10 @@ public class Sratim implements Provider
                 parser.reset();
                 filter = new AndFilter(new TagNameFilter("tr"), new HasAttributeFilter("title", ""));
                 list = parser.parse(filter);
-                
+                if (list.size() == 0)
+                {
+                    return null;
+                }
                 //we are traversing all the subtitle blocks
                 Node[] na = list.toNodeArray();
                 for (int i = 0; i < subNumber; i++)
