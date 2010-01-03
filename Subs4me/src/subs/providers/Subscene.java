@@ -35,15 +35,14 @@ public class Subscene implements Provider
     }
     
     @Override
-    public boolean doWork(File fi)
+    public boolean doWork(FileStruct fs)
     {
-        currentFile = new FileStruct(fi, false);
-        File[] files = new File[1];
-        files[0] = fi;
+        currentFile = fs;
+        File[] files = new File[]{fs.getFile()};
         try
         {
             System.out.println("   Subscene provider trying:" + currentFile.getFullFileName());
-            List<SearchResult> searchResults = subsceneClient.search(fi.getName());
+            List<SearchResult> searchResults = subsceneClient.search(files[0].getName());
             LinkedList<SubtitleDescriptor> subs = new LinkedList<SubtitleDescriptor>();
             for (Iterator<SearchResult> iterator = searchResults.iterator(); iterator
                     .hasNext();)
@@ -96,8 +95,8 @@ public class Subscene implements Provider
 //                            {
 //                                
 //                            }
-                            FileStruct fs = new FileStruct(memFile.getName());
-                            if (!fs.getSeason().equals(currentFile.getSeason()))
+                            FileStruct fsMem = new FileStruct(memFile.getName());
+                            if (!fsMem.getSeason().equals(currentFile.getSeason()))
                             {
                                 break;
                             }
@@ -126,7 +125,7 @@ public class Subscene implements Provider
             if (subs.size() == 1)
             {
                 ByteBuffer subFileBuffer = subs.get(0).fetch();
-                downloadSubs(subFileBuffer, fi.getParent(), subs.get(0), false);
+                downloadSubs(subFileBuffer, fs.getFile().getParent(), subs.get(0), false);
                 return true;
             }
             else
@@ -138,7 +137,7 @@ public class Subscene implements Provider
                     SubtitleDescriptor subtitleDescriptor = (SubtitleDescriptor) iterator
                             .next();
                     ByteBuffer subFileBuffer = subtitleDescriptor.fetch();
-                    downloadSubs(subFileBuffer, fi.getParent(), subtitleDescriptor, true);
+                    downloadSubs(subFileBuffer, fs.getFile().getParent(), subtitleDescriptor, true);
                 } 
                 return false;
             }

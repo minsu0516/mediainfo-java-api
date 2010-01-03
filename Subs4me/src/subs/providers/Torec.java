@@ -48,15 +48,15 @@ public class Torec implements Provider
     }
 
     @Override
-    public boolean doWork(File fi)
+    public boolean doWork(FileStruct fs)
     {
-         Results subsID = null;
+        Results subsID = null;
+        currentFile = fs;
         try
         {
-            currentFile = new FileStruct(fi);
 //            Sratim.searchByActualName(currentFile);
             String f = currentFile.getNameNoExt();
-            System.out.println("Torec - trying direct download: " + f);
+            System.out.println("*** Torec trying direct download: " + f);
 
             // try brute force, just try to get the filename - ext + .zip
             boolean success = false;
@@ -69,7 +69,7 @@ public class Torec implements Provider
             }
             else
             {
-                System.out.println("Torec - could not find:" + Utils.escape(f) + ".zip on Torec"); 
+                System.out.println("*** Torec could not find direct download for:" + Utils.escape(f) + " on Torec"); 
             }
 
             subsID = searchByActualName(currentFile);
@@ -87,7 +87,7 @@ public class Torec implements Provider
             }
             else
             {
-                System.out.println("searchByActualNameInTorec Could not find:" + Utils.escape(f) + ".zip on Torec"); 
+                System.out.println("*** Torec searchByActualName Could not find:" + Utils.escape(f) + ".zip on Torec"); 
             }
 
         } catch (Exception e)

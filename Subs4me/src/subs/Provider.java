@@ -1,9 +1,9 @@
 package subs;
 
-import java.io.File;
+import utils.FileStruct;
 
 public interface Provider
 {
     public String getName();
-    public boolean doWork(File fi);
+    public boolean doWork(FileStruct fs);
 }

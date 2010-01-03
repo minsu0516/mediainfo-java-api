@@ -33,16 +33,15 @@ public class OpenSubs implements Provider
     }
     
     @Override
-    public boolean doWork(File fi)
+    public boolean doWork(FileStruct fs)
     {
-        currentFile = new FileStruct(fi, false);
-        File[] files = new File[1];
-        files[0] = fi;
+        currentFile = fs;
+        File[] files = new File[]{fs.getFile()};
         try
         {
-            System.out.println("   Opensubs provider trying:" + currentFile.getFullFileName());
+            System.out.println("*** Opensubs trying:" + currentFile.getFullFileName());
             Map<File, List<SubtitleDescriptor>> list = openClient.getSubtitleList(files, "Hebrew");
-            List<SubtitleDescriptor> descList = list.get(fi);
+            List<SubtitleDescriptor> descList = list.get(files[0]);
             if (descList.size() == 0)
                 return false;
             
@@ -54,7 +53,7 @@ public class OpenSubs implements Provider
                 if (subtitleDescriptor.getType().equals("srt"))
                 {
                     sub = subtitleDescriptor;
-                    System.out.println("   Opensubs provider found:" + sub.getName());
+                    System.out.println("*** Opensubs found:" + sub.getName());
                     break;
                 }
             }
@@ -62,7 +61,7 @@ public class OpenSubs implements Provider
                 return false;
             
             ByteBuffer subFileBuffer = sub.fetch();
-            downloadSubs(subFileBuffer, fi.getParent(), sub);
+            downloadSubs(subFileBuffer, files[0].getParent(), sub);
         } catch (Exception e)
         {
             // TODO Auto-generated catch block
@@ -97,7 +96,7 @@ public class OpenSubs implements Provider
     public static String[] getMovieNames(File fi)
     {
         String[] ret = null;
-        System.out.println("   Opensubs trying to get movie name for:" + fi.getName());
+        System.out.println("*** Opensubs trying to get movie name for:" + fi.getName());
         Map<File, List<SubtitleDescriptor>> list;
         try
         {
@@ -111,7 +110,7 @@ public class OpenSubs implements Provider
             {
                 OpenSubtitlesSubtitleDescriptor subtitleDescriptor = (OpenSubtitlesSubtitleDescriptor) iterator.next();
                 ret = new String[]{subtitleDescriptor.getMovieName(), subtitleDescriptor.getMovieNameEng()};
-                System.out.println("   Opensubs found movie name:" + ret[0] + ", " + ret[1]);
+                System.out.println("*** Opensubs found movie name:" + ret[0] + ", " + ret[1]);
                 break;
             }
         } catch (Exception e)

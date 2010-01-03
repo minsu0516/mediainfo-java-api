@@ -102,7 +102,6 @@ public class Sratim implements Provider
     {
         currentFile = fs;
         searchByActualName(currentFile);
-        
     }
 
     public Results searchByActualName(FileStruct currentFile)
@@ -300,14 +299,15 @@ public class Sratim implements Provider
     }
 
     @Override
-    public boolean doWork(File fi)
+    public boolean doWork(FileStruct fs)
     {
+        currentFile = fs;
         try
         {
-            currentFile = new FileStruct(fi);
             String f = currentFile.getNameNoExt();
             boolean success = false;
 
+            System.out.println("*** Sratim trying to find movie for: " + currentFile.getNormalizedName()); 
             Results subsID = searchByActualName(currentFile);
             if (subsID != null && subsID.getResults().size() > 0)
             {
@@ -474,7 +474,7 @@ public class Sratim implements Provider
                         displayNames.add(name);
 //                        String dlPlease = Utils.postForFileName(subid.substring(15),
 //                                filesTodl.get(i));
-                        System.out.println("found exact movie name proceeding to dl: "
+                        System.out.println("*** Sratim found exact movie name, proceeding to dl: "
                                 + filesTodl.get(i));
                         LinkedList<String> lst = new LinkedList<String>();
                         lst.add(filesTodl.get(i));

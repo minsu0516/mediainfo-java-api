@@ -17,7 +17,7 @@ import utils.PropertiesUtil;
 public class Subs4me
 {
     public static final String SRT_EXISTS = "/c";
-    public static final String VERSION = "0.9.1";
+    public static final String VERSION = "0.9.2";
     public static final String RECURSIVE_SEARCH = "/r";
     public static final String FULL_DOWNLOAD = "/all";
     public static final String PROVIDERS = "/p";
@@ -65,11 +65,12 @@ public class Subs4me
         {
             // this is a file and not a directory
             File fi = new File(src);
+            FileStruct fs = new FileStruct(fi);
             // String f = fi.getName();
             for (Iterator iterator = _providers.iterator(); iterator.hasNext();)
             {
                 Provider p = (Provider) iterator.next();
-                boolean success = p.doWork(fi);
+                boolean success = p.doWork(fs);
                 if (success)
                 {
                     cleanup();
@@ -86,10 +87,11 @@ public class Subs4me
                     startProcessingFiles(f.getPath());
                 } else
                 {
+                    FileStruct fs = new FileStruct(f);
                     for (Iterator iterator = _providers.iterator(); iterator.hasNext();)
                     {
                         Provider p = (Provider) iterator.next();
-                        boolean success = p.doWork(f);
+                        boolean success = p.doWork(fs);
                         if (success)
                         {
                             cleanup(f);
