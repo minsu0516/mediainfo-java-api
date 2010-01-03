@@ -13,5 +13,6 @@
 	<classpathentry kind="lib" path="httpclient-4.0.1.jar"/>
 	<classpathentry kind="lib" path="httpcore-4.0.1.jar"/>
 	<classpathentry kind="lib" path="commons-logging-1.1.1.jar"/>
+	<classpathentry kind="lib" path="ini4j/ini4j-0.5.1.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
