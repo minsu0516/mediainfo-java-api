@@ -1,3 +1,7 @@
+Version 0.9.1
+ fixed: tweaked the search in goolge to search better.
+ added: ini4j - moving to ini, instead of properties
+ fixed: offer provided the latest getsus.exe, now it works again
 Version 0.9
  added: Support for sratim.co.il thanks to code adapted from YAMJ http://code.google.com/p/moviejukebox/
  fixed: better support for subscene, still less then fully functional
