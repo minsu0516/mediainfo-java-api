@@ -33,40 +33,33 @@ public class OpenSubs implements Provider
     }
     
     @Override
-    public boolean doWork(FileStruct fs)
+    public boolean doWork(FileStruct fs) throws Exception
     {
         currentFile = fs;
         File[] files = new File[]{fs.getFile()};
-        try
+        System.out.println("*** Opensubs trying:" + currentFile.getFullFileName());
+        Map<File, List<SubtitleDescriptor>> list = openClient.getSubtitleList(files, "Hebrew");
+        List<SubtitleDescriptor> descList = list.get(files[0]);
+        if (descList.size() == 0)
+            return false;
+
+        SubtitleDescriptor sub = null;
+        for (Iterator<SubtitleDescriptor> iterator = descList.iterator(); iterator.hasNext();)
         {
-            System.out.println("*** Opensubs trying:" + currentFile.getFullFileName());
-            Map<File, List<SubtitleDescriptor>> list = openClient.getSubtitleList(files, "Hebrew");
-            List<SubtitleDescriptor> descList = list.get(files[0]);
-            if (descList.size() == 0)
-                return false;
-            
-            SubtitleDescriptor sub = null;
-            for (Iterator<SubtitleDescriptor> iterator = descList.iterator(); iterator.hasNext();)
+            SubtitleDescriptor subtitleDescriptor = (SubtitleDescriptor) iterator
+            .next();
+            if (subtitleDescriptor.getType().equals("srt"))
             {
-                SubtitleDescriptor subtitleDescriptor = (SubtitleDescriptor) iterator
-                        .next();
-                if (subtitleDescriptor.getType().equals("srt"))
-                {
-                    sub = subtitleDescriptor;
-                    System.out.println("*** Opensubs found:" + sub.getName());
-                    break;
-                }
+                sub = subtitleDescriptor;
+                System.out.println("*** Opensubs found:" + sub.getName());
+                break;
             }
-            if (sub == null)
-                return false;
-            
-            ByteBuffer subFileBuffer = sub.fetch();
-            downloadSubs(subFileBuffer, files[0].getParent(), sub);
-        } catch (Exception e)
-        {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
         }
+        if (sub == null)
+            return false;
+
+        ByteBuffer subFileBuffer = sub.fetch();
+        downloadSubs(subFileBuffer, files[0].getParent(), sub);
         return true;
     }
     
@@ -94,6 +87,7 @@ public class OpenSubs implements Provider
     }
     
     public static String[] getMovieNames(File fi)
+        throws Exception
     {
         String[] ret = null;
         System.out.println("*** Opensubs trying to get movie name for:" + fi.getName());
@@ -115,8 +109,7 @@ public class OpenSubs implements Provider
             }
         } catch (Exception e)
         {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
+            throw new Exception("Could not retrive names", e);
         }
         return ret;
     }

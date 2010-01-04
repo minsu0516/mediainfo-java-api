@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.FilenameFilter;
 import java.util.Iterator;
 import java.util.LinkedList;
+import java.util.Locale;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -51,6 +52,9 @@ public class Subs4me
     
     public Subs4me()
     {
+//        System.out.println("Locale = " + Locale.getDefault());
+//        Locale.setDefault(new Locale("en", "US"));
+//        System.out.println("New Locale = " + Locale.getDefault());
     }
 
     /**
@@ -70,11 +74,20 @@ public class Subs4me
             for (Iterator iterator = _providers.iterator(); iterator.hasNext();)
             {
                 Provider p = (Provider) iterator.next();
-                boolean success = p.doWork(fs);
-                if (success)
+                boolean success;
+                try
                 {
-                    cleanup();
-                    break;
+                    success = p.doWork(fs);
+                    if (success)
+                    {
+                        cleanup();
+                        break;
+                    }
+                }
+                catch (Exception e)
+                {
+                    // TODO Auto-generated catch block
+                    e.printStackTrace();
                 }
             }
         } else
@@ -91,11 +104,20 @@ public class Subs4me
                     for (Iterator iterator = _providers.iterator(); iterator.hasNext();)
                     {
                         Provider p = (Provider) iterator.next();
-                        boolean success = p.doWork(fs);
-                        if (success)
+                        boolean success;
+                        try
                         {
-                            cleanup(f);
-                            break;
+                            success = p.doWork(fs);
+                            if (success)
+                            {
+                                cleanup(f);
+                                break;
+                            }
+                        }
+                        catch (Exception e)
+                        {
+                            // TODO Auto-generated catch block
+                            e.printStackTrace();
                         }
                     }
                 }
@@ -333,7 +355,7 @@ public class Subs4me
         
         System.out.println("******* Thanks for using subs4me, hope you enjoy the results *******");
     }
-
+    
     private static LinkedList<String> initProperties()
     {
         LinkedList<String> providers = null;

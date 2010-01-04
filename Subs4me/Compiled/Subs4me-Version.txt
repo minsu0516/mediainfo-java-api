@@ -1,3 +1,5 @@
+Version 0.9.2
+ fixed: Now I search with opensubs first, then google.
 Version 0.9.1
  fixed: tweaked the search in goolge to search better.
  added: ini4j - moving to ini, instead of properties

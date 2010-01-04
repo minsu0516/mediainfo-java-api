@@ -2,6 +2,8 @@ package subs;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Arrays;
 
 import org.ini4j.InvalidFileFormatException;
 import org.ini4j.Wini;
@@ -14,7 +16,7 @@ import org.ini4j.Wini;
  */
 public class Launcher
 {
-    public static final String DEFAULT_INI = "./properties/subs4me-default.ini";
+    public static final String DEFAULT_INI = "./properties/launcher-default.ini";
     public static final String LAUNCHER_INI = "./launcher.ini";
     public Launcher()
     {
@@ -28,17 +30,25 @@ public class Launcher
         {
             ini = new Wini(new File(DEFAULT_INI));
             String sequence = ini.get("launcher", "launch");
+            if (sequence == null)
+                return;
+            
             String[] launch = sequence.split(",");
             for (int i = 0; i < launch.length; i++)
             {
                 String prog = launch[i];
+                String[] paramsSplit = prog.split(" ");
+                ArrayList<String> params = new ArrayList<String>(paramsSplit.length + 1);
+                params.add(args[0]);
+                params.addAll(Arrays.asList(paramsSplit));
+                params.remove(1);
                 if (prog.startsWith("getsubs"))
                 {
-                    System.out.println("getsubs activated");
+                    Subs4me.main(params.toArray(new String[params.size()]));
                 }
                 else if (prog.startsWith("handlemultiplesubs"))
                 {
-                    System.out.println("handlemultiplesubs activated");
+                    HandleMultipleSubs.main(params.toArray(new String[params.size()]));
                 }
             }
         }

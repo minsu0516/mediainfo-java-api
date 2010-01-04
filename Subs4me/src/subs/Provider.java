@@ -5,5 +5,5 @@ import utils.FileStruct;
 public interface Provider
 {
     public String getName();
-    public boolean doWork(FileStruct fs);
+    public boolean doWork(FileStruct fs) throws Exception;
 }

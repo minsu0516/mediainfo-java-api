@@ -73,7 +73,17 @@ public class FileStruct
         normalizedName = normalizeMovieName(fullFileName);
         if (extraWebSearchForSearch)
         {
-            String[] names = OpenSubs.getInstance().getMovieNames(f);
+            String[] names = null;
+            try
+            {
+                names = OpenSubs.getInstance().getMovieNames(f);
+            }
+            catch (Exception e)
+            {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
+            }
+            
             if (names != null && names[0] != null)
             {
                 normalizedName = names[0];
