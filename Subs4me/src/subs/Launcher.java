@@ -42,11 +42,11 @@ public class Launcher
                 params.add(args[0]);
                 params.addAll(Arrays.asList(paramsSplit));
                 params.remove(1);
-                if (prog.startsWith("getsubs"))
+                if (prog.toLowerCase().startsWith("getsubs"))
                 {
                     Subs4me.main(params.toArray(new String[params.size()]));
                 }
-                else if (prog.startsWith("handlemultiplesubs"))
+                else if (prog.toLowerCase().startsWith("handlemultiplesubs"))
                 {
                     HandleMultipleSubs.main(params.toArray(new String[params.size()]));
                 }
