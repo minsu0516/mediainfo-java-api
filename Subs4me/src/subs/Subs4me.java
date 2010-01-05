@@ -357,6 +357,7 @@ public class Subs4me
         System.out.println("        check recursively = " + isRecursive());
         System.out.println("        do not check if srt exists = " + checkSrtExists);
         System.out.println("        download everything = " + isFullDownload());
+        System.out.println("        do not check name using opensubs = " + noUseOpen);
         as.startProcessingFiles(args[0]);
         
         System.out.println("******* Thanks for using subs4me, hope you enjoy the results *******");
