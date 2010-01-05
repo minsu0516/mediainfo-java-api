@@ -35,7 +35,7 @@ public class Subscene implements Provider
     }
     
     @Override
-    public boolean doWork(FileStruct fs)
+    public int doWork(FileStruct fs)
     {
         currentFile = fs;
         File[] files = new File[]{fs.getFile()};
@@ -120,13 +120,13 @@ public class Subscene implements Provider
                 }
             }
             if (subs.size() == 0)
-                return false;
+                return Provider.not_found;
             
             if (subs.size() == 1)
             {
                 ByteBuffer subFileBuffer = subs.get(0).fetch();
                 downloadSubs(subFileBuffer, fs.getFile().getParent(), subs.get(0), false);
-                return true;
+                return Provider.perfect;
             }
             else
             {
@@ -139,7 +139,7 @@ public class Subscene implements Provider
                     ByteBuffer subFileBuffer = subtitleDescriptor.fetch();
                     downloadSubs(subFileBuffer, fs.getFile().getParent(), subtitleDescriptor, true);
                 } 
-                return false;
+                return Provider.not_perfect;
             }
 
         } catch (Exception e)
@@ -147,7 +147,8 @@ public class Subscene implements Provider
             // TODO Auto-generated catch block
             e.printStackTrace();
         }
-        return true;
+        
+        return not_found;
     }
     
     /**

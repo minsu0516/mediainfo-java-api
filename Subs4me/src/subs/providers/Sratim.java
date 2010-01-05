@@ -299,7 +299,7 @@ public class Sratim implements Provider
     }
 
     @Override
-    public boolean doWork(FileStruct fs)
+    public int doWork(FileStruct fs)
     {
         currentFile = fs;
         try
@@ -311,12 +311,11 @@ public class Sratim implements Provider
             Results subsID = searchByActualName(currentFile);
             if (subsID != null && subsID.getResults().size() > 0)
             {
-                
                 if (!subsID.isCorrectResults())
                 {
                     handleMoreThanOneSub(subsID);
-                    
-                    return subsID.isCorrectResults();
+                    System.out.println("*** Sratim found some possibilities:" + currentFile.getNormalizedName()); 
+                    return Provider.not_perfect;
                 }
                 else
                 {
@@ -334,12 +333,13 @@ public class Sratim implements Provider
                             Utils.unzipSubs(currentFile, name + ".zip", subsID.isCorrectResults());
                         }
                     }
-                    return subsID.isCorrectResults();
+                    return Provider.perfect;
                 }
             }
             else
             {
                 System.out.println("searchByActualNameInTorec Could not find:" + Utils.escape(f) + ".zip on Torec"); 
+                return Provider.not_found;
             }
 
         } catch (Exception e)
@@ -349,7 +349,7 @@ public class Sratim implements Provider
             // e.printStackTrace();
         }
         
-        return false;
+        return Provider.not_found;
     }
 
     private void handleMoreThanOneSub(Results subsID)

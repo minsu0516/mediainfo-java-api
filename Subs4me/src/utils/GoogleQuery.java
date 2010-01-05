@@ -14,7 +14,8 @@ public class GoogleQuery {
  private static final String HTTP_REFERER = "http://www.tvrage.com/";
 
  public GoogleQuery() {
-  makeQuery("In.the.Valley.Of.Elah.2007.720p.BluRay.x264-Chakra.mkv www.imdb.com inurl:com");
+  makeQuery("h-gforce720p.mkv www.imdb.com +intitle:h-gforce720p");
+  makeQuery("h-gforce720p.mkv www.imdb.com");
 //  makeQuery("info:http://frankmccown.blogspot.com/");
 //  makeQuery("site:frankmccown.blogspot.com");
  }

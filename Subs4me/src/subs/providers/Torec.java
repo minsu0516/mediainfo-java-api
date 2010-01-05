@@ -48,7 +48,7 @@ public class Torec implements Provider
     }
 
     @Override
-    public boolean doWork(FileStruct fs)
+    public int doWork(FileStruct fs)
     {
         Results subsID = null;
         currentFile = fs;
@@ -65,11 +65,11 @@ public class Torec implements Provider
             if (success)
             {
                 Utils.unzipSubs(currentFile, Utils.escape(f)+ ".zip", true);
-                return true;
+                return Provider.perfect;
             }
             else
             {
-                System.out.println("*** Torec could not find direct download for:" + Utils.escape(f) + " on Torec"); 
+                System.out.println("******* not found on torec direct download"); 
             }
 
             subsID = searchByActualName(currentFile);
@@ -88,6 +88,7 @@ public class Torec implements Provider
             else
             {
                 System.out.println("*** Torec searchByActualName Could not find:" + Utils.escape(f) + ".zip on Torec"); 
+                return Provider.not_found;
             }
 
         } catch (Exception e)
@@ -99,10 +100,10 @@ public class Torec implements Provider
         
         if (subsID != null && subsID.isCorrectResults())
         {
-            return true;
+            return Provider.perfect;
         }
         
-        return false;
+        return Provider.not_perfect;
     }
 
     @Override

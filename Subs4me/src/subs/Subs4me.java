@@ -30,6 +30,8 @@ public class Subs4me
     public static final String SUBS_RECURSIVE_PROPEERTY = "get_subs_recursive";
     public static final String SUBS_GET_ALL_PROPEERTY = "get_subs_all";
     
+    public LinkedList<String> oneSubsFound = new LinkedList<String>();
+    public LinkedList<String> moreThanOneSubs = new LinkedList<String>();
     
     String srcDir = new String();
     // private String _group = "";
@@ -71,60 +73,65 @@ public class Subs4me
         {
             // this is a file and not a directory
             File fi = new File(src);
-            FileStruct fs = new FileStruct(fi);
-            // String f = fi.getName();
-            for (Iterator iterator = _providers.iterator(); iterator.hasNext();)
-            {
-                Provider p = (Provider) iterator.next();
-                boolean success;
-                try
-                {
-                    success = p.doWork(fs);
-                    if (success)
-                    {
-                        cleanup();
-                        break;
-                    }
-                }
-                catch (Exception e)
-                {
-                    // TODO Auto-generated catch block
-                    e.printStackTrace();
-                }
-            }
+            doWork(fi);
         } else
         {
             for (int j = 0; j < sources.length; j++)
             {
-                File f = new File(src + File.separator + sources[j]);
-                if (f.isDirectory())
+                File fi = new File(src + File.separator + sources[j]);
+                if (fi.isDirectory())
                 {
-                    startProcessingFiles(f.getPath());
+                    startProcessingFiles(fi.getPath());
                 } else
                 {
-                    FileStruct fs = new FileStruct(f);
-                    for (Iterator iterator = _providers.iterator(); iterator.hasNext();)
-                    {
-                        Provider p = (Provider) iterator.next();
-                        boolean success;
-                        try
-                        {
-                            success = p.doWork(fs);
-                            if (success)
-                            {
-                                cleanup(f);
-                                break;
-                            }
-                        }
-                        catch (Exception e)
-                        {
-                            // TODO Auto-generated catch block
-                            e.printStackTrace();
-                        }
-                    }
+                    doWork(fi);
                 }
             }
         }
+        
+        
+    }
+    
+    /**
+     * iterate over providers to get the subs
+     * @param fi file to work on
+     * @return Providre values to help print the list of files to which we found subtitles
+     */
+    private void doWork(File fi)
+    {
+        int ret = Provider.not_found;
+        FileStruct fs = new FileStruct(fi);
+        for (Iterator iterator = _providers.iterator(); iterator.hasNext();)
+        {
+            Provider p = (Provider) iterator.next();
+            try
+            {
+                int retTemp = p.doWork(fs);
+                if (retTemp > ret)
+                {
+                    ret = retTemp;
+                }
+                if (retTemp == Provider.perfect)
+                {
+                    cleanup();
+                }
+            }
+            catch (Exception e)
+            {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
+            }
+        }
+        
+        if (ret == Provider.perfect)
+        {
+            oneSubsFound.add(fs.getFullFileName());
+        }
+        else if (ret == Provider.not_perfect)
+        {
+            moreThanOneSubs.add(fs.getFullFileName());
+        }
+//        return ret;
     }
     
     private void cleanup(File f)
@@ -223,7 +230,6 @@ public class Subs4me
         {
             return null;
         }
-
     }
 
     public static boolean isRecursive()
@@ -360,6 +366,35 @@ public class Subs4me
         System.out.println("        do not check name using opensubs = " + noUseOpen);
         as.startProcessingFiles(args[0]);
         
+        if (as.oneSubsFound.size() > 0)
+        {
+            StringBuilder sbExact = new StringBuilder("\n********************** found exact matches **********************************************");
+            sbExact.append("\nExact matches were found for:");
+            for (Iterator iterator = as.oneSubsFound.iterator(); iterator.hasNext();)
+            {
+                String src = (String) iterator.next();
+                sbExact.append("\n");
+                sbExact.append(src);
+            }
+            System.out.println(sbExact.toString());
+        }
+        
+        if (as.moreThanOneSubs.size() > 0)
+        {
+            StringBuilder sbExact = new StringBuilder("\n************** found inexact matches, run HandleMultipleSubs ****************************");
+            sbExact.append("\nPlease run HandleMultipleSubs on:");
+            for (Iterator iterator = as.moreThanOneSubs.iterator(); iterator.hasNext();)
+            {
+                String src = (String) iterator.next();
+                sbExact.append("\n");
+                sbExact.append(src);
+            }
+            System.out.println(sbExact.toString());
+        }
+        if (as.moreThanOneSubs.size() > 0 || as.oneSubsFound.size() > 0)
+        {
+            System.out.println("*****************************************************************************************");
+        }
         System.out.println("******* Thanks for using subs4me, hope you enjoy the results *******");
     }
     

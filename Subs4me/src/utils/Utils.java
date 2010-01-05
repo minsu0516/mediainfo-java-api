@@ -494,7 +494,8 @@ public class Utils
                     JSONObject j = ja.getJSONObject(i);
                     String urlTemp = j.getString("url");
                     urlTemp = URLDecoder.decode(urlTemp, "UTF-8");
-                    if (checkURLOk(urlTemp))
+                    urlTemp = checkURLOk(urlTemp);
+                    if ( urlTemp != null)
                     {
                         return urlTemp;
                     }
@@ -516,9 +517,8 @@ public class Utils
         return null;
     }
     
-    public static boolean checkURLOk(String url)
+    public static String checkURLOk(String url)
     {
-        boolean ret = false;
         HttpClient httpclient = new DefaultHttpClient();
         HttpGet httpget = new HttpGet(url); 
      // Create a response handler
@@ -528,9 +528,15 @@ public class Utils
             String responseBody = httpclient.execute(httpget, responseHandler);
             HttpResponse response = httpclient.execute(httpget);
             if (response.getStatusLine().getStatusCode() == 200
-                    && responseBody.indexOf("www.imdb.com/title") >-1)
+                    && responseBody.indexOf("http://www.imdb.com/title") >-1)
             {
-                ret = true;
+//                int i = responseBody.indexOf("http://www.imdb.com/title");
+                Pattern p = Pattern.compile("http://www.imdb.com/title/.*");
+                Matcher m = p.matcher(responseBody);
+                if (m.find())
+                {
+                    return(m.group());
+                }
             }
             
             // When HttpClient instance is no longer needed, 
@@ -545,7 +551,7 @@ public class Utils
         {
         }
         
-        return ret;
+        return null;
     }
     
     public static String locateRealNameUsingGoogle(String fullName)
@@ -566,61 +572,15 @@ public class Utils
     public static String locateRealNameUsingGoogle(String fullName, String critiria)
     {
       //try to find the real name of the movie using google
-        String imdbPointingUrl = Utils.searchRealNameUsingGoogle(fullName, critiria);
-        if (imdbPointingUrl != null)
+        String imdbUrl = Utils.searchRealNameUsingGoogle(fullName, critiria);
+        if (imdbUrl != null)
         {
-            Parser parser;
             try
             {
-                parser = new Parser(imdbPointingUrl);
+                Parser parser = new Parser(imdbUrl);
                 parser.setEncoding("UTF-8");
-                NodeFilter filter = new OrFilter( 
-                                        new RegexFilter(critiria), 
-                                        new LinkRegexFilter(critiria));
-                
-                NodeList list = new NodeList();
-                for (NodeIterator e = parser.elements(); e.hasMoreNodes();)
-                {
-                    Node node = e.nextNode();
-                    node.collectInto(list, filter);
-                    // System.out.println(node.toHtml());
-                }
-                Node[] nodes = list.toNodeArray();
-                if (nodes.length == 0)
-                    return null;
-                
-                String imdbTitleUrl = null;
-                if (nodes[0] instanceof LinkRegexFilter)
-                {
-                    imdbTitleUrl = ((LinkTag)nodes[0]).getLink();
-                }
-                else
-                {
-                    Pattern p = Pattern.compile("http://.*title/.*/");
-                    String url = "";
-                    if (nodes[0] instanceof TextNode)
-                    {
-                        url = ((TextNode)nodes[0]).getText();
-                    }
-                    else if (nodes[0] instanceof LinkTag)
-                    {
-                        url = ((LinkTag)nodes[0]).getText();
-                    }
-                    Matcher m = p.matcher(url);
-                    if (m.find())
-                    {
-                        imdbTitleUrl = m.group();
-                    }
-                }
-                if (imdbTitleUrl == null)
-                {
-                    return null;
-                }
-                
-                parser = new Parser(imdbTitleUrl);
-                parser.setEncoding("UTF-8");
-                filter = new TagNameFilter("title");
-                list = parser.parse(filter);
+                NodeFilter filter = new TagNameFilter("title");
+                NodeList list = parser.parse(filter);
                 String tmpName = list.toNodeArray()[0].toPlainTextString().replaceAll(",", "");
                 tmpName = tmpName.replaceAll("\\([\\d]*\\)$", "");
                 System.out.println("*** Google says - Movie real name is:" + tmpName);

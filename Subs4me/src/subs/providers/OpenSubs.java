@@ -33,7 +33,7 @@ public class OpenSubs implements Provider
     }
     
     @Override
-    public boolean doWork(FileStruct fs) throws Exception
+    public int doWork(FileStruct fs) throws Exception
     {
         currentFile = fs;
         File[] files = new File[]{fs.getFile()};
@@ -41,7 +41,7 @@ public class OpenSubs implements Provider
         Map<File, List<SubtitleDescriptor>> list = openClient.getSubtitleList(files, "Hebrew");
         List<SubtitleDescriptor> descList = list.get(files[0]);
         if (descList.size() == 0)
-            return false;
+            return Provider.not_found;
 
         SubtitleDescriptor sub = null;
         for (Iterator<SubtitleDescriptor> iterator = descList.iterator(); iterator.hasNext();)
@@ -56,11 +56,11 @@ public class OpenSubs implements Provider
             }
         }
         if (sub == null)
-            return false;
+            return Provider.not_found;
 
         ByteBuffer subFileBuffer = sub.fetch();
         downloadSubs(subFileBuffer, files[0].getParent(), sub);
-        return true;
+        return Provider.perfect;
     }
     
     /**
