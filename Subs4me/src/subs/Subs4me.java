@@ -431,6 +431,7 @@ public class Subs4me
         sb.append("  p: select providers, /p=torec,opensubs will select these two providers\n     (order is important), default is opensubs,sratim,torec \n");
         sb.append("     Currently supporting: torec, opensubs, sratim, subscene\n");
         sb.append("  all: Download all the subtitles for this title and unzip with the above schema\n");
+        sb.append("  n: do not use opensubs to validate actual movie name (use google only)\n");
         sb.append("\nCreated by ilank\nEnjoy...");
         System.out.println(sb.toString());
         System.exit(-1);
