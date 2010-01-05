@@ -22,6 +22,7 @@ public class Subs4me
     public static final String RECURSIVE_SEARCH = "/r";
     public static final String FULL_DOWNLOAD = "/all";
     public static final String PROVIDERS = "/p";
+    public static final String DO_NOT_USE_OPENSUBS_FOR_FILE_REALIZATION = "/n";
     public static final String DO_WORK_EXT = ".run_HandleMultiplesubs";
     
     public static final String PROVIDERS_PROPEERTY = "get_subs_providers";
@@ -444,4 +445,3 @@ public class Subs4me
         _availableProviders.add(provider);
     }
 }
-
