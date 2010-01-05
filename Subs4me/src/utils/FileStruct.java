@@ -93,7 +93,10 @@ public class FileStruct
             }
             else
             {
-                System.out.println("*** Opensubs was unable to find the movie name" );
+                if (!Subs4me.noUseOpen)
+                {
+                    System.out.println("*** Opensubs was unable to find the movie name" );
+                }
                 if (!isTV())
                 {
                     System.out.println("*** Search using Google for Movie's real name");
