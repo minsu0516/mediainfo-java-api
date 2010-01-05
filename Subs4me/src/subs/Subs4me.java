@@ -125,11 +125,11 @@ public class Subs4me
         
         if (ret == Provider.perfect)
         {
-            oneSubsFound.add(fs.getFullFileName());
+            oneSubsFound.add(fs.getSrcDir() + File.separator + fs.getFullFileName());
         }
         else if (ret == Provider.not_perfect)
         {
-            moreThanOneSubs.add(fs.getFullFileName());
+            moreThanOneSubs.add(fs.getSrcDir() + File.separator + fs.getFullFileName());
         }
 //        return ret;
     }
