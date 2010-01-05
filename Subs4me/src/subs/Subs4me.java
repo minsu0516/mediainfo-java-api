@@ -45,6 +45,7 @@ public class Subs4me
     public static LinkedList<Provider> _providers = null;
     
     private static Subs4me instance = new Subs4me();
+    public static boolean noUseOpen;
     
     public static Subs4me getInstance()
     {
@@ -338,6 +339,10 @@ public class Subs4me
             else if (arg.startsWith(PROVIDERS))
             {
                 providers = parseProviderNames(arg);
+            }
+            else if (arg.startsWith(DO_NOT_USE_OPENSUBS_FOR_FILE_REALIZATION))
+            {
+                noUseOpen = true;
             }
         }
         as.initProviders(providers);

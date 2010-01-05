@@ -4,6 +4,7 @@ import java.io.File;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import subs.Subs4me;
 import subs.providers.OpenSubs;
 
 public class FileStruct
@@ -74,14 +75,16 @@ public class FileStruct
         if (extraWebSearchForSearch)
         {
             String[] names = null;
-            try
+            if (!Subs4me.noUseOpen)
             {
-                names = OpenSubs.getInstance().getMovieNames(f);
-            }
-            catch (Exception e)
-            {
-                // TODO Auto-generated catch block
-                e.printStackTrace();
+                try
+                {
+                    names = OpenSubs.getInstance().getMovieNames(f);
+                }
+                catch (Exception e)
+                {
+                    System.out.println("****** error trying to find real name using open subs: " + e.getMessage());
+                }
             }
             
             if (names != null && names[0] != null)
