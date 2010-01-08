@@ -166,7 +166,16 @@ public class Sratim implements Provider
                         
                         //sratim allows for the | sign, so we can try and parse it
                         String sName = node.toPlainTextString();
-                        String sNames[] = sName.split("|");
+                        String sNames[];
+                        if (sName.indexOf("|") > -1)
+                        {
+                            sNames = sName.split("|");
+                        }
+                        else
+                        {
+                            sNames = new String[]{sName};
+                        }
+                        boolean foundMovie = false;
                         for (int j = 0; j < sNames.length; j++)
                         {
                             String name = sNames[j];
@@ -174,6 +183,12 @@ public class Sratim implements Provider
                             {
                                 continue;
                             }
+                            foundMovie = true;
+                            break;
+                        }
+                        if (!foundMovie)
+                        {
+                            continue;
                         }
                         
                         String ref = ((TagNode) node).getAttribute("href");
