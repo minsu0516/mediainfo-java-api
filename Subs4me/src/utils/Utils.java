@@ -531,7 +531,7 @@ public class Utils
                     && responseBody.indexOf("http://www.imdb.com/title") >-1)
             {
 //                int i = responseBody.indexOf("http://www.imdb.com/title");
-                Pattern p = Pattern.compile("http://www.imdb.com/title/.*");
+                Pattern p = Pattern.compile("http://www.imdb.com/title/[a-z,0-9]*");
                 Matcher m = p.matcher(responseBody);
                 if (m.find())
                 {
