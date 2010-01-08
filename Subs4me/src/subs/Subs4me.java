@@ -4,7 +4,6 @@ import java.io.File;
 import java.io.FilenameFilter;
 import java.util.Iterator;
 import java.util.LinkedList;
-import java.util.Locale;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -18,7 +17,7 @@ import utils.PropertiesUtil;
 public class Subs4me
 {
     public static final String SRT_EXISTS = "/c";
-    public static final String VERSION = "0.9.2";
+    public static final String VERSION = "0.9.3";
     public static final String RECURSIVE_SEARCH = "/r";
     public static final String FULL_DOWNLOAD = "/all";
     public static final String PROVIDERS = "/p";
@@ -363,7 +362,7 @@ public class Subs4me
         System.out.println("        check recursively = " + isRecursive());
         System.out.println("        do not check if srt exists = " + checkSrtExists);
         System.out.println("        download everything = " + isFullDownload());
-        System.out.println("        do not check name using opensubs = " + noUseOpen);
+        System.out.println("        check name using opensubs first = " + !noUseOpen);
         as.startProcessingFiles(args[0]);
         
         if (as.oneSubsFound.size() > 0)

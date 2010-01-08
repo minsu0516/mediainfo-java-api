@@ -19,8 +19,10 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLEncoder;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.ListIterator;
 import java.util.Map;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
@@ -192,6 +194,7 @@ public class Sratim implements Provider
                         }
                         
                         String ref = ((TagNode) node).getAttribute("href");
+                        findPicture(currentFile, ref);
                         if (ref.contains("id="))
                         {
                             if (subids.contains(ref))
@@ -939,5 +942,51 @@ public class Sratim implements Provider
             {
                 Utils.unzipSubs(curr, dstZipFilename + ".zip", true);
             }
+        }
+        
+        public boolean findPicture(FileStruct fs, String id)
+        {
+            try
+            {
+                Parser parser = new Parser(baseUrl + id);
+                parser.setEncoding("UTF-8");
+                NodeFilter filter = new AndFilter(new TagNameFilter("img"),
+                        new HasAttributeFilter("id", "ctl00_ctl00_Body_Body_Box_MainPicture"));
+                
+                String imgSRC = null;
+                NodeList list= parser.parse(filter);
+                for (SimpleNodeIterator iterator = list.elements(); iterator
+                        .hasMoreNodes();)
+                {
+                    TagNode node = (TagNode) iterator.nextNode();
+                    imgSRC = node.getAttribute("src");
+                }
+                
+                if (imgSRC == null)
+                    return false;
+                
+                URL url = new URL(baseUrl + imgSRC);
+                HttpURLConnection connection = (HttpURLConnection) (url.openConnection());
+                     connection.setRequestProperty("Cookie", cookieHeader);
+                    
+                     // Write the jpg code to the file
+                     File imageFile = new File(fs.getSrcDir() + File.separator + fs.getFullNameNoExt() + ".jpg");
+                     Utils.copy(connection.getInputStream(), new FileOutputStream(imageFile));
+                
+            } catch (ParserException e)
+            {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
+            } catch (MalformedURLException e)
+            {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
+            } catch (IOException e)
+            {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
+            }
+            
+            return false;
         }
 }
