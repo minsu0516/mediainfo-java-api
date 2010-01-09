@@ -1,10 +1,14 @@
 package subs.providers;
 
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.net.HttpURLConnection;
-import java.net.URLDecoder;
-import java.net.URLEncoder;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.LinkedList;
@@ -24,6 +28,7 @@ import org.htmlparser.nodes.TagNode;
 import org.htmlparser.util.NodeIterator;
 import org.htmlparser.util.NodeList;
 import org.htmlparser.util.ParserException;
+import org.htmlparser.util.SimpleNodeIterator;
 
 import subs.Provider;
 import subs.Results;
@@ -56,21 +61,21 @@ public class Torec implements Provider
         {
 //            Sratim.searchByActualName(currentFile);
             String f = currentFile.getNameNoExt();
-            System.out.println("*** Torec trying direct download: " + f);
-
-            // try brute force, just try to get the filename - ext + .zip
+//            System.out.println("*** Torec trying direct download: " + f);
+//
+//            // try brute force, just try to get the filename - ext + .zip
             boolean success = false;
-            success = Utils.downloadZippedSubs(baseUrl + "/zip_versions/"
-                    + Utils.escape(f) + ".zip", f+ ".zip");
-            if (success)
-            {
-                Utils.unzipSubs(currentFile, Utils.escape(f)+ ".zip", true);
-                return Provider.perfect;
-            }
-            else
-            {
-                System.out.println("******* not found on torec direct download"); 
-            }
+//            success = Utils.downloadZippedSubs(baseUrl + "/zip_versions/"
+//                    + Utils.escape(f) + ".zip", f+ ".zip");
+//            if (success)
+//            {
+//                Utils.unzipSubs(currentFile, Utils.escape(f)+ ".zip", true);
+//                return Provider.perfect;
+//            }
+//            else
+//            {
+//                System.out.println("******* not found on torec direct download"); 
+//            }
 
             subsID = searchByActualName(currentFile);
             if (subsID != null && subsID.getResults().size() > 0)
@@ -178,6 +183,7 @@ public class Torec implements Provider
                             continue;
 //                        System.out.println(node.toPlainTextString());
                         String ref = ((TagNode) node).getAttribute("href");
+                        findPicture(currentFile, ref);
                         if (ref.contains("_id="))
                         {
                             subids.add(ref);
@@ -559,4 +565,82 @@ public class Torec implements Provider
     
         return null;
     }
+    
+    public boolean findPicture(FileStruct fs, String id)
+    {
+        if ((Subs4me.shouldGetPic() && !fs.isHasPic())
+                || Subs4me.shouldForceGetPic())
+        {
+            if (fs.hasPicBeenDownloadedAlready())
+                return false;
+
+            try
+            {
+                Parser parser = new Parser(baseUrl + "/" + id);
+                parser.setEncoding("UTF-8");
+                NodeFilter filter = new AndFilter(new TagNameFilter("param"),
+                        new HasAttributeFilter("name", "flashvars"));
+
+                String imgSRC = null;
+                NodeList list = parser.parse(filter);
+                for (SimpleNodeIterator iterator = list.elements(); iterator
+                        .hasMoreNodes();)
+                {
+                    TagNode node = (TagNode) iterator.nextNode();
+                    imgSRC = node.getAttribute("value");
+                }
+
+                if (imgSRC == null)
+                    return false;
+
+                Pattern p = Pattern.compile("http:.*");
+                Matcher m = p.matcher(imgSRC);
+                if (m.find())
+                {
+                    imgSRC = m.group();
+                }
+
+                URL url = new URL(imgSRC);
+                HttpURLConnection connection = (HttpURLConnection) (url
+                        .openConnection());
+                // Write the jpg code to the file
+                File imageFile = new File(fs.getSrcDir() + File.separator
+                        + fs.getFullNameNoExt() + ".jpg");
+                Utils.copy(connection.getInputStream(), new FileOutputStream(
+                        imageFile));
+                fs.setPicAlreadyDownloaded(true);
+                File folder = new File(fs.getFile().getParent(), "folder.jpg");
+                if(!folder.exists())
+                {
+                    InputStream in = new FileInputStream(imageFile);
+                    OutputStream out = new FileOutputStream(folder);
+
+                    // Transfer bytes from in to out
+                    byte[] buf = new byte[1024];
+                    int len;
+                    while ((len = in.read(buf)) > 0) {
+                        out.write(buf, 0, len);
+                    }
+                    in.close();
+                    out.close();
+                }
+                return true;
+
+            } catch (ParserException e)
+            {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
+            } catch (MalformedURLException e)
+            {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
+            } catch (IOException e)
+            {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
+            }
+        }
+        return false;
+    }
+    
 }

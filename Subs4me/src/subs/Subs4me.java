@@ -17,20 +17,25 @@ import utils.PropertiesUtil;
 public class Subs4me
 {
     public static final String SRT_EXISTS = "/c";
-    public static final String VERSION = "0.9.3";
+    public static final String VERSION = "1.0";
     public static final String RECURSIVE_SEARCH = "/r";
     public static final String FULL_DOWNLOAD = "/all";
     public static final String PROVIDERS = "/p";
+    public static final String GET_MOVIE_PIC = "/i";
+    public static final String GRT_MOVIE_PIC_FORCED = "/if";
     public static final String DO_NOT_USE_OPENSUBS_FOR_FILE_REALIZATION = "/n";
     public static final String DO_WORK_EXT = ".run_HandleMultiplesubs";
     
-    public static final String PROVIDERS_PROPEERTY = "get_subs_providers";
-    public static final String SUBS_CHECK_ALL_PROPEERTY = "get_subs_check_exists";
-    public static final String SUBS_RECURSIVE_PROPEERTY = "get_subs_recursive";
-    public static final String SUBS_GET_ALL_PROPEERTY = "get_subs_all";
+    public static final String PROVIDERS_PROPERTY = "get_subs_providers";
+    public static final String SUBS_CHECK_ALL_PROPERTY = "get_subs_check_exists";
+    public static final String SUBS_RECURSIVE_PROPERTY = "get_subs_recursive";
+    public static final String SUBS_GET_ALL_PROPERTY = "get_subs_all";
+    public static final String SUBS_DOWNLOAD_PICTURE_PROPERTY = "get_subs_download_movie_picture";
+    public static final String SUBS_DOWNLOAD_PICTURE_FORCE_PROPERTY = "get_subs_download_movie_picture_force";
     
     public LinkedList<String> oneSubsFound = new LinkedList<String>();
     public LinkedList<String> moreThanOneSubs = new LinkedList<String>();
+    public LinkedList<String> noSubs = new LinkedList<String>();
     
     String srcDir = new String();
     // private String _group = "";
@@ -38,6 +43,8 @@ public class Subs4me
     private static boolean recursive = false;
 //    private static boolean intense = false;
     private static boolean fullDownload = false;
+    private static boolean getMoviePic = false;
+    private static boolean getMoviePicForce = false;
     
     public static String propertiesName = "./subs4me.properties";
     
@@ -87,8 +94,6 @@ public class Subs4me
                 }
             }
         }
-        
-        
     }
     
     /**
@@ -129,6 +134,10 @@ public class Subs4me
         else if (ret == Provider.not_perfect)
         {
             moreThanOneSubs.add(fs.getSrcDir() + File.separator + fs.getFullFileName());
+        }
+        else if (ret == Provider.not_found)
+        {
+            noSubs.add(fs.getSrcDir() + File.separator + fs.getFullFileName());
         }
 //        return ret;
     }
@@ -349,6 +358,14 @@ public class Subs4me
             {
                 noUseOpen = true;
             }
+            else if (arg.startsWith(GET_MOVIE_PIC))
+            {
+                getMoviePic = true;
+            }
+            else if (arg.startsWith(GRT_MOVIE_PIC_FORCED))
+            {
+                getMoviePicForce = true;
+            }
         }
         as.initProviders(providers);
         StringBuilder sb = new StringBuilder();
@@ -362,7 +379,8 @@ public class Subs4me
         System.out.println("        check recursively = " + isRecursive());
         System.out.println("        do not check if srt exists = " + checkSrtExists);
         System.out.println("        download everything = " + isFullDownload());
-        System.out.println("        check name using opensubs first = " + !noUseOpen);
+        System.out.println("        check movie name using opensubs first = " + !noUseOpen);
+        System.out.println("        get movie picture = " + getMoviePic + ", (forced = " + getMoviePicForce + ")");
         as.startProcessingFiles(args[0]);
         
         if (as.oneSubsFound.size() > 0)
@@ -390,6 +408,18 @@ public class Subs4me
             }
             System.out.println(sbExact.toString());
         }
+        if (as.noSubs.size() > 0)
+        {
+            StringBuilder sbExact = new StringBuilder("\n********************* no subs were found ************************************************");
+            sbExact.append("\nNo subs were found for:");
+            for (Iterator iterator = as.noSubs.iterator(); iterator.hasNext();)
+            {
+                String src = (String) iterator.next();
+                sbExact.append("\n");
+                sbExact.append(src);
+            }
+            System.out.println(sbExact.toString());
+        }
         if (as.moreThanOneSubs.size() > 0 || as.oneSubsFound.size() > 0)
         {
             System.out.println("*****************************************************************************************");
@@ -401,30 +431,41 @@ public class Subs4me
     {
         LinkedList<String> providers = null;
         
-        String pp = PropertiesUtil.getProperty(PROVIDERS_PROPEERTY, "opensubs,sratim,torec");
+        String pp = PropertiesUtil.getProperty(PROVIDERS_PROPERTY, "opensubs,sratim,torec");
         if (pp != null)
         {
             providers = parseProviderNames(pp);
         }
         
-        String subCheck = PropertiesUtil.getProperty(SUBS_CHECK_ALL_PROPEERTY, "true");
+        String subCheck = PropertiesUtil.getProperty(SUBS_CHECK_ALL_PROPERTY, "true");
         if (subCheck != null)
         {
             checkSrtExists = subCheck.equalsIgnoreCase("true");
         }
         
-        String subRecursive = PropertiesUtil.getProperty(SUBS_RECURSIVE_PROPEERTY, "true");
+        String subRecursive = PropertiesUtil.getProperty(SUBS_RECURSIVE_PROPERTY, "true");
         if (subRecursive != null)
         {
             setRecursive(subRecursive.equalsIgnoreCase("true"));
         }
         
-        String subGetAll = PropertiesUtil.getProperty(SUBS_GET_ALL_PROPEERTY, "true");
+        String subGetAll = PropertiesUtil.getProperty(SUBS_GET_ALL_PROPERTY, "true");
         if (subGetAll != null)
         {
             fullDownload = subGetAll.equalsIgnoreCase("true");
         }
         
+        String getPicture = PropertiesUtil.getProperty(SUBS_DOWNLOAD_PICTURE_PROPERTY, "true");
+        if (getPicture != null)
+        {
+            getMoviePic = getPicture.equalsIgnoreCase("true");
+        }
+        
+        String getPictureForce = PropertiesUtil.getProperty(SUBS_DOWNLOAD_PICTURE_FORCE_PROPERTY, "true");
+        if (getPictureForce != null)
+        {
+            getMoviePicForce = getPictureForce.equalsIgnoreCase("true");
+        }
         return providers;
     }
 
@@ -472,6 +513,8 @@ public class Subs4me
         sb.append("     Currently supporting: torec, opensubs, sratim, subscene\n");
         sb.append("  all: Download all the subtitles for this title and unzip with the above schema\n");
         sb.append("  n: do not use opensubs to validate actual movie name (use google only)\n");
+        sb.append("  i: get the image file for the movie (only if it does not exist)\n");
+        sb.append("  if: get the image file for the movie (refresh current)\n");
         sb.append("\nCreated by ilank\nEnjoy...");
         System.out.println(sb.toString());
         System.exit(-1);
@@ -484,5 +527,15 @@ public class Subs4me
             return;
         }
         _availableProviders.add(provider);
+    }
+    
+    public static boolean shouldGetPic()
+    {
+        return getMoviePic;
+    }
+    
+    public static boolean shouldForceGetPic()
+    {
+        return getMoviePicForce;
     }
 }

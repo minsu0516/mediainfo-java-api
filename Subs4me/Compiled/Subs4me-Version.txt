@@ -1,3 +1,10 @@
+Version 1.0
+ added: reporting on movies I did not find subs for
+ added: download movie pic from sratim and torec, usses /i and /if
+ 		/if will download the movie pic anyway, /i will download if its not
+ 		there already, both will copy this pic to folder.jpg, if its not
+ 		present.
+ fixed: google search tweaked.
 Version 0.9.2
  fixed: Now I search with opensubs first, then google.
  fixed: much better and simpler google search

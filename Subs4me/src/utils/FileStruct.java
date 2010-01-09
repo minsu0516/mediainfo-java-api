@@ -9,19 +9,22 @@ import subs.providers.OpenSubs;
 
 public class FileStruct
 {
-    private String srcDir = "";
-    private String fullFileName = "";
+    private String _srcDir = "";
+    private String _fullFileName = "";
     private String fullFileNameNoGroup = "";
-    private String normalizedName = "";
+    private String _normalizedName = "";
     private String source = null;
     private String release = "";
     private int releaseStartIndex = -1;
     private String hd = null;
+    private boolean hasPic = false;
+    
+    private boolean picAlreadyDownloaded = false;
     
     public final static String releaseSourcePattern = "(?i)(cam)|(ts)|(tc)|(r5)";
     public final static String hdLevel = "(?i)(720p)|(720i)|(720)|(1080p)|(1080i)|(1080)|(480p)|(480i)|(576p)|(576i)";
     
-    
+    Pattern EXT_PATTERN = Pattern.compile(".*([.].*$)");
     public int getReleaseStartIndex()
     {
         return releaseStartIndex;
@@ -32,21 +35,21 @@ public class FileStruct
         this.releaseStartIndex = releaseStartIndex;
     }
 
-    private String ext = "";
-    private String season = null;
+    private String _ext = "";
+    private String _season = null;
     
     public String getExt()
     {
-        return ext;
+        return _ext;
     }
 
     public void setExt(String ext)
     {
-        this.ext = ext;
+        this._ext = ext;
     }
 
-    private String episode = null;
-    private File orig;
+    private String _episode = null;
+    private File _orig;
     
     public FileStruct(File f)
     {
@@ -58,7 +61,7 @@ public class FileStruct
         //because there is usually no ext on the file created like this
         // and we need an extension for the normalize procedure, I am adding it manually
         //time will tell if this is the right move
-        normalizedName = normalizeMovieName(fileName + ".srt");
+        _normalizedName = normalizeMovieName(fileName + ".srt");
     }
     
     public FileStruct(String fileName)
@@ -68,10 +71,10 @@ public class FileStruct
     
     public FileStruct(File f, boolean extraWebSearchForSearch)
     {
-        orig = f;
-        srcDir = f.getParent();
-        fullFileName = f.getName();
-        normalizedName = normalizeMovieName(fullFileName);
+        _orig = f;
+        _srcDir = f.getParent();
+        _fullFileName = f.getName();
+        _normalizedName = normalizeMovieName(_fullFileName);
         if (extraWebSearchForSearch)
         {
             String[] names = null;
@@ -89,7 +92,7 @@ public class FileStruct
             
             if (names != null && names[0] != null)
             {
-                normalizedName = names[0];
+                _normalizedName = names[0];
             }
             else
             {
@@ -100,14 +103,20 @@ public class FileStruct
                 if (!isTV())
                 {
                     System.out.println("*** Search using Google for Movie's real name");
-                    String realName = Utils.locateRealNameUsingGoogle(fullFileName, "www.imdb.com");
+                    String realName = Utils.locateRealNameUsingGoogle(_fullFileName, "www.imdb.com");
                     if (realName == null)
                     {
                         return;
                     }
-                    normalizedName = realName;
+                    _normalizedName = realName;
                 }
             }
+        }
+        
+        File pic = new File(f, getFullNameNoExt() + ".jpg");
+        if(pic.exists())
+        {
+            setHasPic(true);
         }
     }
     
@@ -116,23 +125,22 @@ public class FileStruct
         String groupPattern = "(-\\w*(-)|($))|(-\\w*$)|(\\A\\w*-)";
         String seasonEp1 = "(?i)(s([\\d]+)e([\\d]+))";
         String seasonEp2 = "(?i)([.][\\d]{3,}+[.])";
-        String ext = ".*([.].*$)";
         String pattern = "(?i)(PAL)|(DVDRip)|(DVDR)|(REPACK)|(720p)|(720)|(1080p)|(1080)|(480p)|(x264)|(BD5)|(bluray)|(-.*$)|(\\A\\w*-)|(\\d\\d\\d\\d)|(XviD)|(HDTV)|(s[\\d]+e[\\d]+)|([.][\\d]{3,}+[.])|(\\[.*\\])|(ac3)|(nl)|(limited)";
         
         //need to take into account that if the is a word at the beginning and then a -
         //its the group name or a cdxxx
         
         in = in.replaceAll("(?i)(Blue-ray)|(blu-ray)|(brrip)", "");
-        Pattern p1 = Pattern.compile(ext);
+        Pattern p;
         //need to remove the ext 
-        Matcher m1 = p1.matcher(in);
+        Matcher m1 = EXT_PATTERN.matcher(in);
         if (m1.find())
         {
             setExt(m1.group(1).substring(1));
             in = in.substring(0, in.length() - getExt().length()-1);
         }
-        p1 = Pattern.compile(groupPattern);
-        m1 = p1.matcher(in);
+        p = Pattern.compile(groupPattern);
+        m1 = p.matcher(in);
         if (m1.find())
         {
             if (!m1.group().isEmpty())
@@ -154,8 +162,8 @@ public class FileStruct
         // house.609.the tyrent.mkv
         //we need to stop the normalize, after the episode.
         int normalizeStopper = -1;
-        p1 = Pattern.compile(seasonEp1);
-        m1 = p1.matcher(in);
+        p = Pattern.compile(seasonEp1);
+        m1 = p.matcher(in);
         if (m1.find())
         {
             setSeason(m1.group(2));
@@ -176,14 +184,14 @@ public class FileStruct
 //                normalizeStopper = m1.start();
 //            }
 //        }
-        p1 = Pattern.compile(hdLevel);
-        m1 = p1.matcher(in);
+        p = Pattern.compile(hdLevel);
+        m1 = p.matcher(in);
         if (m1.find())
         {
             hd = m1.group();
         }
-        p1 = Pattern.compile(releaseSourcePattern);
-        m1 = p1.matcher(in);
+        p = Pattern.compile(releaseSourcePattern);
+        m1 = p.matcher(in);
         if (m1.find())
         {
             source = m1.group();
@@ -208,17 +216,17 @@ public class FileStruct
     
     public String getSrcDir()
     {
-        return srcDir;
+        return _srcDir;
     }
 
     public void setSrcDir(String srcDir)
     {
-        this.srcDir = srcDir;
+        this._srcDir = srcDir;
     }
 
     public String getFullFileName()
     {
-        return fullFileName;
+        return _fullFileName;
     }
     
     public String getFullFileNameNoGroup()
@@ -228,17 +236,17 @@ public class FileStruct
 
     public void setFullFileName(String fullFileName)
     {
-        this.fullFileName = fullFileName;
+        this._fullFileName = fullFileName;
     }
 
     public String getNormalizedName()
     {
-        return normalizedName.trim();
+        return _normalizedName.trim();
     }
 
     public void setNormalizedNmae(String normalizedName)
     {
-        this.normalizedName = normalizedName;
+        this._normalizedName = normalizedName;
     }
 
 
@@ -249,32 +257,32 @@ public class FileStruct
 
     public String getSeason()
     {
-        return season;
+        return _season;
     }
 
     public String getSeasonSimple()
     {
-        return season.replaceAll("^[0]*", "");
+        return _season.replaceAll("^[0]*", "");
     }
     
     public String getEpisode()
     {
-        return episode;
+        return _episode;
     }
     
     public String getEpisodeSimple()
     {
-        return episode.replaceAll("^[0]*", "");
+        return _episode.replaceAll("^[0]*", "");
     }
 
     public void setEpisode(String episode)
     {
-        this.episode = episode;
+        this._episode = episode;
     }
 
     public void setSeason(String season)
     {
-        this.season = season;
+        this._season = season;
     }
 
     public String getReleaseName()
@@ -363,7 +371,7 @@ public class FileStruct
     
     public File getFile()
     {
-        return orig;
+        return _orig;
     }
     
     public boolean isVideoFile()
@@ -376,6 +384,23 @@ public class FileStruct
         
         return false;
     }
+    public boolean isHasPic()
+    {
+        return hasPic;
+    }
+
+    public void setHasPic(boolean hasPic)
+    {
+        this.hasPic = hasPic;
+    }
+
+    public void setPicAlreadyDownloaded(boolean picAlreadyDownloaded)
+    {
+        this.picAlreadyDownloaded = picAlreadyDownloaded;
+    }
     
-    
+    public boolean hasPicBeenDownloadedAlready()
+    {
+        return this.picAlreadyDownloaded;
+    }
 }

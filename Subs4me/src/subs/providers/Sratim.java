@@ -3,12 +3,14 @@ package subs.providers;
 import java.io.BufferedReader;
 import java.io.DataOutputStream;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.io.StringWriter;
@@ -19,10 +21,8 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLEncoder;
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.ListIterator;
 import java.util.Map;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
@@ -944,35 +944,63 @@ public class Sratim implements Provider
             }
         }
         
-        public boolean findPicture(FileStruct fs, String id)
+    public boolean findPicture(FileStruct fs, String id)
+    {
+        if ((Subs4me.shouldGetPic() && !fs.isHasPic())
+                || Subs4me.shouldForceGetPic())
         {
+            if (fs.hasPicBeenDownloadedAlready())
+                return false;
+            
             try
             {
                 Parser parser = new Parser(baseUrl + id);
                 parser.setEncoding("UTF-8");
                 NodeFilter filter = new AndFilter(new TagNameFilter("img"),
-                        new HasAttributeFilter("id", "ctl00_ctl00_Body_Body_Box_MainPicture"));
-                
+                        new HasAttributeFilter("id",
+                                "ctl00_ctl00_Body_Body_Box_MainPicture"));
+
                 String imgSRC = null;
-                NodeList list= parser.parse(filter);
+                NodeList list = parser.parse(filter);
                 for (SimpleNodeIterator iterator = list.elements(); iterator
                         .hasMoreNodes();)
                 {
                     TagNode node = (TagNode) iterator.nextNode();
                     imgSRC = node.getAttribute("src");
                 }
-                
+
                 if (imgSRC == null)
                     return false;
-                
+
                 URL url = new URL(baseUrl + imgSRC);
-                HttpURLConnection connection = (HttpURLConnection) (url.openConnection());
-                     connection.setRequestProperty("Cookie", cookieHeader);
-                    
-                     // Write the jpg code to the file
-                     File imageFile = new File(fs.getSrcDir() + File.separator + fs.getFullNameNoExt() + ".jpg");
-                     Utils.copy(connection.getInputStream(), new FileOutputStream(imageFile));
+                HttpURLConnection connection = (HttpURLConnection) (url
+                        .openConnection());
+                // connection.setRequestProperty("Cookie", cookieHeader);
+                // Write the jpg code to the file
+                File imageFile = new File(fs.getSrcDir() + File.separator
+                        + fs.getFullNameNoExt() + ".jpg");
+                Utils.copy(connection.getInputStream(), new FileOutputStream(
+                        imageFile));
                 
+                fs.setPicAlreadyDownloaded(true);
+                
+                File folder = new File(fs.getFile().getParent(), "folder.jpg");
+                if(!folder.exists())
+                {
+                    InputStream in = new FileInputStream(imageFile);
+                    OutputStream out = new FileOutputStream(folder);
+
+                    // Transfer bytes from in to out
+                    byte[] buf = new byte[1024];
+                    int len;
+                    while ((len = in.read(buf)) > 0) {
+                        out.write(buf, 0, len);
+                    }
+                    in.close();
+                    out.close();
+                }
+                return true;
+
             } catch (ParserException e)
             {
                 // TODO Auto-generated catch block
@@ -986,7 +1014,7 @@ public class Sratim implements Provider
                 // TODO Auto-generated catch block
                 e.printStackTrace();
             }
-            
-            return false;
         }
+        return false;
+    }
 }
