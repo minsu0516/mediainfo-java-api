@@ -232,6 +232,8 @@ public class Sratim implements Provider
                         Node node = nodes[i];
                         String subid = searchForCorrectSubidOfSeries(((TagNode) node)
                                 .getAttribute("href"), currentFile);
+                        findPicture(currentFile, ((TagNode) node)
+                                .getAttribute("href"));
                         if (subid != null)
                         {
                             Results subFiles = locateFileInFilePage(subid
@@ -588,8 +590,12 @@ public class Sratim implements Provider
                 BufferedReader in = new BufferedReader(cookieFile);
                 cookieHeader = in.readLine();
                 in.close();
-            } catch (Exception error) {
+            } catch (Exception error) 
+            {
             }
+            
+            if (cookieHeader == null)
+                return false;
 
             if (!cookieHeader.equals(""))
             {
@@ -615,8 +621,10 @@ public class Sratim implements Provider
                         return true;
                     }
 
-                } catch (Exception error) {
+                } catch (Exception error) 
+                {
                     logger.severe("Error : " + error.getMessage());
+                    error.printStackTrace();
                     return false;
                 }
 
@@ -634,10 +642,13 @@ public class Sratim implements Provider
                 BufferedReader in = new BufferedReader(sessionFile);
                 cookieHeader = in.readLine();
                 in.close();
-            } catch (Exception error) {
+            } catch (Exception error) 
+            {
             }
 
-
+            if (cookieHeader == null)
+                return false;
+            
             // Check if we don't have the verification code yet
             if (!cookieHeader.equals("")) {
                 try {            
@@ -670,7 +681,6 @@ public class Sratim implements Provider
                     wr.writeBytes (post);
                     wr.flush ();
                     wr.close ();
-
 
                     cookieHeader = "";
 
@@ -727,6 +737,7 @@ public class Sratim implements Provider
 
                 } catch (Exception error) {
                     logger.severe("Error : " + error.getMessage());
+                    error.printStackTrace();
                     return false;
                 }
 

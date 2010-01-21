@@ -62,6 +62,8 @@ public class Subs4me
     
     public Subs4me()
     {
+//        System.setProperty ("sun.net.client.defaultReadTimeout", "22000");
+//        System.setProperty ("sun.net.client.defaultConnectTimeout", "22000");
 //        System.out.println("Locale = " + Locale.getDefault());
 //        Locale.setDefault(new Locale("en", "US"));
 //        System.out.println("New Locale = " + Locale.getDefault());
@@ -118,6 +120,7 @@ public class Subs4me
                 if (retTemp == Provider.perfect)
                 {
                     cleanup();
+                    break;
                 }
             }
             catch (Exception e)
@@ -274,6 +277,7 @@ public class Subs4me
                 {
                     if (prov.getName().equals(Sratim.getInstance().getName()))
                     {
+                        System.out.println("Trying to init Sratim, this may take some time");
                         if (!Sratim.getInstance().loadSratimCookie())
                         {
                             Login login = new Login();
@@ -282,6 +286,7 @@ public class Subs4me
                                 System.exit(-1);
                             }
                         }
+                        System.out.println("Sratim works OK");
                     }
                     _providers.add(prov);
                 }
@@ -367,12 +372,11 @@ public class Subs4me
                 getMoviePicForce = true;
             }
         }
-        as.initProviders(providers);
         StringBuilder sb = new StringBuilder();
-        for (Iterator iterator = _providers.iterator(); iterator.hasNext();)
+        for (Iterator iterator = providers.iterator(); iterator.hasNext();)
         {
-            Provider p = (Provider) iterator.next();
-            sb.append(p.getName() + ",");
+            String p = (String) iterator.next();
+            sb.append(p + ",");
         }
         System.out.println("Subs4me version " + VERSION);
         System.out.println("        selected providers are:" + sb.toString());
@@ -381,6 +385,9 @@ public class Subs4me
         System.out.println("        download everything = " + isFullDownload());
         System.out.println("        check movie name using opensubs first = " + !noUseOpen);
         System.out.println("        get movie picture = " + getMoviePic + ", (forced = " + getMoviePicForce + ")");
+
+        as.initProviders(providers);
+        
         as.startProcessingFiles(args[0]);
         
         if (as.oneSubsFound.size() > 0)
