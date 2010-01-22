@@ -13,7 +13,6 @@ import net.sourceforge.filebot.web.OpenSubtitlesClient;
 import net.sourceforge.filebot.web.OpenSubtitlesSubtitleDescriptor;
 import net.sourceforge.filebot.web.SubtitleDescriptor;
 import subs.Provider;
-import subs.Results;
 import subs.Subs4me;
 import utils.FileStruct;
 
@@ -73,7 +72,7 @@ public class OpenSubs implements Provider
 
         try
         {
-            fileOutputStream = new FileOutputStream(location + File.separator + currentFile.getFullNameNoExt() + "." + subDesc.getType());
+            fileOutputStream = new FileOutputStream(currentFile.buildDestSrt("." + subDesc.getType()));
             fileChannel = fileOutputStream.getChannel();
             fileChannel.write(buffer);
             fileChannel.close();

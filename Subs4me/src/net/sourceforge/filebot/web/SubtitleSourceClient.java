@@ -2,8 +2,9 @@
 package net.sourceforge.filebot.web;
 
 
-import static net.sourceforge.filebot.web.WebRequest.*;
-import static net.sourceforge.tuned.XPathUtilities.*;
+import static net.sourceforge.filebot.web.WebRequest.getDocument;
+import static net.sourceforge.tuned.XPathUtilities.getTextContent;
+import static net.sourceforge.tuned.XPathUtilities.selectNodes;
 
 import java.net.URI;
 import java.net.URL;
@@ -15,10 +16,10 @@ import java.util.Map;
 
 import javax.swing.Icon;
 
+import net.sourceforge.filebot.ResourceManager;
+
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
-
-import net.sourceforge.filebot.ResourceManager;
 
 
 public class SubtitleSourceClient implements SubtitleProvider {

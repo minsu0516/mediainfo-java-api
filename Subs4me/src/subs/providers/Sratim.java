@@ -988,8 +988,7 @@ public class Sratim implements Provider
                         .openConnection());
                 // connection.setRequestProperty("Cookie", cookieHeader);
                 // Write the jpg code to the file
-                File imageFile = new File(fs.getSrcDir() + File.separator
-                        + fs.getFullNameNoExt() + ".jpg");
+                File imageFile = new File(fs.buildDestSrt(".jpg"));
                 Utils.copy(connection.getInputStream(), new FileOutputStream(
                         imageFile));
                 

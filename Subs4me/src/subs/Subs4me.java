@@ -24,6 +24,7 @@ public class Subs4me
     public static final String GET_MOVIE_PIC = "/i";
     public static final String GRT_MOVIE_PIC_FORCED = "/if";
     public static final String DO_NOT_USE_OPENSUBS_FOR_FILE_REALIZATION = "/n";
+    public static final String USE_PARENT_DIRNAME_AS_NAME = "/useDirName";
     public static final String DO_WORK_EXT = ".run_HandleMultiplesubs";
     
     public static final String PROVIDERS_PROPERTY = "get_subs_providers";
@@ -32,6 +33,7 @@ public class Subs4me
     public static final String SUBS_GET_ALL_PROPERTY = "get_subs_all";
     public static final String SUBS_DOWNLOAD_PICTURE_PROPERTY = "get_subs_download_movie_picture";
     public static final String SUBS_DOWNLOAD_PICTURE_FORCE_PROPERTY = "get_subs_download_movie_picture_force";
+    public static final String SUBS_USE_PARENT_DIRNAME_AS_NAME_PROPERTY = "get_subs_use_parent_dirname_as_moviename";
     
     public LinkedList<String> oneSubsFound = new LinkedList<String>();
     public LinkedList<String> moreThanOneSubs = new LinkedList<String>();
@@ -45,6 +47,7 @@ public class Subs4me
     private static boolean fullDownload = false;
     private static boolean getMoviePic = false;
     private static boolean getMoviePicForce = false;
+    private static boolean _useParentDirAsName = false;
     
     public static String propertiesName = "./subs4me.properties";
     
@@ -106,7 +109,16 @@ public class Subs4me
     private void doWork(File fi)
     {
         int ret = Provider.not_found;
-        FileStruct fs = new FileStruct(fi);
+        FileStruct fs = null;
+//        fs = new FileStruct(fi, false, true);
+        if (_useParentDirAsName)
+        {
+            fs = new FileStruct(fi, true, true);
+        }
+        else
+        {
+            fs = new FileStruct(fi);
+        }
         for (Iterator iterator = _providers.iterator(); iterator.hasNext();)
         {
             Provider p = (Provider) iterator.next();
@@ -195,6 +207,8 @@ public class Subs4me
     private String[] findFilesInDir(String src)
     {
         File dir = new File(src);
+        final Pattern p1 = Pattern.compile(".*([.].*$)");
+        final Pattern samplePattern = Pattern.compile("(?i)\\bsample\\b");
         if (dir.isDirectory())
         {
             FilenameFilter filter = new FilenameFilter()
@@ -206,17 +220,17 @@ public class Subs4me
                         return true;
                     }
                     //NO SAMPLE FILES!!!!
-                    if (name.indexOf("-sample") > -1)
+                    
+                    Matcher m1 = samplePattern.matcher(name);
+                    if (m1.find())
                     {
                         return false;
-                        
                     }
                     if (name.endsWith("mkv") || name.endsWith("avi"))
                     {
                         if (checkSrtExists)
                         {
-                            Pattern p1 = Pattern.compile(".*([.].*$)");
-                            Matcher m1 = p1.matcher(name);
+                            m1 = p1.matcher(name);
                             File srt = null;
                             if (m1.find())
                             {
@@ -327,18 +341,7 @@ public class Subs4me
         }
         
         Subs4me as = Subs4me.getInstance();
-        
-     // Load the sub4me-default.properties file
-        if (!PropertiesUtil.setPropertiesStreamName("./properties/subs4me-default.properties")) {
-            return;
-        }
-
-        // Load the user properties file "moviejukebox.properties"
-        // No need to abort if we don't find this file
-        // Must be read before the skin, because this may contain an override skin
-        PropertiesUtil.setPropertiesStreamName(propertiesName);
         LinkedList<String> providers = null;
-        
         providers = initProperties();
         
         for (int i = 1; i < args.length; i++)
@@ -355,7 +358,7 @@ public class Subs4me
             {
                 fullDownload = true;
             }
-            else if (arg.startsWith(PROVIDERS))
+            else if (arg.startsWith(PROVIDERS + "="))
             {
                 providers = parseProviderNames(arg);
             }
@@ -371,6 +374,10 @@ public class Subs4me
             {
                 getMoviePicForce = true;
             }
+            else if (arg.equals(USE_PARENT_DIRNAME_AS_NAME))
+            {
+                _useParentDirAsName = true;
+            }
         }
         StringBuilder sb = new StringBuilder();
         for (Iterator iterator = providers.iterator(); iterator.hasNext();)
@@ -385,7 +392,7 @@ public class Subs4me
         System.out.println("        download everything = " + isFullDownload());
         System.out.println("        check movie name using opensubs first = " + !noUseOpen);
         System.out.println("        get movie picture = " + getMoviePic + ", (forced = " + getMoviePicForce + ")");
-
+        System.out.println("        use parent directory as name = " + _useParentDirAsName);
         as.initProviders(providers);
         
         as.startProcessingFiles(args[0]);
@@ -434,45 +441,62 @@ public class Subs4me
         System.out.println("******* Thanks for using subs4me, hope you enjoy the results *******");
     }
     
-    private static LinkedList<String> initProperties()
+    public static LinkedList<String> initProperties()
     {
+        // Load the sub4me-default.properties file
+        if (!PropertiesUtil.setPropertiesStreamName("./properties/subs4me-default.properties")) {
+            System.exit(-1);
+        }
+
+        // Load the user properties file "moviejukebox.properties"
+        // No need to abort if we don't find this file
+        // Must be read before the skin, because this may contain an override skin
+        PropertiesUtil.setPropertiesStreamName(propertiesName);
+        
         LinkedList<String> providers = null;
         
-        String pp = PropertiesUtil.getProperty(PROVIDERS_PROPERTY, "opensubs,sratim,torec");
-        if (pp != null)
+        String value = PropertiesUtil.getProperty(PROVIDERS_PROPERTY, "opensubs,sratim,torec");
+        if (value != null)
         {
-            providers = parseProviderNames(pp);
+            providers = parseProviderNames(value);
         }
         
-        String subCheck = PropertiesUtil.getProperty(SUBS_CHECK_ALL_PROPERTY, "true");
-        if (subCheck != null)
+        value = PropertiesUtil.getProperty(SUBS_CHECK_ALL_PROPERTY, "true");
+        if (value != null)
         {
-            checkSrtExists = subCheck.equalsIgnoreCase("true");
+            checkSrtExists = value.equalsIgnoreCase("true");
         }
         
-        String subRecursive = PropertiesUtil.getProperty(SUBS_RECURSIVE_PROPERTY, "true");
-        if (subRecursive != null)
+        value = PropertiesUtil.getProperty(SUBS_RECURSIVE_PROPERTY, "true");
+        if (value != null)
         {
-            setRecursive(subRecursive.equalsIgnoreCase("true"));
+            setRecursive(value.equalsIgnoreCase("true"));
         }
         
-        String subGetAll = PropertiesUtil.getProperty(SUBS_GET_ALL_PROPERTY, "true");
-        if (subGetAll != null)
+        value = PropertiesUtil.getProperty(SUBS_GET_ALL_PROPERTY, "true");
+        if (value != null)
         {
-            fullDownload = subGetAll.equalsIgnoreCase("true");
+            fullDownload = value.equalsIgnoreCase("true");
         }
         
-        String getPicture = PropertiesUtil.getProperty(SUBS_DOWNLOAD_PICTURE_PROPERTY, "true");
-        if (getPicture != null)
+        value = PropertiesUtil.getProperty(SUBS_DOWNLOAD_PICTURE_PROPERTY, "true");
+        if (value != null)
         {
-            getMoviePic = getPicture.equalsIgnoreCase("true");
+            getMoviePic = value.equalsIgnoreCase("true");
         }
         
-        String getPictureForce = PropertiesUtil.getProperty(SUBS_DOWNLOAD_PICTURE_FORCE_PROPERTY, "true");
-        if (getPictureForce != null)
+        value = PropertiesUtil.getProperty(SUBS_DOWNLOAD_PICTURE_FORCE_PROPERTY, "true");
+        if (value != null)
         {
-            getMoviePicForce = getPictureForce.equalsIgnoreCase("true");
+            getMoviePicForce = value.equalsIgnoreCase("true");
         }
+        
+        value = PropertiesUtil.getProperty(SUBS_USE_PARENT_DIRNAME_AS_NAME_PROPERTY, "false");
+        if (value != null)
+        {
+            _useParentDirAsName = value.equalsIgnoreCase("true");
+        }
+        
         return providers;
     }
 
@@ -520,8 +544,11 @@ public class Subs4me
         sb.append("     Currently supporting: torec, opensubs, sratim, subscene\n");
         sb.append("  all: Download all the subtitles for this title and unzip with the above schema\n");
         sb.append("  n: do not use opensubs to validate actual movie name (use google only)\n");
-        sb.append("  i: get the image file for the movie (only if it does not exist)\n");
-        sb.append("  if: get the image file for the movie (refresh current)\n");
+        sb.append("  i[f]: get the image file for the movie\n");
+        sb.append("         f = force getting the movie image (refresh current)\n");
+        sb.append("  " + USE_PARENT_DIRNAME_AS_NAME);
+        sb.append(": use parents dir name as name for movie, will not work at all if there are 2 movies at the same directry\n");
+        sb.append("/?: this help file\n");
         sb.append("\nCreated by ilank\nEnjoy...");
         System.out.println(sb.toString());
         System.exit(-1);

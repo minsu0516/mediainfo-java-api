@@ -379,7 +379,9 @@ public class Torec implements Provider
     //            parser.setEncoding("UTF-8");
                 parser.reset();
                 filter = new AndFilter(new TagNameFilter("span"),
-                        new HasParentFilter(new TagNameFilter("p")));
+                        new HasParentFilter(
+                                new AndFilter(new TagNameFilter("p"), new HasAttributeFilter("id", "version_list"))
+                                ));
     
                 for (NodeIterator e = parser.elements(); e.hasMoreNodes();)
                 {
@@ -604,8 +606,9 @@ public class Torec implements Provider
                 HttpURLConnection connection = (HttpURLConnection) (url
                         .openConnection());
                 // Write the jpg code to the file
-                File imageFile = new File(fs.getSrcDir() + File.separator
-                        + fs.getFullNameNoExt() + ".jpg");
+                File imageFile = new File(fs.buildDestSrt(".jpg"));
+//                        getSrcDir() + File.separator
+//                        + fs.getFullNameNoExt() + ".jpg");
                 Utils.copy(connection.getInputStream(), new FileOutputStream(
                         imageFile));
                 fs.setPicAlreadyDownloaded(true);

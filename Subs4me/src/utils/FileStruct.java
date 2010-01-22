@@ -64,16 +64,29 @@ public class FileStruct
         _normalizedName = normalizeMovieName(fileName + ".srt");
     }
     
+    public FileStruct(File f, boolean extraWebSearchForSearch)
+    {
+        this(f, extraWebSearchForSearch, false);
+    }
+    
     public FileStruct(String fileName)
     {
         this(fileName, true);
     }
     
-    public FileStruct(File f, boolean extraWebSearchForSearch)
+    public FileStruct(File f, boolean extraWebSearchForSearch, boolean useParentDirNameAsFilename)
     {
         _orig = f;
         _srcDir = f.getParent();
         _fullFileName = f.getName();
+        if (useParentDirNameAsFilename)
+        {
+            Matcher m = EXT_PATTERN.matcher(f.getName());
+            m.find();
+            String ext = m.group(1);
+            _fullFileName = f.getParentFile().getName() + ext;
+        }
+        
         _normalizedName = normalizeMovieName(_fullFileName);
         if (extraWebSearchForSearch)
         {
@@ -308,7 +321,16 @@ public class FileStruct
     
     public String getFullNameNoExt()
     {
+        
         return getFullFileName().substring(0, getFullFileName().length() - getExt().length() -1);
+    }
+    
+    public String getREALFullNameNoExt()
+    {
+        if (getFile() == null)
+            return getFullFileName();
+        
+        return getFile().getName().substring(0, getFile().getName().length() - getExt().length() -1);
     }
     
     public static void main(String[] args)
@@ -349,10 +371,13 @@ public class FileStruct
         sb.append(getSource());
         return sb.toString();
     }
-    
     public String buildDestSrt()
     {
-        String ret = getSrcDir() + File.separator + getFullNameNoExt() + ".srt";
+        return buildDestSrt(".srt");
+    }
+    public String buildDestSrt(String ext)
+    {
+        String ret = getSrcDir() + File.separator + getREALFullNameNoExt() + ext;
         return ret;
     }
     

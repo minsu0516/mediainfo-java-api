@@ -2,9 +2,13 @@
 package net.sourceforge.filebot.web;
 
 
-import static net.sourceforge.filebot.web.EpisodeListUtilities.*;
-import static net.sourceforge.filebot.web.WebRequest.*;
-import static net.sourceforge.tuned.XPathUtilities.*;
+import static net.sourceforge.filebot.web.EpisodeListUtilities.filterBySeason;
+import static net.sourceforge.filebot.web.EpisodeListUtilities.getLastSeason;
+import static net.sourceforge.filebot.web.WebRequest.getDocument;
+import static net.sourceforge.tuned.XPathUtilities.getAttribute;
+import static net.sourceforge.tuned.XPathUtilities.getTextContent;
+import static net.sourceforge.tuned.XPathUtilities.selectNodes;
+import static net.sourceforge.tuned.XPathUtilities.selectString;
 
 import java.io.IOException;
 import java.net.URI;
@@ -16,11 +20,11 @@ import java.util.List;
 import javax.swing.Icon;
 import javax.xml.parsers.ParserConfigurationException;
 
+import net.sourceforge.filebot.ResourceManager;
+
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 import org.xml.sax.SAXException;
-
-import net.sourceforge.filebot.ResourceManager;
 
 
 public class TVRageClient implements EpisodeListProvider {

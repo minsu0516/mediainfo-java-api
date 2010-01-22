@@ -2,7 +2,7 @@
 package net.sourceforge.filebot;
 
 
-import static java.util.Collections.*;
+import static java.util.Collections.addAll;
 
 import java.io.FileFilter;
 import java.util.ArrayList;

@@ -1,10 +1,16 @@
 Version 1.0
+ NEW:   Added launcher as main class, can be tweaked with launcher property in the properties file.
+ 		Will now do getsubs (getsubs.bat should run the same), then wait for the user to click cancel for 5 seconds.
+ 		If not, then continue to handlemoresubs....
  added: reporting on movies I did not find subs for
- added: download movie pic from sratim and torec, usses /i and /if
+ added: download movie pic from sratim and torec, uses /i and /if
  		/if will download the movie pic anyway, /i will download if its not
  		there already, both will copy this pic to folder.jpg, if its not
  		present.
  fixed: google search tweaked.
+ fixed: torec tweaked
+ added: by popular demand (2-3 people) I added a new option called /useDirName or get_subs_use_parent_dirname_as_moviename property.
+ 		this will use the directory as the real filename.
 Version 0.9.2
  fixed: Now I search with opensubs first, then google.
  fixed: much better and simpler google search

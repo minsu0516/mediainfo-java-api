@@ -2,7 +2,7 @@
 package net.sourceforge.filebot.web;
 
 
-import static java.util.Collections.*;
+import static java.util.Collections.singletonMap;
 
 import java.net.URL;
 import java.nio.ByteBuffer;

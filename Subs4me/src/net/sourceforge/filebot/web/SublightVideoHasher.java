@@ -2,7 +2,8 @@
 package net.sourceforge.filebot.web;
 
 
-import static java.lang.Math.*;
+import static java.lang.Math.max;
+import static java.lang.Math.min;
 
 import java.io.File;
 import java.io.FileInputStream;

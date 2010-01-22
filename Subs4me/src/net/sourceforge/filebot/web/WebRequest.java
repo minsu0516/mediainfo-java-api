@@ -23,12 +23,12 @@ import java.util.zip.InflaterInputStream;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 
+import net.sourceforge.tuned.ByteBufferOutputStream;
+
 import org.cyberneko.html.parsers.DOMParser;
 import org.w3c.dom.Document;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
-
-import net.sourceforge.tuned.ByteBufferOutputStream;
 
 
 public final class WebRequest {

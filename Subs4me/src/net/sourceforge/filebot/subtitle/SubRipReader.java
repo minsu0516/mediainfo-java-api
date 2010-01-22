@@ -2,7 +2,7 @@
 package net.sourceforge.filebot.subtitle;
 
 
-import static net.sourceforge.tuned.StringUtilities.*;
+import static net.sourceforge.tuned.StringUtilities.join;
 
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;

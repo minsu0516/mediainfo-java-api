@@ -15,11 +15,9 @@ import net.sourceforge.filebot.ui.panel.subtitle.MemoryFile;
 import net.sourceforge.filebot.ui.panel.subtitle.RarArchive;
 import net.sourceforge.filebot.ui.panel.subtitle.ZipArchive;
 import net.sourceforge.filebot.web.SearchResult;
-import net.sourceforge.filebot.web.SeasonOutOfBoundsException;
 import net.sourceforge.filebot.web.SubsceneSubtitleClient;
 import net.sourceforge.filebot.web.SubtitleDescriptor;
 import subs.Provider;
-import subs.Results;
 import subs.Subs4me;
 import utils.FileStruct;
 import utils.Utils;
@@ -169,11 +167,11 @@ public class Subscene implements Provider
                     {
                         if (!moreThanOne)
                         {
-                            writeToDisk(memFile.getData(), location + File.separator + memFile.getName());
+                            writeToDisk(memFile.getData(), currentFile.buildDestSrt());
                         }
                         else
                         {
-                            writeToDisk(memFile.getData(), location + File.separator + currentFile.getFullNameNoExt() + ".srt.subscene."+ memFile.getName());
+                            writeToDisk(memFile.getData(), currentFile.buildDestSrt(".srt.subscene.") + memFile.getName());
                             return true;
                         }
                     }
