@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.FilenameFilter;
 import java.util.Iterator;
 import java.util.LinkedList;
+import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -17,7 +18,7 @@ import utils.PropertiesUtil;
 public class Subs4me
 {
     public static final String SRT_EXISTS = "/c";
-    public static final String VERSION = "1.0";
+    public static final String VERSION = "1.1";
     public static final String RECURSIVE_SEARCH = "/r";
     public static final String FULL_DOWNLOAD = "/all";
     public static final String PROVIDERS = "/p";
@@ -34,6 +35,8 @@ public class Subs4me
     public static final String SUBS_DOWNLOAD_PICTURE_PROPERTY = "get_subs_download_movie_picture";
     public static final String SUBS_DOWNLOAD_PICTURE_FORCE_PROPERTY = "get_subs_download_movie_picture_force";
     public static final String SUBS_USE_PARENT_DIRNAME_AS_NAME_PROPERTY = "get_subs_use_parent_dirname_as_moviename";
+    public static final String get_subs_default_directories = "get_subs_default_directories";
+    
     
     public LinkedList<String> oneSubsFound = new LinkedList<String>();
     public LinkedList<String> moreThanOneSubs = new LinkedList<String>();
@@ -75,27 +78,32 @@ public class Subs4me
     /**
      * need to be recursive to process sub directories
      * 
-     * @param src
+     * @param srcs directry/file list to work on
      */
-    public void startProcessingFiles(String src)
+    public void startProcessingFiles(List<String> srcs)
     {
-        String[] sources = findFilesInDir(src);
-        if (sources == null)
+        for (String src : srcs)
         {
-            // this is a file and not a directory
-            File fi = new File(src);
-            doWork(fi);
-        } else
-        {
-            for (int j = 0; j < sources.length; j++)
+            String[] sources = findFilesInDir(src);
+            if (sources == null)
             {
-                File fi = new File(src + File.separator + sources[j]);
-                if (fi.isDirectory())
+                // this is a file and not a directory
+                File fi = new File(src);
+                doWork(fi);
+            } else
+            {
+                for (int j = 0; j < sources.length; j++)
                 {
-                    startProcessingFiles(fi.getPath());
-                } else
-                {
-                    doWork(fi);
+                    File fi = new File(src + File.separator + sources[j]);
+                    if (fi.isDirectory())
+                    {
+                        List<String> lst = new LinkedList<String>();
+                        lst.add(fi.getPath());
+                        startProcessingFiles(lst);
+                    } else
+                    {
+                        doWork(fi);
+                    }
                 }
             }
         }
@@ -329,22 +337,16 @@ public class Subs4me
     public static void main(String[] args)
     {
 //        args = new String[]{};
-        if (args.length < 1)
-        {
-            exitShowMessage();
-        }
-        
-        File f = new File(args[0]);
-        if (!f.exists())
-        {
-            exitShowMessage();
-        }
+//        if (args.length < 1)
+//        {
+//            exitShowMessage();
+//        }
         
         Subs4me as = Subs4me.getInstance();
         LinkedList<String> providers = null;
         providers = initProperties();
-        
-        for (int i = 1; i < args.length; i++)
+        List<String> destinations = new LinkedList<String>();
+        for (int i = 0; i < args.length; i++)
         {
             String arg = args[i];
             if (arg.equals(SRT_EXISTS))
@@ -378,24 +380,75 @@ public class Subs4me
             {
                 _useParentDirAsName = true;
             }
+            else
+            {
+                destinations.add(arg);
+            }
         }
+        String defDirs = PropertiesUtil.getProperty(get_subs_default_directories, null);
+        if (destinations.size() == 0 && defDirs != null)
+        {
+            String[] dests = defDirs.split(",");
+            for (int i = 0; i < dests.length; i++)
+            {
+                String dst = dests[i];
+                destinations.add(dst.trim());
+            }
+        }
+        for (String dst : destinations)
+        {
+            File f = new File(dst);
+            if (!f.exists())
+            {
+                exitShowMessage();
+            }
+        }
+        
         StringBuilder sb = new StringBuilder();
         for (Iterator iterator = providers.iterator(); iterator.hasNext();)
         {
             String p = (String) iterator.next();
             sb.append(p + ",");
         }
-        System.out.println("Subs4me version " + VERSION);
-        System.out.println("        selected providers are:" + sb.toString());
-        System.out.println("        check recursively = " + isRecursive());
-        System.out.println("        do not check if srt exists = " + checkSrtExists);
-        System.out.println("        download everything = " + isFullDownload());
-        System.out.println("        check movie name using opensubs first = " + !noUseOpen);
-        System.out.println("        get movie picture = " + getMoviePic + ", (forced = " + getMoviePicForce + ")");
-        System.out.println("        use parent directory as name = " + _useParentDirAsName);
+        StringBuilder sbMsg = new StringBuilder("Subs4me version ");
+        sbMsg.append(VERSION);
+        sbMsg.append("\n");
+        sbMsg.append("   looking in: ");
+
+        for (Iterator iterator = destinations.iterator(); iterator.hasNext();)
+        {
+            String dst = (String) iterator.next();
+            sbMsg.append(dst + " ");
+        }
+        sbMsg.append("\n");
+        sbMsg.append("        selected providers are:");
+        sbMsg.append(sb.toString());
+        sbMsg.append("\n");
+        sbMsg.append("        check recursively = ");
+        sbMsg.append(isRecursive());
+        sbMsg.append("\n");
+        sbMsg.append("        do not check if srt exists = ");
+        sbMsg.append(checkSrtExists);
+        sbMsg.append("\n");
+        sbMsg.append("        download everything = ");
+        sbMsg.append(isFullDownload());
+        sbMsg.append("\n");
+        sbMsg.append("        check movie name using opensubs first = ");
+        sbMsg.append(!noUseOpen);
+        sbMsg.append("\n");
+        sbMsg.append("        get movie picture = ");
+        sbMsg.append(getMoviePic);
+        sbMsg.append(", (forced = ");
+        sbMsg.append(getMoviePicForce);
+        sbMsg.append(")");
+        sbMsg.append("\n");
+        sbMsg.append("        use parent directory as name = ");
+        sbMsg.append(_useParentDirAsName);
+        sbMsg.append("\n");
+        System.out.println(sbMsg);
         as.initProviders(providers);
         
-        as.startProcessingFiles(args[0]);
+        as.startProcessingFiles(destinations);
         
         if (as.oneSubsFound.size() > 0)
         {
@@ -532,6 +585,7 @@ public class Subs4me
     public static void exitShowMessage()
     {
         StringBuffer sb = new StringBuffer("Usage: subs4me \"[file]\" | \"[directory]\" [/params]");
+        sb.append(" Can accept more than one file/directory as destination paramater, all must be VALID\n");
         sb.append("\nVersion ");
         sb.append(VERSION);
         sb.append("\n");

@@ -7,6 +7,7 @@ import java.io.FileReader;
 import java.io.FilenameFilter;
 import java.io.IOException;
 import java.util.Arrays;
+import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Scanner;
@@ -18,58 +19,64 @@ import utils.PropertiesUtil;
 public class HandleMultipleSubs
 {
     public static final String RECURSIVE_SEARCH = "/r";
-    public static final String VERSION = "0.5";
+    public static final String VERSION = "0.6";
     public static final String RECURSIVE_SEARCH_PROPEERTY = "handle_multipule_subtitles_recursive";
+    public static final String handle_multipule_subtitles_default_directories = "handle_multipule_subtitles_default_directories";
     
     private static boolean recursive = false;
     private FileStruct currentFile;
     
-    public HandleMultipleSubs(String srcDirOrFile)
+    public HandleMultipleSubs(List<String> srcs)
     {
         PropertiesUtil.setPropertiesStreamName("./properties/subs4me-default.properties");
         PropertiesUtil.setPropertiesStreamName(Subs4me.propertiesName);
-        processFiles(srcDirOrFile);
+        processFiles(srcs);
     }
 
-    private void processFiles(String src)
+    private void processFiles(List<String> srcs)
     {
-        String[] sources = findFilesInDir(src);
-        List<String> sourcesList = null;
-        if (sources != null)
+        for (String src : srcs)
         {
-            sourcesList = Arrays.asList(sources);
-        }
-        
-        if (sources == null)
-        {
-            // this is a file and not a directory
-            File fi = new File(src);
-            // String f = fi.getName();
-            try
+            String[] sources = findFilesInDir(src);
+            List<String> sourcesList = null;
+            if (sources != null)
             {
-                doWork(fi);
-            } catch (Exception e)
-            {
-                System.err.println(" ****** HandleMultipleSubs error handling:" + fi.getName());
-                e.printStackTrace();
+                sourcesList = Arrays.asList(sources);
             }
-        } else
-        {
-            for (String source : sourcesList)
+            
+            if (sources == null)
             {
-                File f = new File(src + File.separator + source);
-                if (f.isDirectory())
+                // this is a file and not a directory
+                File fi = new File(src);
+                // String f = fi.getName();
+                try
                 {
-                    processFiles(f.getPath());
-                } else
+                    doWork(fi);
+                } catch (Exception e)
                 {
-                    try
+                    System.err.println(" ****** HandleMultipleSubs error handling:" + fi.getName());
+                    e.printStackTrace();
+                }
+            } else
+            {
+                for (String source : sourcesList)
+                {
+                    File f = new File(src + File.separator + source);
+                    if (f.isDirectory())
                     {
-                        doWork(f);
-                    } catch (Exception e)
+                        List<String> lst = new LinkedList<String>();
+                        lst.add(f.getPath());
+                        processFiles(lst);
+                    } else
                     {
-                        System.err.println(" ****** HandleMultipleSubs error handling:" + f.getName());
-                        e.printStackTrace();
+                        try
+                        {
+                            doWork(f);
+                        } catch (Exception e)
+                        {
+                            System.err.println(" ****** HandleMultipleSubs error handling:" + f.getName());
+                            e.printStackTrace();
+                        }
                     }
                 }
             }
@@ -289,10 +296,10 @@ public class HandleMultipleSubs
     
     public static void main(String[] args)
     {
-        if (args.length < 1)
-        {
-            exitShowMessage();
-        }
+//        if (args.length < 1)
+//        {
+//            exitShowMessage();
+//        }
         
         // Load the sub4me-default.properties file
         if (!PropertiesUtil.setPropertiesStreamName("./properties/subs4me-default.properties")) {
@@ -304,7 +311,7 @@ public class HandleMultipleSubs
         // Must be read before the skin, because this may contain an override skin
         PropertiesUtil.setPropertiesStreamName(Subs4me.propertiesName);
         initProperties();
-        
+        List<String> destinations = new LinkedList<String>();
         for (int i = 1; i < args.length; i++)
         {
             String arg = args[i];
@@ -312,16 +319,45 @@ public class HandleMultipleSubs
             {
                 setRecursive(true);
             }
+            else
+            {
+                destinations.add(arg);
+            }
         }
         
-        File f = new File(args[0]);
-        if (!f.exists())
+        String defDirs = PropertiesUtil.getProperty(handle_multipule_subtitles_default_directories, null);
+        if (destinations.size() == 0 && defDirs != null)
         {
-            exitShowMessage();
+            String[] dests = defDirs.split(",");
+            for (int i = 0; i < dests.length; i++)
+            {
+                String dst = dests[i];
+                destinations.add(dst.trim());
+            }
         }
-        System.out.println("       *** HandleMultipleSubs version " + VERSION);
+        for (String dst : destinations)
+        {
+            File f = new File(dst);
+            if (!f.exists())
+            {
+                exitShowMessage();
+            }
+        }
+        
+        StringBuilder sbMsg = new StringBuilder("       *** HandleMultipleSubs version ");
+        sbMsg.append(VERSION);
+        sbMsg.append("\n");
+        sbMsg.append("   looking in: ");
+
+        for (Iterator iterator = destinations.iterator(); iterator.hasNext();)
+        {
+            String dst = (String) iterator.next();
+            sbMsg.append(dst + " ");
+        }
+        sbMsg.append("\n");
+//        System.out.println("       *** HandleMultipleSubs version " + VERSION);
         System.out.println("       *** HandleMultipleSubs recursive = " + recursive);
-        new HandleMultipleSubs(args[0]);
+        new HandleMultipleSubs(destinations);
         System.out.println("******* Thanks for using HandleMultipleSubs *******");
     }
     
@@ -336,12 +372,13 @@ public class HandleMultipleSubs
     
     private static void exitShowMessage()
     {
-        StringBuffer sb = new StringBuffer("Usage: HandleMultipleSubs \"[file]\" | \"[directory]\" [/params]");
-        sb.append("\nVersion ");
+        StringBuffer sb = new StringBuffer("Usage: HandleMultipleSubs \"[file]\" | \"[directory]\" [/params]\n");
+        sb.append(" Can accept more than one file/directory as destination paramater, all must be VALID\n");
+        sb.append("Version ");
         sb.append(VERSION);
         sb.append("\n");
         sb.append("Example:\n");
-        sb.append("\tHandleMultipleSubs \"C:\\movies\" \n\n");
+        sb.append("\tHandleMultipleSubs \"c:\\movies\" \"c:\\movies2\" \n\n");
         sb.append("Params:\n");
 //        sb.append("  chksrtexists: If an srt file exists do not try to get the subtitels for this file\n");
         sb.append("  r: Recurse over all the files in all the directories\n");

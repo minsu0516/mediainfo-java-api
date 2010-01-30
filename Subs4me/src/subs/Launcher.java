@@ -2,6 +2,8 @@ package subs;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.LinkedList;
+import java.util.List;
 
 import javax.swing.JOptionPane;
 
@@ -22,6 +24,9 @@ public class Launcher
     public static final String WAITFORIT_PROPERTY = "waitforit";
     public static final String WAITFORIT_DO_NOTHING_PROPERTY = "waitforitdonothing";
     
+    public static final String DEFUALT_LAUNCH_PROPERTY = "default_launch";
+    public static final String DEFUALT_LAUNCH_OPERATION = "/launch=";
+    
     public Launcher()
     {
         // TODO Auto-generated constructor stub
@@ -29,12 +34,29 @@ public class Launcher
 
     public static void main(String[] args)
     {
-        System.out.println("***** Starting Subs4Me launcher, edit the launch property in the subs4me.properties to decide what to do as default\n");
+        System.out.println("***** Starting Subs4Me launcher, edit the launch property in the subs4me.properties to decide what to do as default");
         Subs4me.initProperties();
-        String sequence = PropertiesUtil.getProperty("launch");
+        List<String> destinations = new LinkedList<String>();
+        String def_launch = PropertiesUtil.getProperty(DEFUALT_LAUNCH_PROPERTY);
+        //handle multi directories and different launchers
+        for (int i = 0; i < args.length; i++)
+        {
+            String arg = args[i];
+            if (arg.startsWith(DEFUALT_LAUNCH_OPERATION))
+            {
+                def_launch = arg.substring(DEFUALT_LAUNCH_OPERATION.length());
+            }
+            else
+            {
+                destinations.add(arg); 
+            }
+        }
+        
+        String sequence = PropertiesUtil.getProperty(def_launch);
         if (sequence == null)
             return;
-//        sequence = WAITFORIT_DO_NOTHING_PROPERTY;
+        System.out.println("***** launch using " + def_launch + " configuration" );
+        System.out.println("       to change launch config, either change default_launch property or use " + DEFUALT_LAUNCH_OPERATION + " param\n");
         String[] launch = sequence.split(",");
         for (int i = 0; i < launch.length; i++)
         {
@@ -42,9 +64,9 @@ public class Launcher
             String[] paramsSplit = prog.split(" ");
             ArrayList<String> params = new ArrayList<String>(
                     paramsSplit.length + 1);
-            params.add(args[0]);
+            params.addAll(destinations);
             params.addAll(Arrays.asList(paramsSplit));
-            params.remove(1);
+            params.remove(destinations.size());
             if (prog.toLowerCase().startsWith(GET_SUBTITLE_PROPERTY))
             {
                 System.out.println("Launcher running getsubs");
