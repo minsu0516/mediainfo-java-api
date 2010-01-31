@@ -36,7 +36,7 @@ public class Subs4me
     public static final String SUBS_DOWNLOAD_PICTURE_FORCE_PROPERTY = "get_subs_download_movie_picture_force";
     public static final String SUBS_USE_PARENT_DIRNAME_AS_NAME_PROPERTY = "get_subs_use_parent_dirname_as_moviename";
     public static final String get_subs_default_directories = "get_subs_default_directories";
-    
+    public static String SESSION_ID = "";
     
     public LinkedList<String> oneSubsFound = new LinkedList<String>();
     public LinkedList<String> moreThanOneSubs = new LinkedList<String>();
@@ -73,6 +73,7 @@ public class Subs4me
 //        System.out.println("Locale = " + Locale.getDefault());
 //        Locale.setDefault(new Locale("en", "US"));
 //        System.out.println("New Locale = " + Locale.getDefault());
+        SESSION_ID = Long.toString(System.currentTimeMillis());
     }
 
     /**

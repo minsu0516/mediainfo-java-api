@@ -7,6 +7,8 @@ import java.io.BufferedOutputStream;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileOutputStream;
+import java.io.FileReader;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -38,6 +40,8 @@ import org.htmlparser.util.NodeList;
 import org.htmlparser.util.ParserException;
 import org.json.JSONArray;
 import org.json.JSONObject;
+
+import subs.Subs4me;
 
 
 public class Utils
@@ -639,5 +643,67 @@ public class Utils
         return bytesCopied;
     }
 
+    public static void writeDoWorkFile(FileStruct currentFile, StringBuilder data)
+    {
+        File f = new File(currentFile.getFile().getParent(), currentFile.getFullNameNoExt() + Subs4me.DO_WORK_EXT);
+        try
+        {
+            String session = "";
+            if (f.exists())
+            {
+                FileReader reader = new FileReader(f);
+                BufferedReader in = new BufferedReader(reader);
+//                Scanner s = new sc
+                //first line must be session
+                session = in.readLine();
+                in.close();
+            }
+            if (session != null && !session.isEmpty())
+            {
+                Pattern p = Pattern.compile("session = ([\\d]*)");
+                Matcher m = p.matcher(session);
+                if (m.find())
+                    session =  m.group(1);
+                else
+                    session = "";
+                
+                if (!session.equals(Subs4me.SESSION_ID))
+                    session = "";
+                
+            }
+            if (session == null || session.isEmpty())
+            {
+                FileWriter dowrkFile = new FileWriter(f);
+                session = "session = " + Subs4me.SESSION_ID;
+                dowrkFile.write(session + "\n");
+                dowrkFile.write(data.toString());
+                dowrkFile.close();
+            }
+            else
+            {
+                FileReader reader = new FileReader(f);
+                BufferedReader in = new BufferedReader(reader);
+                String line = null;
+                StringBuilder sb = new StringBuilder();
+                while ((line = in.readLine()) != null)
+                {
+                    sb.append(line);
+                    sb.append(System.getProperty("line.separator"));
+                }
+                //first line must be session
+//                session = in.readLine();
+                in.close();
+                FileWriter dowrkFile = new FileWriter(f);
+                dowrkFile.write(sb.toString());
+                dowrkFile.append(data.toString());
+                dowrkFile.close();
+            }
+        }
+        catch (IOException e)
+        {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
+    }
     
 }

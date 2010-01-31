@@ -1,8 +1,11 @@
 package subs.providers;
 
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
+import java.io.FileReader;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -12,6 +15,7 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.LinkedList;
+import java.util.Scanner;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -30,6 +34,7 @@ import org.htmlparser.util.NodeList;
 import org.htmlparser.util.ParserException;
 import org.htmlparser.util.SimpleNodeIterator;
 
+import subs.Login;
 import subs.Provider;
 import subs.Results;
 import subs.Subs4me;
@@ -40,6 +45,7 @@ public class Torec implements Provider
 {
     public static final String baseUrl ="http://www.torec.net";
     private FileStruct currentFile = null;
+    private static Pattern subIdPattern = Pattern.compile("ID=([\\d]*)");
     
     private static final Torec instance = new Torec();
     static
@@ -80,14 +86,24 @@ public class Torec implements Provider
             subsID = searchByActualName(currentFile);
             if (subsID != null && subsID.getResults().size() > 0)
             {
-                for (String subID : subsID.getResults())
+                if (!subsID.isCorrectResults())
                 {
-                    success = Utils.downloadZippedSubs(baseUrl + "/zip_versions/"
-                            + Utils.escape(subID) + ".zip", subID + ".zip");
-                    if (success)
+                    handleMoreThanOneSub(subsID);
+                    System.out.println("*** Torec found some possibilities:" + currentFile.getNormalizedName()); 
+                    return Provider.not_perfect;
+                }
+                else
+                {
+                    for (String subID : subsID.getResults())
                     {
-                        Utils.unzipSubs(currentFile, subID + ".zip", subsID.isCorrectResults());
+                        success = Utils.downloadZippedSubs(baseUrl + "/zip_versions/"
+                                + Utils.escape(subID) + ".zip", subID + ".zip");
+                        if (success)
+                        {
+                            Utils.unzipSubs(currentFile, subID + ".zip", subsID.isCorrectResults());
+                        }
                     }
+                    return Provider.perfect;
                 }
             }
             else
@@ -103,10 +119,10 @@ public class Torec implements Provider
             // e.printStackTrace();
         }
         
-        if (subsID != null && subsID.isCorrectResults())
-        {
-            return Provider.perfect;
-        }
+//        if (subsID != null && subsID.isCorrectResults())
+//        {
+//            return Provider.perfect;
+//        }
         
         return Provider.not_perfect;
     }
@@ -342,7 +358,9 @@ public class Torec implements Provider
         private Results locateFileInFilePageOnTorec(String subid, String movieName)
         {
             LinkedList<String> intenseFilesList = new LinkedList<String>();
+            LinkedList<String> intenseFilesListNames = new LinkedList<String>();
             LinkedList<String> longerFilesList = new LinkedList<String>();
+            LinkedList<String> longerFilesListNames = new LinkedList<String>();
             
             try
             {
@@ -410,6 +428,7 @@ public class Torec implements Provider
                     } else
                     {
                         String remoteName = node.toPlainTextString().trim();
+                        displayNames.add(remoteName);
                         String dlPlease = postForFileName(subid.substring(15),
                                 filesTodl.get(i));
     //                    String dlPlease = node.toPlainTextString().trim();
@@ -417,6 +436,7 @@ public class Torec implements Provider
                         if (Subs4me.isFullDownload())
                         {
                             longerFilesList.add(dlPlease);
+                            longerFilesListNames.add(displayNames.get(i));
                         }
                         
                         //check group
@@ -430,6 +450,7 @@ public class Torec implements Provider
                         if (!Subs4me.isFullDownload())
                         {
                             intenseFilesList.add(dlPlease);
+                            intenseFilesListNames.add(displayNames.get(i));
                         }
     //                    
     //                    //check HDLevel
@@ -484,7 +505,7 @@ public class Torec implements Provider
                         e.printStackTrace();
                     }
                 }
-                return new Results(longerFilesList, false);
+                return new Results(longerFilesList, longerFilesListNames, false);
             }
             else if (intenseFilesList.size() > 0)
             {
@@ -497,7 +518,7 @@ public class Torec implements Provider
                     // TODO Auto-generated catch block
                     e.printStackTrace();
                 }
-                return new Results(intenseFilesList, false);
+                return new Results(intenseFilesList, intenseFilesListNames, false);
             }
             // System.out.println("Did not find a file to download");
             return null;
@@ -646,4 +667,80 @@ public class Torec implements Provider
         return false;
     }
     
+    private void handleMoreThanOneSub(Results subsID)
+    {
+        StringBuilder sb = new StringBuilder();
+        int i = -1;
+        for (String subID : subsID.getResults())
+        {
+            i++;
+//            Matcher m = subIdPattern.matcher(subID);
+//            String name = subID;
+//            if (m.find())
+//            {
+//                name = m.group(1);
+//            }
+            String st = getName() + ", " + baseUrl + "/zip_versions/" + Utils.escape(subID) + ".zip" + ", " + subsID.getNames().get(i);
+            sb.append(st);
+            sb.append("\n");
+//            success = Utils.downloadZippedSubs(baseUrl + subID, name + ".zip", cookieHeader);
+//            if (success)
+//            {
+//                Utils.unzipSubs(currentFile, name + ".zip", subsID.isCorrectResults());
+//            }
+        }
+        Utils.writeDoWorkFile(currentFile, sb);
+    }
+    
+    /**
+     * 
+     * @param url
+     *            where to download from
+     * @param dstZipFilename
+     *            downloaded zip name
+     * @param curr
+     *            the current file working on so we know where to download and
+     *            what to rename to
+     */
+    public void downloadFile(String url, String dstZipFilename, FileStruct curr)
+    {
+        try
+        {
+            FileReader cookieFile = new FileReader("sratim.cookie");
+            BufferedReader in = new BufferedReader(cookieFile);
+            cookieHeader = in.readLine();
+            in.close();
+        } catch (Exception error)
+        {
+        }
+        boolean cookieOk = loadSratimCookie(true);
+        if (!cookieOk)
+        {
+            Login login = new Login();
+            if (!login.isLoginOk())
+            {
+                return;
+            } else
+            {
+                cookieOk = true;
+                // Check if cookie file exist
+                try
+                {
+                    FileReader cookieFile = new FileReader("sratim.cookie");
+                    BufferedReader in = new BufferedReader(cookieFile);
+                    cookieHeader = in.readLine();
+                    in.close();
+                } catch (Exception error)
+                {
+                }
+            }
+        }
+        boolean success = Utils.downloadZippedSubs(url,
+                dstZipFilename + ".zip", cookieHeader);
+        if (success)
+        {
+            Utils.unzipSubs(curr, dstZipFilename + ".zip", true);
+        }
+    }
+
 }

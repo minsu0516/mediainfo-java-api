@@ -13,6 +13,7 @@ import java.util.List;
 import java.util.Scanner;
 
 import subs.providers.Sratim;
+import subs.providers.Torec;
 import utils.FileStruct;
 import utils.PropertiesUtil;
 
@@ -191,9 +192,17 @@ public class HandleMultipleSubs
                 if (sel > files.length)
                 {
                     ProviderResult p = pResults.get(sel - files.length -1);
-                    if (p.getProviderName().equalsIgnoreCase("sratim"))
+                    if (p.getProviderName().equalsIgnoreCase(Sratim.getInstance().getName()))
                     {
                         Sratim.getInstance().downloadFile(p.getFileURL(), p.getDestFileName(), currentFile);
+                        if (!currentFile.isVideoFile())
+                        {
+                            currentFile.getFile().delete();
+                        }
+                    }
+                    else if (p.getProviderName().equalsIgnoreCase(Torec.getInstance().getName()))
+                    {
+                        Torec.getInstance().downloadFile(p.getFileURL(), p.getDestFileName(), currentFile);
                         if (!currentFile.isVideoFile())
                         {
                             currentFile.getFile().delete();
@@ -312,7 +321,7 @@ public class HandleMultipleSubs
         PropertiesUtil.setPropertiesStreamName(Subs4me.propertiesName);
         initProperties();
         List<String> destinations = new LinkedList<String>();
-        for (int i = 1; i < args.length; i++)
+        for (int i = 0; i < args.length; i++)
         {
             String arg = args[i];
             if (arg.equals(RECURSIVE_SEARCH))
@@ -402,6 +411,8 @@ public class HandleMultipleSubs
             String str;
             while ((str = in.readLine()) != null) 
             {
+                if (str.startsWith("session"))
+                    continue;
                 String[] split = str.split(", ");
                 ProviderResult p = new ProviderResult(split[0], split[1], split[2]);
                 ret.add(p);

@@ -394,18 +394,7 @@ public class Sratim implements Provider
 //                Utils.unzipSubs(currentFile, name + ".zip", subsID.isCorrectResults());
 //            }
         }
-        File f = new File(currentFile.getFile().getParent(), currentFile.getFullNameNoExt() + Subs4me.DO_WORK_EXT);
-        try
-        {
-            FileWriter dowrkFile = new FileWriter(f);
-            dowrkFile.write(sb.toString());
-            dowrkFile.close();
-        }
-        catch (IOException e)
-        {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        }
+        Utils.writeDoWorkFile(currentFile, sb);
     }
 
     @Override
@@ -910,51 +899,57 @@ public class Sratim implements Provider
             return surl.toString();
         }
         
-        /**
-         * 
-         * @param url where to download from
-         * @param dstZipFilename downloaded zip name
-         * @param curr the current file working on so we know where to download and what to rename to
-         */
-        public void downloadFile(String url, String dstZipFilename, FileStruct curr)
+    /**
+     * 
+     * @param url
+     *            where to download from
+     * @param dstZipFilename
+     *            downloaded zip name
+     * @param curr
+     *            the current file working on so we know where to download and
+     *            what to rename to
+     */
+    public void downloadFile(String url, String dstZipFilename, FileStruct curr)
+    {
+        try
         {
-            try {            
-                FileReader cookieFile = new FileReader("sratim.cookie");
-                BufferedReader in = new BufferedReader(cookieFile);
-                cookieHeader = in.readLine();
-                in.close();
-            } catch (Exception error) 
+            FileReader cookieFile = new FileReader("sratim.cookie");
+            BufferedReader in = new BufferedReader(cookieFile);
+            cookieHeader = in.readLine();
+            in.close();
+        } catch (Exception error)
+        {
+        }
+        boolean cookieOk = loadSratimCookie(true);
+        if (!cookieOk)
+        {
+            Login login = new Login();
+            if (!login.isLoginOk())
             {
-            }
-            boolean cookieOk = loadSratimCookie(true);
-            if (!cookieOk)
+                return;
+            } else
             {
-                Login login = new Login();
-                if (!login.isLoginOk())
+                cookieOk = true;
+                // Check if cookie file exist
+                try
                 {
-                    return;
-                }
-                else
+                    FileReader cookieFile = new FileReader("sratim.cookie");
+                    BufferedReader in = new BufferedReader(cookieFile);
+                    cookieHeader = in.readLine();
+                    in.close();
+                } catch (Exception error)
                 {
-                    cookieOk = true;
-                 // Check if cookie file exist
-                    try {            
-                        FileReader cookieFile = new FileReader("sratim.cookie");
-                        BufferedReader in = new BufferedReader(cookieFile);
-                        cookieHeader = in.readLine();
-                        in.close();
-                    } catch (Exception error) 
-                    {
-                    }
                 }
-            }
-            boolean success = Utils.downloadZippedSubs(url, dstZipFilename + ".zip", cookieHeader);
-            if (success)
-            {
-                Utils.unzipSubs(curr, dstZipFilename + ".zip", true);
             }
         }
-        
+        boolean success = Utils.downloadZippedSubs(url,
+                dstZipFilename + ".zip", cookieHeader);
+        if (success)
+        {
+            Utils.unzipSubs(curr, dstZipFilename + ".zip", true);
+        }
+    }
+
     public boolean findPicture(FileStruct fs, String id)
     {
         if ((Subs4me.shouldGetPic() && !fs.isHasPic())
