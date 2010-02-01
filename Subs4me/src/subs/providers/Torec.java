@@ -704,39 +704,7 @@ public class Torec implements Provider
      */
     public void downloadFile(String url, String dstZipFilename, FileStruct curr)
     {
-        try
-        {
-            FileReader cookieFile = new FileReader("sratim.cookie");
-            BufferedReader in = new BufferedReader(cookieFile);
-            cookieHeader = in.readLine();
-            in.close();
-        } catch (Exception error)
-        {
-        }
-        boolean cookieOk = loadSratimCookie(true);
-        if (!cookieOk)
-        {
-            Login login = new Login();
-            if (!login.isLoginOk())
-            {
-                return;
-            } else
-            {
-                cookieOk = true;
-                // Check if cookie file exist
-                try
-                {
-                    FileReader cookieFile = new FileReader("sratim.cookie");
-                    BufferedReader in = new BufferedReader(cookieFile);
-                    cookieHeader = in.readLine();
-                    in.close();
-                } catch (Exception error)
-                {
-                }
-            }
-        }
-        boolean success = Utils.downloadZippedSubs(url,
-                dstZipFilename + ".zip", cookieHeader);
+        boolean success = Utils.downloadZippedSubs(url, dstZipFilename + ".zip");
         if (success)
         {
             Utils.unzipSubs(curr, dstZipFilename + ".zip", true);
