@@ -118,13 +118,13 @@ public class Launcher
         if (okToStop)
         {
             title = "Abort script????";
-            message = "The script will continue in 10 seconds, press the cancel button to Abort\nClosing the dialog will NOT Abort";
+            message = "The script will continue in 5 seconds, press the cancel button to Abort\nClosing the dialog will NOT Abort";
             option[0] = "cancel";
         }
         else
         {
             title = "Continue script????";
-            message = "The script will exit in 10 seconds, press the continue button to continue\nClosing the dialog will NOT Continue";   
+            message = "The script will exit in 5 seconds, press the continue button to continue\nClosing the dialog will NOT Continue";   
             option[0] = "continue";
         }
         
