@@ -14,6 +14,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.PrintWriter;
+import java.io.UnsupportedEncodingException;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -33,9 +34,13 @@ import org.apache.http.client.ResponseHandler;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.BasicResponseHandler;
 import org.apache.http.impl.client.DefaultHttpClient;
+import org.htmlparser.Node;
 import org.htmlparser.NodeFilter;
 import org.htmlparser.Parser;
+import org.htmlparser.filters.AndFilter;
+import org.htmlparser.filters.HasAttributeFilter;
 import org.htmlparser.filters.TagNameFilter;
+import org.htmlparser.util.NodeIterator;
 import org.htmlparser.util.NodeList;
 import org.htmlparser.util.ParserException;
 import org.json.JSONArray;
@@ -514,6 +519,61 @@ public class Utils
         return null;
     }
     
+  //scrape google
+    public static String searchRealNameUsingGoogle2(String fileName, String searchForCritiria)
+    {
+        String query = fileName + " " + searchForCritiria; 
+        System.out.println("Querying Google for " + query);
+        Parser parser;
+        try
+        {
+         // Convert spaces to +, etc. to make a valid URL
+            query = URLEncoder.encode(query, "UTF-8");
+            URL url = new URL(
+                    "http://www.google.com/search?hl=en&source=hp&q="
+                            + query+ "&btnG=Google+Search&aq=f&aqi=&oq=");
+            parser = new Parser(url.toString());
+            parser.setEncoding("UTF-8");
+            NodeFilter filter = new AndFilter(
+                    new TagNameFilter("div"), new HasAttributeFilter("class", "s"));
+//            NodeFilter filter = new RegexFilter("www.imdb.com/title</em>/tt[\\d]*");
+            NodeList list = new NodeList();
+            for (NodeIterator e = parser.elements(); e.hasMoreNodes();)
+            {
+                Node node =  e.nextNode();
+//                System.out.println(node.toHtml());
+                node.collectInto(list, filter);
+            }
+            Node[] nodes = list.toNodeArray();
+            for (int i = 0; i < nodes.length; i++)
+            {
+                Node nd = nodes[i];
+                Pattern p = Pattern.compile("http://www.imdb.com/title/[a-z,0-9]*");
+                Matcher m = p.matcher(nd.toPlainTextString());
+                if (m.find())
+                {
+//                    String me = m.group();
+                    return(m.group());
+                }
+//                System.out.println(nd.toPlainTextString());
+            }
+        } catch (ParserException e)
+        {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        } catch (UnsupportedEncodingException e)
+        {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        } catch (MalformedURLException e)
+        {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
+        
+        return null;
+    }
+    
     public static String checkURLOk(String url)
     {
         HttpClient httpclient = new DefaultHttpClient();
@@ -569,7 +629,7 @@ public class Utils
     public static String locateRealNameUsingGoogle(String fullName, String critiria)
     {
       //try to find the real name of the movie using google
-        String imdbUrl = Utils.searchRealNameUsingGoogle(fullName, critiria);
+        String imdbUrl = Utils.searchRealNameUsingGoogle2(fullName, critiria);
         if (imdbUrl != null)
         {
             try

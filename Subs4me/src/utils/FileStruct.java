@@ -91,7 +91,7 @@ public class FileStruct
         if (extraWebSearchForSearch)
         {
             String[] names = null;
-            if (!Subs4me.noUseOpen)
+            if (!Subs4me.dontUseOpenSubsForNameSearch)
             {
                 try
                 {
@@ -109,14 +109,19 @@ public class FileStruct
             }
             else
             {
-                if (!Subs4me.noUseOpen)
+                if (!Subs4me.dontUseOpenSubsForNameSearch)
                 {
                     System.out.println("*** Opensubs was unable to find the movie name" );
                 }
                 if (!isTV())
                 {
                     System.out.println("*** Search using Google for Movie's real name");
-                    String realName = Utils.locateRealNameUsingGoogle(_fullFileName, "www.imdb.com");
+                    String n = getNameNoExt();
+                    if (useParentDirNameAsFilename)
+                    {
+                        n = _fullFileName;
+                    }
+                    String realName = Utils.locateRealNameUsingGoogle(n, "www.imdb.com");
                     if (realName == null)
                     {
                         return;

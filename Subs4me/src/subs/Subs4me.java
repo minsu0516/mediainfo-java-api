@@ -59,7 +59,7 @@ public class Subs4me
     public static LinkedList<Provider> _providers = null;
     
     private static Subs4me instance = new Subs4me();
-    public static boolean noUseOpen;
+    public static boolean dontUseOpenSubsForNameSearch;
     
     public static Subs4me getInstance()
     {
@@ -224,8 +224,13 @@ public class Subs4me
             {
                 public boolean accept(File dir, String name)
                 {
-                    if (isRecursive() && new File(dir, name).isDirectory())
+                    File parent = new File(dir, name);
+                    if (isRecursive() && parent.isDirectory())
                     {
+                        File dont = new File(parent, "subs4me_do_no_look.txt");
+                        if (dont.exists())
+                            return false;
+                        
                         return true;
                     }
                     //NO SAMPLE FILES!!!!
@@ -367,7 +372,7 @@ public class Subs4me
             }
             else if (arg.startsWith(DO_NOT_USE_OPENSUBS_FOR_FILE_REALIZATION))
             {
-                noUseOpen = true;
+                dontUseOpenSubsForNameSearch = true;
             }
             else if (arg.startsWith(GET_MOVIE_PIC))
             {
@@ -435,7 +440,7 @@ public class Subs4me
         sbMsg.append(isFullDownload());
         sbMsg.append("\n");
         sbMsg.append("        check movie name using opensubs first = ");
-        sbMsg.append(!noUseOpen);
+        sbMsg.append(!dontUseOpenSubsForNameSearch);
         sbMsg.append("\n");
         sbMsg.append("        get movie picture = ");
         sbMsg.append(getMoviePic);
