@@ -524,7 +524,7 @@ public class Utils
   //scrape google
     public static String searchRealNameUsingGoogle2(String fileName, String searchForCritiria)
     {
-        String query = fileName + " " + searchForCritiria; 
+        String query = "\"" + fileName + "\" " + searchForCritiria; 
         System.out.println("Querying Google for " + query);
         Parser parser;
         try
