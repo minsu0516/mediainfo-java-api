@@ -39,6 +39,8 @@ import org.htmlparser.NodeFilter;
 import org.htmlparser.Parser;
 import org.htmlparser.filters.AndFilter;
 import org.htmlparser.filters.HasAttributeFilter;
+import org.htmlparser.filters.HasChildFilter;
+import org.htmlparser.filters.RegexFilter;
 import org.htmlparser.filters.TagNameFilter;
 import org.htmlparser.util.NodeIterator;
 import org.htmlparser.util.NodeList;
@@ -538,22 +540,27 @@ public class Utils
                     new TagNameFilter("div"), new HasAttributeFilter("class", "s"));
 //            NodeFilter filter = new RegexFilter("www.imdb.com/title</em>/tt[\\d]*");
             NodeList list = new NodeList();
-            for (NodeIterator e = parser.elements(); e.hasMoreNodes();)
-            {
-                Node node =  e.nextNode();
-//                System.out.println(node.toHtml());
-                node.collectInto(list, filter);
-            }
+            list = parser.parse(filter);
+//            for (NodeIterator e = parser.elements(); e.hasMoreNodes();)
+//            {
+//                Node node =  e.nextNode();
+////                System.out.println(node.toHtml());
+//                node.collectInto(list, filter);
+//            }
+            Pattern p = Pattern.compile("http://www.imdb.com/[ ]*title/[a-z]{2}[0-9]+");
             Node[] nodes = list.toNodeArray();
             for (int i = 0; i < nodes.length; i++)
             {
                 Node nd = nodes[i];
-                Pattern p = Pattern.compile("http://www.imdb.com/title/[a-z,0-9]*");
+                
                 Matcher m = p.matcher(nd.toPlainTextString());
                 if (m.find())
                 {
 //                    String me = m.group();
-                    return(m.group());
+//                    System.out.println("******** " + m.group());
+                    String urll = m.group();
+                    urll = urll.replaceAll(" ", "");
+                    return(urll);
                 }
 //                System.out.println(nd.toPlainTextString());
             }
@@ -613,7 +620,7 @@ public class Utils
     
     public static String locateRealNameUsingGoogle(String fullName)
     {
-        String name = locateRealNameUsingGoogle(fullName, "www.imdb.com");
+        String name = locateRealNameUsingGoogle(fullName, "www.imdb.com/title");
         if (name == null)
         {
             name = locateRealNameUsingGoogle(fullName, "www.tv.com");
@@ -640,17 +647,31 @@ public class Utils
                 NodeList list = parser.parse(filter);
                 String tmpName = list.toNodeArray()[0].toPlainTextString().replaceAll(",", "");
                 tmpName = tmpName.replaceAll("\\([\\d]*\\)$", "");
+                
+                
+                NodeFilter filter2 = new RegexFilter("English title");
+                
+                parser.reset();
+                list = new NodeList();
+                list = parser.parse(filter2);
+                if (list != null && list.size() >0)
+                {
+                    String engName = list.elementAt(0).toPlainTextString();
+                    engName = engName.replaceFirst("\\(.*\\)", "");
+                    return engName;
+//                    System.out.println("eng name = " + engName);
+                }
                 System.out.println("*** Google says - Movie real name is:" + tmpName);
                 return tmpName;
                 
             } catch (ParserException e1)
             {
-                System.out.println("*********** Error trying to get file name using google for: " + fullName);
+                System.out.println("***** Error trying to get file name using google for: " + fullName);
             }
         }
         else
         {
-            
+            System.out.println("***** Google did not find a result for: " + fullName);
         }
         
         return null;

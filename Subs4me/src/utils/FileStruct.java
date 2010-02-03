@@ -121,7 +121,7 @@ public class FileStruct
                     {
                         n = _fullFileName;
                     }
-                    String realName = Utils.locateRealNameUsingGoogle(n, "www.imdb.com");
+                    String realName = Utils.locateRealNameUsingGoogle(n, "www.imdb.com/title");
                     if (realName == null)
                     {
                         return;
