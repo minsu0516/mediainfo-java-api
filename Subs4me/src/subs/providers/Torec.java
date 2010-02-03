@@ -250,7 +250,9 @@ public class Torec implements Provider
             }
         } catch (Exception e)
         {
-            e.printStackTrace();
+            System.out.println("Torec could not find by actual name (not there): " + currentFile.getFullFileName());
+            return null;
+//            e.printStackTrace();
         }
 
         return null;
