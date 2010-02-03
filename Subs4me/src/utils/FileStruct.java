@@ -290,7 +290,11 @@ public class FileStruct
     
     public String getEpisodeSimple()
     {
-        return _episode.replaceAll("^[0]*", "");
+        String ret = _episode.replaceAll("^[0]*", "");
+        if (ret.isEmpty())
+            return "0";
+        else
+            return ret;
     }
 
     public void setEpisode(String episode)

@@ -236,8 +236,11 @@ public class Sratim implements Provider
                                 .getAttribute("href"));
                         if (subid != null)
                         {
-                            Results subFiles = locateFileInFilePage(subid
-                                    .substring(1), currentFile.getNameNoExt());
+                            String sub1 = subid;
+                            if (sub1.startsWith("/"))
+                                sub1 = subid.substring(1);
+                            
+                            Results subFiles = locateFileInFilePage(sub1, currentFile.getNameNoExt());
                             if (subFiles != null)
                             {
                                 return subFiles;
