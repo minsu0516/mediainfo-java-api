@@ -521,6 +521,28 @@ public class Utils
         return null;
     }
     
+    public static String createGoogleQuery(String query) 
+    {
+         // Convert spaces to +, etc. to make a valid URL
+            try
+            {
+                query = URLEncoder.encode(query, "UTF-8");
+                URL url = new URL(
+                        "http://www.google.com/search?hl=en&source=hp&q="
+                        + query+ "&btnG=Google+Search&aq=f&aqi=&oq=");
+                return url.toString();
+            } catch (UnsupportedEncodingException e)
+            {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
+            } catch (MalformedURLException e)
+            {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
+            }
+        return null;
+    }
+    
   //scrape google
     public static String searchRealNameUsingGoogle2(String fileName, String searchForCritiria)
     {

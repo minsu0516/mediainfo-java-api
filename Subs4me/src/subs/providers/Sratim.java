@@ -105,6 +105,46 @@ public class Sratim implements Provider
         currentFile = fs;
         searchByActualName(currentFile);
     }
+    
+    /**
+     * search using google to find the movie/tv show
+     * @param currentFile
+     * @return
+     */
+    public Results searchByActualName2(FileStruct currentFile)
+    {
+        String name = currentFile.getNormalizedName();
+        String query = "\"" + name + "\"";
+        if (currentFile.isTV())
+        {
+            query += " season " + currentFile.getSeasonSimple() + " \"episode " + currentFile.getEpisodeSimple() + "\"";
+        }
+        query += " site:www.sratim.co.il";
+        String url = Utils.createGoogleQuery(query);
+        Parser parser;
+        try
+        {
+            parser = new Parser(url);
+            parser.setEncoding("UTF-8");
+            NodeFilter filter = new AndFilter(
+                    new TagNameFilter("div"), new HasAttributeFilter("class", "s"));
+            NodeList list = new NodeList();
+//            list = parser.parse(filter);
+            for (NodeIterator e = parser.elements(); e.hasMoreNodes();)
+            {
+                Node node =  e.nextNode();
+                System.out.println(node.toHtml());
+                node.collectInto(list, filter);
+            }
+        } catch (ParserException e)
+        {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
+        
+        
+        return null;
+    }
 
     public Results searchByActualName(FileStruct currentFile)
     {
@@ -331,6 +371,7 @@ public class Sratim implements Provider
             boolean success = false;
 
             System.out.println("*** Sratim trying to find movie for: " + currentFile.getNormalizedName()); 
+            searchByActualName2(currentFile);
             Results subsID = searchByActualName(currentFile);
             if (subsID != null && subsID.getResults().size() > 0)
             {
@@ -788,7 +829,6 @@ public class Sratim implements Provider
                 logger.severe("Error : " + error.getMessage());
                 return false;
             }
-
         }
 
         public static HttpURLConnection createPost(String urlString,
