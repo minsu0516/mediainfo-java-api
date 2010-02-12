@@ -39,6 +39,7 @@ import org.htmlparser.filters.LinkStringFilter;
 import org.htmlparser.filters.TagNameFilter;
 import org.htmlparser.http.ConnectionManager;
 import org.htmlparser.nodes.TagNode;
+import org.htmlparser.tags.HeadingTag;
 import org.htmlparser.tags.LinkTag;
 import org.htmlparser.util.NodeIterator;
 import org.htmlparser.util.NodeList;
@@ -126,16 +127,31 @@ public class Sratim implements Provider
         {
             parser = new Parser(url);
             parser.setEncoding("UTF-8");
-            NodeFilter filter = new AndFilter(
-                    new TagNameFilter("div"), new HasAttributeFilter("class", "s"));
+            
+//            NodeFilter filter = new AndFilter(
+//                    new TagNameFilter("h3"), new HasAttributeFilter("class", "r"));
+            NodeFilter filter = new AndFilter(new LinkRegexFilter("www.sratim.co.il"),
+                    new HasParentFilter(
+                            new AndFilter(
+                                  new TagNameFilter("h3"), new HasAttributeFilter("class", "r"))));
             NodeList list = new NodeList();
 //            list = parser.parse(filter);
             for (NodeIterator e = parser.elements(); e.hasMoreNodes();)
             {
                 Node node =  e.nextNode();
-                System.out.println(node.toHtml());
+//                System.out.println(node.toHtml());
                 node.collectInto(list, filter);
             }
+            
+            if (list != null && list.size() >0)
+            {
+                LinkTag link = (LinkTag) list.elementAt(0);
+//                return link.getAttribute("href");
+//                engName = engName.replaceFirst("\\(.*\\)", "");
+//                return engName;
+//                System.out.println("eng name = " + engName);
+            }
+//            System.out.println("*** Google says - Movie real name is:" + tmpName);
         } catch (ParserException e)
         {
             // TODO Auto-generated catch block
@@ -371,7 +387,7 @@ public class Sratim implements Provider
             boolean success = false;
 
             System.out.println("*** Sratim trying to find movie for: " + currentFile.getNormalizedName()); 
-            searchByActualName2(currentFile);
+            searchByActualName(currentFile);
             Results subsID = searchByActualName(currentFile);
             if (subsID != null && subsID.getResults().size() > 0)
             {
