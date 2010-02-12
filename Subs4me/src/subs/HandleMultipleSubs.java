@@ -16,6 +16,7 @@ import subs.providers.Sratim;
 import subs.providers.Torec;
 import utils.FileStruct;
 import utils.PropertiesUtil;
+import utils.Utils;
 
 public class HandleMultipleSubs
 {
@@ -121,7 +122,7 @@ public class HandleMultipleSubs
         {
             if (currentFile.getExt().equals(Subs4me.DO_WORK_EXT.substring(1)))
             {
-                currentFile.getFile().delete();
+                Utils.deleteFile(currentFile.getFile());
             }
             return;
         }
@@ -195,25 +196,29 @@ public class HandleMultipleSubs
                     if (p.getProviderName().equalsIgnoreCase(Sratim.getInstance().getName()))
                     {
                         Sratim.getInstance().downloadFile(p.getFileURL(), p.getDestFileName(), currentFile);
-                        if (!currentFile.isVideoFile())
-                        {
-                            currentFile.getFile().delete();
-                        }
+                        Utils.deleteFile(currentFile.getFile());
+//                        if (!currentFile.isVideoFile())
+//                        {
+//                            
+//                            currentFile.getFile().delete();
+//                        }
                     }
                     else if (p.getProviderName().equalsIgnoreCase(Torec.getInstance().getName()))
                     {
                         Torec.getInstance().downloadFile(p.getFileURL(), p.getDestFileName(), currentFile);
-                        if (!currentFile.isVideoFile())
-                        {
-                            currentFile.getFile().delete();
-                        }
+                        Utils.deleteFile(currentFile.getFile());
+//                        if (!currentFile.isVideoFile())
+//                        {
+//                            currentFile.getFile().delete();
+//                        }
                     }
                     
                     for (int i = 0; i < files.length; i++)
                     {
                         String delName = files[i];
                         File del = new File(currentFile.getFile().getParent(), delName);
-                        del.delete();
+                        Utils.deleteFile(del);
+//                        del.delete();
                     }
                 }
                 else
@@ -221,10 +226,11 @@ public class HandleMultipleSubs
                     File ff = new File(currentFile.getFile().getParent(), files[sel-1]);
                     File dest = new File(currentFile.getFile().getParent(), currentFile.getFullNameNoExt() + ".srt");
                     ff.renameTo(dest);
-                    if (!currentFile.isVideoFile())
-                    {
-                        currentFile.getFile().delete();
-                    }
+                    Utils.deleteFile(currentFile.getFile());
+//                    if (!currentFile.isVideoFile())
+//                    {
+//                        currentFile.getFile().delete();
+//                    }
                     
                     for (int i = 0; i < files.length; i++)
                     {
@@ -232,7 +238,8 @@ public class HandleMultipleSubs
                         if (i == sel-1)
                             continue;
                         File del = new File(currentFile.getFile().getParent(), delName);
-                        del.delete();
+                        Utils.deleteFile(del);
+//                        del.delete();
                     }
                 }
                 
@@ -240,7 +247,8 @@ public class HandleMultipleSubs
                 if (!currentFile.getExt().equals(Subs4me.DO_WORK_EXT.substring(1)))
                 {
                     File del = new File(currentFile.getFile().getParent(), currentFile.getFullNameNoExt() + Subs4me.DO_WORK_EXT);
-                    del.delete();
+                    Utils.deleteFile(del);
+//                    del.delete();
                 }
                 break;
         }
@@ -248,23 +256,26 @@ public class HandleMultipleSubs
     
     private void cleanup(String[] files)
     {
-        if (!currentFile.isVideoFile())
-        {
-            currentFile.getFile().delete();
-        }
+        Utils.deleteFile(currentFile.getFile());
+//        if (!currentFile.isVideoFile())
+//        {
+//            currentFile.getFile().delete();
+//        }
         
         for (int i = 0; i < files.length; i++)
         {
             String delName = files[i];
             File del = new File(currentFile.getFile().getParent(), delName);
-            del.delete();
+            Utils.deleteFile(del);
+//            del.delete();
         }
         
         //cleanup dowrok file
         if (!currentFile.getExt().equals(Subs4me.DO_WORK_EXT.substring(1)))
         {
             File del = new File(currentFile.getFile().getParent(), currentFile.getFullNameNoExt() + Subs4me.DO_WORK_EXT);
-            del.delete();
+            Utils.deleteFile(del);
+//            del.delete();
         }
     }
     
