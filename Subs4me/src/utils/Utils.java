@@ -166,7 +166,8 @@ public class Utils
                                 destFileName)));
             }
             zipFile.close();
-            new File(tempDir + zipName).delete();
+            File del = new File(tempDir + zipName);
+            Utils.deleteFile(del);
         }
         catch (IOException ioe)
         {
@@ -806,6 +807,28 @@ public class Utils
         {
             // TODO Auto-generated catch block
             e.printStackTrace();
+        }
+    }
+    
+    /**
+     * check if file is not a video file, and if it is less 100K, obly then delete it
+     * @param f file to delete
+     */
+    public static void deleteFile(File f)
+    {
+        String ext = null;
+        Matcher m1 = FileStruct.EXT_PATTERN.matcher(f.getName());
+        if (m1.find())
+        {
+            ext = m1.group(1);
+        }
+        if (ext != null
+                && !ext.equals(".mkv")
+                && !ext.equals(".avi")
+                && f.length() < 100000
+                )
+        {
+            f.delete();
         }
     }
     
