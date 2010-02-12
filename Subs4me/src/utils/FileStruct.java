@@ -24,7 +24,7 @@ public class FileStruct
     public final static String releaseSourcePattern = "(?i)(cam)|(ts)|(tc)|(r5)";
     public final static String hdLevel = "(?i)(720p)|(720i)|(720)|(1080p)|(1080i)|(1080)|(480p)|(480i)|(576p)|(576i)";
     
-    Pattern EXT_PATTERN = Pattern.compile(".*([.].*$)");
+    public static Pattern EXT_PATTERN = Pattern.compile(".*([.].*$)");
     public int getReleaseStartIndex()
     {
         return releaseStartIndex;
@@ -245,6 +245,37 @@ public class FileStruct
     public String getFullFileName()
     {
         return _fullFileName;
+    }
+    
+    public String getParentName()
+    {
+        return getFile().getParentFile().getName();
+    }
+    
+    /**
+     * 0 or 1 types please
+     * @param type
+     * @return
+     */
+    public String getFullNameForSubsDownloaded(String... type)
+    {
+        String tmpType = "srt";
+        if (type != null && type.length >0)
+        {
+            tmpType = type[0];
+        }
+        if (Subs4me.shouldUseParentDirName())
+        {
+            Matcher m = EXT_PATTERN.matcher(getFile().getName());
+            m.find();
+            String ext = m.group(1);
+            return getFile().getParentFile().getName() + "." + tmpType;
+//            return 
+        }
+        else
+        {
+            return _fullFileName + "." + tmpType;
+        }
     }
     
     public String getFullFileNameNoGroup()
