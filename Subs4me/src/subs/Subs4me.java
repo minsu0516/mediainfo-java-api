@@ -14,6 +14,7 @@ import subs.providers.Subscene;
 import subs.providers.Torec;
 import utils.FileStruct;
 import utils.PropertiesUtil;
+import utils.Utils;
 
 public class Subs4me
 {
@@ -174,7 +175,8 @@ public class Subs4me
         {
             String delName = files[i];
             File del = new File(f.getParent(), delName);
-            del.delete();
+            Utils.deleteFile(del);
+//            del.delete();
         }
     }
     
@@ -498,6 +500,22 @@ public class Subs4me
             System.out.println("*****************************************************************************************");
         }
         System.out.println("******* Thanks for using subs4me, hope you enjoy the results *******");
+        if (as.oneSubsFound.size() > 0
+                   && as.moreThanOneSubs.size() ==0
+                   && as.noSubs.size() == 0)
+        {
+            System.out.println("existing code 0");
+            System.exit(0);
+        }
+
+        if (as.moreThanOneSubs.size() >0 
+                && as.noSubs.size() == 0)
+        {
+            System.out.println("existing code 1");
+            System.exit(1);
+        }
+        System.out.println("existing code 2");
+        System.exit(2); 
     }
     
     public static LinkedList<String> initProperties()
@@ -631,5 +649,10 @@ public class Subs4me
     public static boolean shouldForceGetPic()
     {
         return getMoviePicForce;
+    }
+    
+    public static boolean shouldUseParentDirName()
+    {
+        return _useParentDirAsName;
     }
 }
