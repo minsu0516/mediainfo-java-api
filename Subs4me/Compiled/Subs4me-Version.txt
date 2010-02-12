@@ -1,13 +1,24 @@
 Version 1.1
  change: new default_launch property that accepts launch configuration name (any name), must be configured in file:
- 			default_launch=launch1
- 			launch1=getsubs,waitforit,handlemultiplesubs /r
+ 			default_launch=intetractive
+ 			intetractive=handlemultiplesubs,getsubs,handlemultiplesubs
  change: now accepting more than 1 source directory/file as paramaters - because sometimes I want to look for a few dirs together...	
  			i.e - getsubs c:\1 c:\2		
  change: get_subs_default_directories now should work. put directorys/files seprated by comma.
  		 handle_multipule_subtitles_default_directories now should work. put directorys/files seprated by comma.
  change: torec now (exactly like sratim), does not download all the subs, but puts them in the file, and when we handle more than
  		 one subs per movie, and choose the correct one it downloads it on the fly.
+ added: return code only for getsubs which means that if all you do is getsubs
+ 			change this in properties file:
+ 				default_launch=justgetsubs
+ 				justgetsubs=getsubs
+ 				
+ 		you will get these return codes
+ 		return code 0: all went well, correct (1) subtitle found
+ 		return code 1: more than 1 subtitle was found
+ 		return code 0: no subtitles were found
+ added: file deletion protection, do not delte if video file, or greater than 100K		
+ 
 Version 1.0
  NEW:   Added launcher as main class, can be tweaked with launcher property in the properties file.
  		Will now do getsubs (getsubs.bat should run the same), then wait for the user to click cancel for 5 seconds.
