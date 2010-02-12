@@ -1,3 +1,5 @@
+Version 1.1.1
+ added: /useExitCodes to getsubs - give an exit code when ending prog
 Version 1.1
  change: new default_launch property that accepts launch configuration name (any name), must be configured in file:
  			default_launch=intetractive

@@ -19,7 +19,7 @@ import utils.Utils;
 public class Subs4me
 {
     public static final String SRT_EXISTS = "/c";
-    public static final String VERSION = "1.1";
+    public static final String VERSION = "1.1.1";
     public static final String RECURSIVE_SEARCH = "/r";
     public static final String FULL_DOWNLOAD = "/all";
     public static final String PROVIDERS = "/p";
@@ -27,6 +27,7 @@ public class Subs4me
     public static final String GRT_MOVIE_PIC_FORCED = "/if";
     public static final String DO_NOT_USE_OPENSUBS_FOR_FILE_REALIZATION = "/n";
     public static final String USE_PARENT_DIRNAME_AS_NAME = "/useDirName";
+    public static final String USE_EXIT_CODES = "/useExitCodes";
     public static final String DO_WORK_EXT = ".run_HandleMultiplesubs";
     
     public static final String PROVIDERS_PROPERTY = "get_subs_providers";
@@ -61,6 +62,7 @@ public class Subs4me
     
     private static Subs4me instance = new Subs4me();
     public static boolean dontUseOpenSubsForNameSearch;
+    private static boolean _useExitCodes = false;
     
     public static Subs4me getInstance()
     {
@@ -384,6 +386,10 @@ public class Subs4me
             {
                 getMoviePicForce = true;
             }
+            else if (arg.equals(USE_EXIT_CODES))
+            {
+                _useExitCodes  = true;
+            }
             else if (arg.equals(USE_PARENT_DIRNAME_AS_NAME))
             {
                 _useParentDirAsName = true;
@@ -453,6 +459,9 @@ public class Subs4me
         sbMsg.append("        use parent directory as name = ");
         sbMsg.append(_useParentDirAsName);
         sbMsg.append("\n");
+        sbMsg.append("        use exit codes = ");
+        sbMsg.append(_useExitCodes);
+        sbMsg.append("\n");
         System.out.println(sbMsg);
         as.initProviders(providers);
         
@@ -500,22 +509,26 @@ public class Subs4me
             System.out.println("*****************************************************************************************");
         }
         System.out.println("******* Thanks for using subs4me, hope you enjoy the results *******");
-        if (as.oneSubsFound.size() > 0
-                   && as.moreThanOneSubs.size() ==0
-                   && as.noSubs.size() == 0)
+        
+        if (_useExitCodes)
         {
-            System.out.println("existing code 0");
-            System.exit(0);
+            if (as.oneSubsFound.size() > 0
+                       && as.moreThanOneSubs.size() ==0
+                       && as.noSubs.size() == 0)
+            {
+                System.out.println("existing code 0");
+                System.exit(0);
+            }
+    
+            if (as.moreThanOneSubs.size() >0 
+                    && as.noSubs.size() == 0)
+            {
+                System.out.println("existing code 1");
+                System.exit(1);
+            }
+            System.out.println("existing code 2");
+            System.exit(2); 
         }
-
-        if (as.moreThanOneSubs.size() >0 
-                && as.noSubs.size() == 0)
-        {
-            System.out.println("existing code 1");
-            System.exit(1);
-        }
-        System.out.println("existing code 2");
-        System.exit(2); 
     }
     
     public static LinkedList<String> initProperties()
@@ -626,6 +639,7 @@ public class Subs4me
         sb.append("         f = force getting the movie image (refresh current)\n");
         sb.append("  " + USE_PARENT_DIRNAME_AS_NAME);
         sb.append(": use parents dir name as name for movie, will not work at all if there are 2 movies at the same directry\n");
+        sb.append("  useExitCodes: when getsubs ends, give an exit code\n");
         sb.append("/?: this help file\n");
         sb.append("\nCreated by ilank\nEnjoy...");
         System.out.println(sb.toString());
