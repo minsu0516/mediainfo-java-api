@@ -28,6 +28,7 @@ public class Subs4me
     public static final String DO_NOT_USE_OPENSUBS_FOR_FILE_REALIZATION = "/n";
     public static final String USE_PARENT_DIRNAME_AS_NAME = "/useDirName";
     public static final String USE_EXIT_CODES = "/useExitCodes";
+    public static final String SHOW_HELP = "-?";
     public static final String DO_WORK_EXT = ".run_HandleMultiplesubs";
     
     public static final String PROVIDERS_PROPERTY = "get_subs_providers";
@@ -393,6 +394,10 @@ public class Subs4me
             else if (arg.equals(USE_PARENT_DIRNAME_AS_NAME))
             {
                 _useParentDirAsName = true;
+            }
+            else if (arg.equals(SHOW_HELP))
+            {
+                exitShowMessage();
             }
             else
             {
