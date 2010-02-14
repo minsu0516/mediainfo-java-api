@@ -1,5 +1,8 @@
 Version 1.1.1
  added: /useExitCodes to getsubs - give an exit code when ending prog
+ 		to use this run
+ 		example batch file content:
+ 			java -jar subs4me.jar /launch=justgetsubswithexitcodes %1 %2 %3 %4 %5 %6 %7 %8 %9
 Version 1.1
  change: new default_launch property that accepts launch configuration name (any name), must be configured in file:
  			default_launch=intetractive
