@@ -39,6 +39,7 @@ public class Subs4me
     public static final String SUBS_DOWNLOAD_PICTURE_FORCE_PROPERTY = "get_subs_download_movie_picture_force";
     public static final String SUBS_USE_PARENT_DIRNAME_AS_NAME_PROPERTY = "get_subs_use_parent_dirname_as_moviename";
     public static final String get_subs_default_directories = "get_subs_default_directories";
+    public static final String use_opensubs_for_file_name_realization = "use_opensubs_for_file_name_realization";
     public static String SESSION_ID = "";
     
     public LinkedList<String> oneSubsFound = new LinkedList<String>();
@@ -590,6 +591,12 @@ public class Subs4me
         if (value != null)
         {
             _useParentDirAsName = value.equalsIgnoreCase("true");
+        }
+        
+        value = PropertiesUtil.getProperty(use_opensubs_for_file_name_realization, "true");
+        if (value != null)
+        {
+            dontUseOpenSubsForNameSearch = value.equalsIgnoreCase("false");
         }
         
         return providers;
