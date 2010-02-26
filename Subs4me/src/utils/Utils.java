@@ -22,6 +22,8 @@ import java.net.URLConnection;
 import java.net.URLDecoder;
 import java.net.URLEncoder;
 import java.util.Enumeration;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.zip.ZipEntry;
@@ -40,8 +42,11 @@ import org.htmlparser.Parser;
 import org.htmlparser.filters.AndFilter;
 import org.htmlparser.filters.HasAttributeFilter;
 import org.htmlparser.filters.HasChildFilter;
+import org.htmlparser.filters.HasParentFilter;
+import org.htmlparser.filters.HasSiblingFilter;
 import org.htmlparser.filters.RegexFilter;
 import org.htmlparser.filters.TagNameFilter;
+import org.htmlparser.tags.HeadingTag;
 import org.htmlparser.util.NodeIterator;
 import org.htmlparser.util.NodeList;
 import org.htmlparser.util.ParserException;
@@ -113,9 +118,10 @@ public class Utils
      * @param retainTheSameName
      *            - true will keep the original filename as there is only one
      *            download, false will change to filename + entry.srt
+     * @param url url reporting is now possible in the unzip
      */
     public static void unzipSubs(FileStruct currentFile,
-            String zipName, boolean retainTheSameName)
+            String zipName, boolean retainTheSameName, String url)
     {
         Enumeration entries;
         ZipFile zipFile;
@@ -155,6 +161,8 @@ public class Utils
                     }
                     // destFileName = currentFile.getSrcDir() + File.separator
                     // + currentFile.getNameNoExt() + ".srt";
+                    
+                    System.out.println("downloaded:" + url + ", originally called:" + entry.getName());
                 }
                 else
                 {
@@ -235,7 +243,6 @@ public class Utils
             bis = new BufferedInputStream(urlc.getInputStream());
             bos = new BufferedOutputStream(new FileOutputStream(destination));
 
-            System.out.println("downloading " + sb.toString());
             int i;
             while ((i = bis.read()) != -1)
             {
@@ -310,34 +317,34 @@ public class Utils
         return false;
     }
 
-    public static boolean compareHDLevel(String n1, FileStruct f1)
-    {
-        Pattern p1 = Pattern.compile(FileStruct.hdLevel);
-        Matcher m1 = p1.matcher(n1);
-        String fileHd = null;
-        if (m1.find())
-        {
-            fileHd = m1.group();
-        }
-        if (fileHd != null)
-            fileHd = fileHd.replaceAll("[pP]", "");
-
-        if (fileHd == f1.getHDLevel())
-        {
-            return true;
-        }
-
-        if ((fileHd == null && f1.getHDLevel() != null)
-                || (fileHd != null && f1.getHDLevel() == null))
-        {
-            return false;
-        }
-
-        if (fileHd.equalsIgnoreCase(f1.getHDLevel()))
-            return true;
-
-        return false;
-    }
+//    public static boolean compareHDLevel(String n1, FileStruct f1)
+//    {
+//        Pattern p1 = Pattern.compile(FileStruct.hdLevel);
+//        Matcher m1 = p1.matcher(n1);
+//        String fileHd = null;
+//        if (m1.find())
+//        {
+//            fileHd = m1.group();
+//        }
+//        if (fileHd != null)
+//            fileHd = fileHd.replaceAll("[pP]", "");
+//
+//        if (fileHd == f1.getHDLevel())
+//        {
+//            return true;
+//        }
+//
+//        if ((fileHd == null && f1.getHDLevel() != null)
+//                || (fileHd != null && f1.getHDLevel() == null))
+//        {
+//            return false;
+//        }
+//
+//        if (fileHd.equalsIgnoreCase(f1.getHDLevel()))
+//            return true;
+//
+//        return false;
+//    }
 
     public static boolean compareReleaseSources(String n1, FileStruct f1)
     {
@@ -381,10 +388,14 @@ public class Utils
 
     public static boolean isSameMovie(FileStruct ff1, FileStruct ff2)
     {
-//        if (!ff1.getReleaseName().equalsIgnoreCase(ff2.getReleaseName()))
-//        {
-//            return false;
-//        }
+        if (isReleaseAMatch(ff1.getReleaseName(),ff2.getReleaseName()))
+        {
+            if (ff1.getHD() != null && ff2.getHD() != null
+                    && ff1.getHD().equalsIgnoreCase(ff2.getHD()))
+            {
+                return true;
+            }
+        }
         String file1 = ff1.getFullFileNameNoGroup();
         String file2 = ff2.getFullFileNameNoGroup();
         
@@ -399,6 +410,29 @@ public class Utils
         return false;
     }
     
+    /**
+     * compare the release names
+     * @param rel1
+     * @param rel2 always considered to be the real file, and not the name from the site
+     * @return
+     */
+    public static boolean isReleaseAMatch(String rel1, String rel2)
+    {
+        if (rel1.equalsIgnoreCase(rel2))
+            return true;
+        
+        if (rel1.toLowerCase().startsWith(rel2.toLowerCase()))
+            return true;
+        
+        return false;
+    }
+    
+    /**
+     * 
+     * @param ff1
+     * @param ff2
+     * @return always considered to be the real file, and not the name from the site
+     */
     public static boolean isSameMovie2(String ff1, String ff2)
     {
         if (ff1.equals(ff2))
@@ -413,7 +447,7 @@ public class Utils
     }
 
     /**
-     * chekc if a movie starts with the same name
+     * check if a movie starts with the same name
      * @param ff1
      * @param ff2
      * @return
@@ -641,14 +675,14 @@ public class Utils
         return null;
     }
     
-    public static String locateRealNameUsingGoogle(String fullName)
+    public static List<String> locateRealNameUsingGoogle(String fullName)
     {
-        String name = locateRealNameUsingGoogle(fullName, "www.imdb.com/title");
-        if (name == null)
+        List<String> names = locateRealNameUsingGoogle(fullName, "www.imdb.com/title");
+        if (names == null)
         {
-            name = locateRealNameUsingGoogle(fullName, "www.tv.com");
+            names = locateRealNameUsingGoogle(fullName, "www.tv.com");
         }
-        return name;
+        return names;
     }
 
     /**
@@ -656,7 +690,7 @@ public class Utils
      * @param fullName
      * @return
      */
-    public static String locateRealNameUsingGoogle(String fullName, String critiria)
+    public static List<String> locateRealNameUsingGoogle(String fullName, String critiria)
     {
       //try to find the real name of the movie using google
         String imdbUrl = Utils.searchRealNameUsingGoogle2(fullName, critiria);
@@ -666,26 +700,45 @@ public class Utils
             {
                 Parser parser = new Parser(imdbUrl);
                 parser.setEncoding("UTF-8");
-                NodeFilter filter = new TagNameFilter("title");
+                NodeFilter parentFilter = new AndFilter(
+                        new TagNameFilter("div"), new HasAttributeFilter("id", "tn15title"));
+                NodeFilter filter = new AndFilter(new TagNameFilter("h1"), 
+                        new HasParentFilter(parentFilter));
+                
                 NodeList list = parser.parse(filter);
-                String tmpName = list.toNodeArray()[0].toPlainTextString().replaceAll(",", "");
-                tmpName = tmpName.replaceAll("\\([\\d]*\\)$", "");
+                String tmpName = ((HeadingTag)list.toNodeArray()[0]).getChild(0).toPlainTextString();
+//                tmpName = tmpName.replaceAll("\\([\\d]*\\)$", "");
+                List<String> lst = new LinkedList<String>();
+                lst.add(tmpName);
                 
-                
-                NodeFilter filter2 = new RegexFilter("English title");
-                
-                parser.reset();
+                parser = new Parser(imdbUrl + "/releaseinfo#akas");
+                NodeFilter filter2 = new AndFilter(new TagNameFilter("a"), new HasAttributeFilter("name", "akas"));
                 list = new NodeList();
                 list = parser.parse(filter2);
                 if (list != null && list.size() >0)
                 {
-                    String engName = list.elementAt(0).toPlainTextString();
-                    engName = engName.replaceFirst("\\(.*\\)", "");
-                    return engName;
-//                    System.out.println("eng name = " + engName);
+                    Node table = list.elementAt(0).getParent().getNextSibling().getNextSibling();
+                    Pattern p1 = Pattern.compile("<td>(.*)</td>");
+                    Matcher m = p1.matcher(table.toHtml());
+                    if (m.find())
+                    {
+                        for (int i = 0; i < m.groupCount(); i=i+2)
+                        {
+                            String gr = m.group(i);
+                            lst.add(gr);
+                        }
+                    }
                 }
+//                if (list != null && list.size() >0)
+//                {
+//                    String engName = list.elementAt(0).toPlainTextString();
+//                    engName = engName.replaceFirst("\\(.*\\)", "");
+//                    lst.add(engName);
+////                    return lst;
+////                    System.out.println("eng name = " + engName);
+//                }
                 System.out.println("*** Google says - Movie real name is:" + tmpName);
-                return tmpName;
+                return lst;
                 
             } catch (ParserException e1)
             {

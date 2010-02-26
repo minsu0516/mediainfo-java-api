@@ -46,7 +46,8 @@ public class Subscene implements Provider
                     .hasNext();)
             {
                 SearchResult searchResult = (SearchResult) iterator.next();
-                if (!Utils.isSameMovie3(searchResult.getName(), currentFile.getNormalizedName()))
+                //TODO:fix to be correct her, this is just a stupid patch
+                if (!Utils.isSameMovie3(searchResult.getName(), currentFile.getNormalizedName().get(0)))
                 {
                     continue;
                 }
@@ -110,7 +111,8 @@ public class Subscene implements Provider
                         }
 //                        subs.add(sub);
                     }
-                    else if (sub.getName().toLowerCase().indexOf(currentFile.getNormalizedName()) > -1)
+                  //TODO:fix to be correct her, this is just a stupid patch
+                    else if (sub.getName().toLowerCase().indexOf(currentFile.getNormalizedName().get(0)) > -1)
                     {
                         System.out.println("Subscene found:" + sub.getName());
                         subs.add(sub);

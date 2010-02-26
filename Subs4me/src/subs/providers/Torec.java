@@ -96,11 +96,12 @@ public class Torec implements Provider
                 {
                     for (String subID : subsID.getResults())
                     {
+                        String url = baseUrl + "/zip_versions/" + Utils.escape(subID) + ".zip";
                         success = Utils.downloadZippedSubs(baseUrl + "/zip_versions/"
                                 + Utils.escape(subID) + ".zip", subID + ".zip");
                         if (success)
                         {
-                            Utils.unzipSubs(currentFile, subID + ".zip", subsID.isCorrectResults());
+                            Utils.unzipSubs(currentFile, subID + ".zip", subsID.isCorrectResults(), url);
                         }
                     }
                     return Provider.perfect;
@@ -135,11 +136,14 @@ public class Torec implements Provider
 
     public Results searchByActualName(FileStruct currentFile)
     {
-        StringBuffer buffer;
+        for (Iterator iterator = currentFile.getNormalizedName().iterator(); iterator.hasNext();)
+        {
+            String currentTmpNormalizedName = ((String) iterator.next()).trim();
+            String[] names = currentTmpNormalizedName.split(" ");
+            StringBuffer buffer;
             buffer = new StringBuffer(1024);
             // 'input' fields separated by ampersands (&)
             buffer.append("search=");
-            String[] names = currentFile.getNormalizedName().split(" ");
             for (int i = 0; i < names.length; i++)
             {
                 String part = names[i];
@@ -159,100 +163,101 @@ public class Torec implements Provider
                 parser = new Parser(connection);
                 parser.setEncoding("UTF-8");
 
-            NodeList list = new NodeList();
-            // check if we need tvseries
-            NodeFilter filter = null;
-            if (currentFile.isTV())
-            {
-                filter = new AndFilter(new LinkRegexFilter("series_id"),
-                        new HasChildFilter(new TagNameFilter("IMG")));
-            } else
-            {                
-               filter = new AndFilter(new LinkRegexFilter("_id="),
-                        new HasParentFilter(new AndFilter(new TagNameFilter("td"),
-                                new HasAttributeFilter("class", "newd_table_titleLeft_BG")), true));
-            }
-
-            ArrayList<String> subids = new ArrayList<String>();
-            // parsing the links on the search page itself
-            for (NodeIterator e = parser.elements(); e.hasMoreNodes();)
-            {
-                e.nextNode().collectInto(list, filter);
-            }
-
-            if (!currentFile.isTV())
-            {
-                if (!list.toHtml().equals(""))
+                NodeList list = new NodeList();
+                // check if we need tvseries
+                NodeFilter filter = null;
+                if (currentFile.isTV())
                 {
-                    Node[] nodes = list.toNodeArray();
-                    for (int i = 0; i < nodes.length; i++)
-                    {
-                        Node node = nodes[i];
-                        if (node.toPlainTextString() == null || node.toPlainTextString().equals(""))
-                            continue;
-                        
-                        String[] namess = node.toPlainTextString().split("/");
-                        if (namess.length < 2)
-                            continue;
-                        
-                        if (!Utils.isSameMovie2(namess[1], currentFile.getNormalizedName()))
-                            continue;
-//                        System.out.println(node.toPlainTextString());
-                        String ref = ((TagNode) node).getAttribute("href");
-                        findPicture(currentFile, ref);
-                        if (ref.contains("_id="))
-                        {
-                            subids.add(ref);
-                        }
-                        
-                        // System.out.println("subid = " + subids.get(i));
-                    }
+                    filter = new AndFilter(new LinkRegexFilter("series_id"),
+                            new HasChildFilter(new TagNameFilter("IMG")));
+                } else
+                {                
+                    filter = new AndFilter(new LinkRegexFilter("_id="),
+                            new HasParentFilter(new AndFilter(new TagNameFilter("td"),
+                                    new HasAttributeFilter("class", "newd_table_titleLeft_BG")), true));
                 }
-    
-                for (String id : subids)
-                {
-                    Results subs = locateFileInFilePageOnTorec(id, currentFile.getNameNoExt());
-                    if (subs != null)
-                    {
-                        return subs;
-                    }
-                }
-            }
-            else
-            {
-                // ////////////////////////////////////////////////////////////////////////////////////////
-                /*
-                 * No luck finding the correct movie name, it must be a tv
-                 * series So we need to search for series
-                 */
 
-                if (!list.toHtml().equals(""))
+                ArrayList<String> subids = new ArrayList<String>();
+                // parsing the links on the search page itself
+                for (NodeIterator e = parser.elements(); e.hasMoreNodes();)
                 {
-                    Node[] nodes = list.toNodeArray();
-                    for (int i = 0; i < nodes.length; i++)
+                    e.nextNode().collectInto(list, filter);
+                }
+
+                if (!currentFile.isTV())
+                {
+                    if (!list.toHtml().equals(""))
                     {
-                        Node node = nodes[i];
-                        // System.out.println(((TagNode)
-                        // node).getAttribute("href"));
-                        String subid = searchForCorrectSubidOfSeries(((TagNode) node)
-                                .getAttribute("href"), currentFile);
-                        if (subid != null)
+                        Node[] nodes = list.toNodeArray();
+                        for (int i = 0; i < nodes.length; i++)
                         {
-                            Results subFiles = locateFileInFilePageOnTorec(subid
-                                    .substring(1), currentFile.getNameNoExt());
-                            if (subFiles != null)
+                            Node node = nodes[i];
+                            if (node.toPlainTextString() == null || node.toPlainTextString().equals(""))
+                                continue;
+
+                            String[] namess = node.toPlainTextString().split("/");
+                            if (namess.length < 2)
+                                continue;
+
+                            if (!Utils.isSameMovie2(namess[1], currentTmpNormalizedName))
+                                continue;
+                            //                        System.out.println(node.toPlainTextString());
+                            String ref = ((TagNode) node).getAttribute("href");
+                            findPicture(currentFile, ref);
+                            if (ref.contains("_id="))
                             {
-                                return subFiles;
+                                subids.add(ref);
+                            }
+
+                            // System.out.println("subid = " + subids.get(i));
+                        }
+                    }
+
+                    for (String id : subids)
+                    {
+                        Results subs = locateFileInFilePageOnTorec(id, currentFile.getNameNoExt());
+                        if (subs != null)
+                        {
+                            return subs;
+                        }
+                    }
+                }
+                else
+                {
+                    // ////////////////////////////////////////////////////////////////////////////////////////
+                    /*
+                     * No luck finding the correct movie name, it must be a tv
+                     * series So we need to search for series
+                     */
+
+                    if (!list.toHtml().equals(""))
+                    {
+                        Node[] nodes = list.toNodeArray();
+                        for (int i = 0; i < nodes.length; i++)
+                        {
+                            Node node = nodes[i];
+                            // System.out.println(((TagNode)
+                            // node).getAttribute("href"));
+                            String subid = searchForCorrectSubidOfSeries(((TagNode) node)
+                                    .getAttribute("href"), currentFile);
+                            if (subid != null)
+                            {
+                                Results subFiles = locateFileInFilePageOnTorec(subid
+                                        .substring(1), currentFile.getNameNoExt());
+                                if (subFiles != null)
+                                {
+                                    return subFiles;
+                                }
                             }
                         }
                     }
                 }
+            } catch (Exception e)
+            {
+                System.out.println("Torec could not find by actual name (not there): " + currentFile.getFullFileName());
+                return null;
+                //            e.printStackTrace();
             }
-        } catch (Exception e)
-        {
-            System.out.println("Torec could not find by actual name (not there): " + currentFile.getFullFileName());
-            return null;
-//            e.printStackTrace();
         }
 
         return null;
@@ -709,7 +714,7 @@ public class Torec implements Provider
         boolean success = Utils.downloadZippedSubs(url, dstZipFilename + ".zip");
         if (success)
         {
-            Utils.unzipSubs(curr, dstZipFilename + ".zip", true);
+            Utils.unzipSubs(curr, dstZipFilename + ".zip", true, url);
         }
     }
 

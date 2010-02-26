@@ -19,7 +19,10 @@ import utils.Utils;
 public class Subs4me
 {
     public static final String SRT_EXISTS = "/c";
-    public static final String VERSION = "1.1.1";
+    public static final String VERSION = "1.1.2";
+    public static final String SUBS4ME_IGNORE_FILE_NAME = "ignore_directory.subs4me";
+    
+    
     public static final String RECURSIVE_SEARCH = "/r";
     public static final String FULL_DOWNLOAD = "/all";
     public static final String PROVIDERS = "/p";
@@ -28,6 +31,7 @@ public class Subs4me
     public static final String DO_NOT_USE_OPENSUBS_FOR_FILE_REALIZATION = "/n";
     public static final String USE_PARENT_DIRNAME_AS_NAME = "/useDirName";
     public static final String USE_EXIT_CODES = "/useExitCodes";
+    public static final String USE_HD_IN_NAMES = "/hd";
     public static final String SHOW_HELP = "-?";
     public static final String DO_WORK_EXT = ".run_HandleMultiplesubs";
     
@@ -40,6 +44,8 @@ public class Subs4me
     public static final String SUBS_USE_PARENT_DIRNAME_AS_NAME_PROPERTY = "get_subs_use_parent_dirname_as_moviename";
     public static final String get_subs_default_directories = "get_subs_default_directories";
     public static final String use_opensubs_for_file_name_realization = "use_opensubs_for_file_name_realization";
+    public static final String get_subs_always_use_hd_in_names = "get_subs_always_use_hd_in_names";
+    
     public static String SESSION_ID = "";
     
     public LinkedList<String> oneSubsFound = new LinkedList<String>();
@@ -64,6 +70,7 @@ public class Subs4me
     
     private static Subs4me instance = new Subs4me();
     public static boolean dontUseOpenSubsForNameSearch;
+    public static boolean _alwaysSearchForHDNmaes;
     private static boolean _useExitCodes = false;
     
     public static Subs4me getInstance()
@@ -233,13 +240,17 @@ public class Subs4me
                     File parent = new File(dir, name);
                     if (isRecursive() && parent.isDirectory())
                     {
-                        File dont = new File(parent, "subs4me_do_no_look.txt");
+                        File dont = new File(parent, SUBS4ME_IGNORE_FILE_NAME);
                         if (dont.exists())
                             return false;
                         
                         return true;
                     }
                     //NO SAMPLE FILES!!!!
+                    
+                    File dont = new File(parent.getParentFile(), SUBS4ME_IGNORE_FILE_NAME);
+                    if (dont.exists())
+                        return false;
                     
                     Matcher m1 = samplePattern.matcher(name);
                     if (m1.find())
@@ -599,6 +610,12 @@ public class Subs4me
             dontUseOpenSubsForNameSearch = value.equalsIgnoreCase("false");
         }
         
+        value = PropertiesUtil.getProperty(get_subs_always_use_hd_in_names, "false");
+        if (value != null)
+        {
+            _alwaysSearchForHDNmaes = value.equalsIgnoreCase("false");
+        }
+        
         return providers;
     }
 
@@ -652,6 +669,7 @@ public class Subs4me
         sb.append("  " + USE_PARENT_DIRNAME_AS_NAME);
         sb.append(": use parents dir name as name for movie, will not work at all if there are 2 movies at the same directry\n");
         sb.append("  useExitCodes: when getsubs ends, give an exit code\n");
+        //sb.append("  hd: always look for hd ref in names (480P, 720P, 1080P) and only give those options\n");
         sb.append("/?: this help file\n");
         sb.append("\nCreated by ilank\nEnjoy...");
         System.out.println(sb.toString());

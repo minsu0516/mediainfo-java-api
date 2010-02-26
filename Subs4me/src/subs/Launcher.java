@@ -55,8 +55,9 @@ public class Launcher
         String sequence = PropertiesUtil.getProperty(def_launch);
         if (sequence == null)
             return;
-        System.out.println("***** launch using " + def_launch + " configuration" );
-        System.out.println("       to change launch config, either change default_launch property or use " + DEFUALT_LAUNCH_OPERATION + " param\n");
+        
+        System.out.println("***** launching using " + def_launch + " configuration *******" );
+        System.out.println("       to change launch config, either change default_launch property or use " + DEFUALT_LAUNCH_OPERATION + " param\n\n");
         String[] launch = sequence.split(",");
         for (int i = 0; i < launch.length; i++)
         {
@@ -69,7 +70,7 @@ public class Launcher
             params.remove(destinations.size());
             if (prog.toLowerCase().startsWith(GET_SUBTITLE_PROPERTY))
             {
-                System.out.println("Launcher running getsubs");
+                System.out.println(" ***** Launcher running getsubs *****\n");
                 Subs4me.main(params.toArray(new String[params.size()]));
             }
             else if (prog.toLowerCase().equals(WAITFORIT_PROPERTY))

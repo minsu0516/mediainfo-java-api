@@ -21,6 +21,7 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLEncoder;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -107,208 +108,212 @@ public class Sratim implements Provider
         searchByActualName(currentFile);
     }
     
-    /**
-     * search using google to find the movie/tv show
-     * @param currentFile
-     * @return
-     */
-    public Results searchByActualName2(FileStruct currentFile)
-    {
-        String name = currentFile.getNormalizedName();
-        String query = "\"" + name + "\"";
-        if (currentFile.isTV())
-        {
-            query += " season " + currentFile.getSeasonSimple() + " \"episode " + currentFile.getEpisodeSimple() + "\"";
-        }
-        query += " site:www.sratim.co.il";
-        String url = Utils.createGoogleQuery(query);
-        Parser parser;
-        try
-        {
-            parser = new Parser(url);
-            parser.setEncoding("UTF-8");
-            
-//            NodeFilter filter = new AndFilter(
-//                    new TagNameFilter("h3"), new HasAttributeFilter("class", "r"));
-            NodeFilter filter = new AndFilter(new LinkRegexFilter("www.sratim.co.il"),
-                    new HasParentFilter(
-                            new AndFilter(
-                                  new TagNameFilter("h3"), new HasAttributeFilter("class", "r"))));
-            NodeList list = new NodeList();
-//            list = parser.parse(filter);
-            for (NodeIterator e = parser.elements(); e.hasMoreNodes();)
-            {
-                Node node =  e.nextNode();
-//                System.out.println(node.toHtml());
-                node.collectInto(list, filter);
-            }
-            
-            if (list != null && list.size() >0)
-            {
-                LinkTag link = (LinkTag) list.elementAt(0);
-//                return link.getAttribute("href");
-//                engName = engName.replaceFirst("\\(.*\\)", "");
-//                return engName;
-//                System.out.println("eng name = " + engName);
-            }
-//            System.out.println("*** Google says - Movie real name is:" + tmpName);
-        } catch (ParserException e)
-        {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        }
-        
-        
-        return null;
-    }
+//    /**
+//     * search using google to find the movie/tv show
+//     * @param currentFile
+//     * @return
+//     */
+//    public Results searchByActualName2(FileStruct currentFile)
+//    {
+//        List<String> possibeTitleNames = currentFile.getNormalizedName();
+//        String query = "\"" + possibeTitleNames + "\"";
+//        if (currentFile.isTV())
+//        {
+//            query += " season " + currentFile.getSeasonSimple() + " \"episode " + currentFile.getEpisodeSimple() + "\"";
+//        }
+//        query += " site:www.sratim.co.il";
+//        String url = Utils.createGoogleQuery(query);
+//        Parser parser;
+//        try
+//        {
+//            parser = new Parser(url);
+//            parser.setEncoding("UTF-8");
+//            
+////            NodeFilter filter = new AndFilter(
+////                    new TagNameFilter("h3"), new HasAttributeFilter("class", "r"));
+//            NodeFilter filter = new AndFilter(new LinkRegexFilter("www.sratim.co.il"),
+//                    new HasParentFilter(
+//                            new AndFilter(
+//                                  new TagNameFilter("h3"), new HasAttributeFilter("class", "r"))));
+//            NodeList list = new NodeList();
+////            list = parser.parse(filter);
+//            for (NodeIterator e = parser.elements(); e.hasMoreNodes();)
+//            {
+//                Node node =  e.nextNode();
+////                System.out.println(node.toHtml());
+//                node.collectInto(list, filter);
+//            }
+//            
+//            if (list != null && list.size() >0)
+//            {
+//                LinkTag link = (LinkTag) list.elementAt(0);
+////                return link.getAttribute("href");
+////                engName = engName.replaceFirst("\\(.*\\)", "");
+////                return engName;
+////                System.out.println("eng name = " + engName);
+//            }
+////            System.out.println("*** Google says - Movie real name is:" + tmpName);
+//        } catch (ParserException e)
+//        {
+//            // TODO Auto-generated catch block
+//            e.printStackTrace();
+//        }
+//        
+//        
+//        return null;
+//    }
 
     public Results searchByActualName(FileStruct currentFile)
     {
-        StringBuffer buffer = new StringBuffer(1024);
         // 'input' fields separated by ampersands (&)
-        buffer.append("keyword=");
-        String[] names = currentFile.getNormalizedName().split(" ");
-        for (int i = 0; i < names.length; i++)
+        for (Iterator iterator = currentFile.getNormalizedName().iterator(); iterator.hasNext();)
         {
-            String part = names[i];
-            if (i != 0)
+            String currentTmpNormalizedName = ((String) iterator.next()).trim();
+            String[] names = currentTmpNormalizedName.split(" ");
+
+            StringBuffer buffer = new StringBuffer(1024);
+            buffer.append("keyword=");
+            for (int i = 0; i < names.length; i++)
             {
-                buffer.append("+");
-            }
-            buffer.append(part);
-        }
-        
-        HttpURLConnection connection = createPost(
-                baseUrl + "/movies/search.aspx", buffer);
-        Parser parser;
-        try
-        {
-            parser = new Parser(connection);
-            parser.setEncoding("UTF-8");
-            String res = "";
-            NodeList list = new NodeList();
-            // check if we need tvseries
-            NodeFilter filter = null;
-            
-            if (currentFile.isTV())
-            {
-                filter = new AndFilter(new LinkRegexFilter("series"),
-                        new HasParentFilter(new AndFilter(new TagNameFilter("table"),
-                                new HasAttributeFilter("class", "MovieViews")), true));   
-            } else
-            {
-                filter = new AndFilter(new LinkRegexFilter("movies/view"),
-                        new HasParentFilter(new AndFilter(new TagNameFilter("table"),
-                                new HasAttributeFilter("class", "MovieViews")), true));   
-            }
-            
-            ArrayList<String> subids = new ArrayList<String>();
-            // parsing the links on the search page itself
-            for (NodeIterator e = parser.elements(); e.hasMoreNodes();)
-            {
-                Node node = e.nextNode();
-//                System.out.println(node.toHtml());
-                node.collectInto(list, filter);
+                String part = names[i];
+                if (i != 0)
+                {
+                    buffer.append("+");
+                }
+                buffer.append(part);
             }
 
-            if (!currentFile.isTV())    
+            HttpURLConnection connection = createPost(
+                    baseUrl + "/movies/search.aspx", buffer);
+            Parser parser;
+            try
             {
-                if (!list.toHtml().equals(""))
+                parser = new Parser(connection);
+                parser.setEncoding("UTF-8");
+                String res = "";
+                NodeList list = new NodeList();
+                // check if we need tvseries
+                NodeFilter filter = null;
+
+                if (currentFile.isTV())
                 {
-                    Node[] nodes = list.toNodeArray();
-                    for (int i = 0; i < nodes.length; i++)
+                    filter = new AndFilter(new LinkRegexFilter("series"),
+                            new HasParentFilter(new AndFilter(new TagNameFilter("table"),
+                                    new HasAttributeFilter("class", "MovieViews")), true));   
+                } else
+                {
+                    filter = new AndFilter(new LinkRegexFilter("movies/view"),
+                            new HasParentFilter(new AndFilter(new TagNameFilter("table"),
+                                    new HasAttributeFilter("class", "MovieViews")), true));   
+                }
+
+                ArrayList<String> subids = new ArrayList<String>();
+                // parsing the links on the search page itself
+                for (NodeIterator e = parser.elements(); e.hasMoreNodes();)
+                {
+                    Node node = e.nextNode();
+                    //                System.out.println(node.toHtml());
+                    node.collectInto(list, filter);
+                }
+
+                if (!currentFile.isTV())    
+                {
+                    if (!list.toHtml().equals(""))
                     {
-                        Node node = nodes[i];
-                        if (node.toPlainTextString() == null || node.toPlainTextString().equals(""))
-                            continue;
-                        
-                        //sratim allows for the | sign, so we can try and parse it
-                        String sName = node.toPlainTextString();
-                        String sNames[];
-                        if (sName.indexOf("|") > -1)
+                        Node[] nodes = list.toNodeArray();
+                        for (int i = 0; i < nodes.length; i++)
                         {
-                            sNames = sName.split("|");
-                        }
-                        else
-                        {
-                            sNames = new String[]{sName};
-                        }
-                        boolean foundMovie = false;
-                        for (int j = 0; j < sNames.length; j++)
-                        {
-                            String name = sNames[j];
-                            if (!name.equalsIgnoreCase(currentFile.getNormalizedName()))
+                            Node node = nodes[i];
+                            if (node.toPlainTextString() == null || node.toPlainTextString().equals(""))
+                                continue;
+
+                            //sratim allows for the | sign, so we can try and parse it
+                            String sName = node.toPlainTextString();
+                            String sNames[];
+                            if (sName.indexOf("|") > -1)
+                            {
+                                sNames = sName.split("|");
+                            }
+                            else
+                            {
+                                sNames = new String[]{sName};
+                            }
+                            boolean foundMovie = false;
+                            for (int j = 0; j < sNames.length; j++)
+                            {
+                                String name = sNames[j];
+                                if (!name.equalsIgnoreCase(currentTmpNormalizedName))
+                                {
+                                    continue;
+                                }
+                                foundMovie = true;
+                                break;
+                            }
+                            if (!foundMovie)
                             {
                                 continue;
                             }
-                            foundMovie = true;
-                            break;
-                        }
-                        if (!foundMovie)
-                        {
-                            continue;
-                        }
-                        
-                        String ref = ((TagNode) node).getAttribute("href");
-                        findPicture(currentFile, ref);
-                        if (ref.contains("id="))
-                        {
-                            if (subids.contains(ref))
-                            {
-                                continue;
-                            }
-                            subids.add(ref);
-                        }
-                        // System.out.println("subid = " + subids.get(i));
-                    }
-                }
-    
-                for (String id : subids)
-                {
-                    Results subs = locateFileInFilePage(id, currentFile.getNameNoExt());
-                    if (subs != null)
-                    {
-                        return subs;
-                    }
-                }
-            }
-            else
-            {
-                // ////////////////////////////////////////////////////////////////////////////////////////
-                /*
-                 * No luck finding the correct movie name, it must be a tv
-                 * series So we need to search for series
-                 */
 
-                if (!list.toHtml().equals(""))
-                {
-                    Node[] nodes = list.toNodeArray();
-                    for (int i = 0; i < nodes.length; i++)
-                    {
-                        Node node = nodes[i];
-                        String subid = searchForCorrectSubidOfSeries(((TagNode) node)
-                                .getAttribute("href"), currentFile);
-                        findPicture(currentFile, ((TagNode) node)
-                                .getAttribute("href"));
-                        if (subid != null)
-                        {
-                            String sub1 = subid;
-                            if (sub1.startsWith("/"))
-                                sub1 = subid.substring(1);
-                            
-                            Results subFiles = locateFileInFilePage(sub1, currentFile.getNameNoExt());
-                            if (subFiles != null)
+                            String ref = ((TagNode) node).getAttribute("href");
+                            findPicture(currentFile, ref);
+                            if (ref.contains("id="))
                             {
-                                return subFiles;
+                                if (subids.contains(ref))
+                                {
+                                    continue;
+                                }
+                                subids.add(ref);
+                            }
+                            // System.out.println("subid = " + subids.get(i));
+                        }
+                    }
+
+                    for (String id : subids)
+                    {
+                        Results subs = locateFileInFilePage(id, currentFile.getNameNoExt());
+                        if (subs != null)
+                        {
+                            return subs;
+                        }
+                    }
+                }
+                else
+                {
+                    // ////////////////////////////////////////////////////////////////////////////////////////
+                    /*
+                     * No luck finding the correct movie name, it must be a tv
+                     * series So we need to search for series
+                     */
+
+                    if (!list.toHtml().equals(""))
+                    {
+                        Node[] nodes = list.toNodeArray();
+                        for (int i = 0; i < nodes.length; i++)
+                        {
+                            Node node = nodes[i];
+                            String subid = searchForCorrectSubidOfSeries(((TagNode) node)
+                                    .getAttribute("href"), currentFile);
+                            findPicture(currentFile, ((TagNode) node)
+                                    .getAttribute("href"));
+                            if (subid != null)
+                            {
+                                String sub1 = subid;
+                                if (sub1.startsWith("/"))
+                                    sub1 = subid.substring(1);
+
+                                Results subFiles = locateFileInFilePage(sub1, currentFile.getNameNoExt());
+                                if (subFiles != null)
+                                {
+                                    return subFiles;
+                                }
                             }
                         }
                     }
                 }
+            } catch (ParserException e)
+            {
             }
-        } catch (ParserException e)
-        {
         }
-        
         return null;
     }
 
@@ -387,7 +392,6 @@ public class Sratim implements Provider
             boolean success = false;
 
             System.out.println("*** Sratim trying to find movie for: " + currentFile.getNormalizedName()); 
-            searchByActualName(currentFile);
             Results subsID = searchByActualName(currentFile);
             if (subsID != null && subsID.getResults().size() > 0)
             {
@@ -410,7 +414,7 @@ public class Sratim implements Provider
                         success = Utils.downloadZippedSubs(baseUrl + subID, name + ".zip", cookieHeader);
                         if (success)
                         {
-                            Utils.unzipSubs(currentFile, name + ".zip", subsID.isCorrectResults());
+                            Utils.unzipSubs(currentFile, name + ".zip", subsID.isCorrectResults(), baseUrl + subID);
                         }
                     }
                     return Provider.perfect;
@@ -1005,7 +1009,7 @@ public class Sratim implements Provider
                 dstZipFilename + ".zip", cookieHeader);
         if (success)
         {
-            Utils.unzipSubs(curr, dstZipFilename + ".zip", true);
+            Utils.unzipSubs(curr, dstZipFilename + ".zip", true, url);
         }
     }
 

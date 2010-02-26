@@ -1,3 +1,14 @@
+Version 1.1.2
+ change: no longer looking in opensubs, something is not working there, and I do not feel like diving in there.
+ change: now parse the IMDB title better - work every time with real name. (problem with old dogs movie)
+ added: now looking for "ignore_directory.subs4me" file and if present, I do not look in the dir.
+ added: checking if the file has hd markins in it(720p,720i,1080p,1080i,480p,480i,576p,576i) and if it does check the 
+ 		name of the subtitle, if it has that marking. if they both have the same marking and are of the same release group,
+ 		download that file. since release groups often use short names (Metis=m, HDEX=h), I check if the name of the group in 
+ 		the file I have is the beginning of the name of the group in torec or sratim... this is done since usually they hae the 
+ 		full group release name there.(new feature needs more testing).
+ change: now get all the possible english name from imdb and check on them all, more work, but maybe it will be better, like for
+ 		 "Who am I" and "G-force"
 Version 1.1.1
  added: /useExitCodes to getsubs - give an exit code when ending prog
  		to use this run

@@ -1,6 +1,8 @@
 package utils;
 
 import java.io.File;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -12,18 +14,19 @@ public class FileStruct
     private String _srcDir = "";
     private String _fullFileName = "";
     private String fullFileNameNoGroup = "";
-    private String _normalizedName = "";
+    private List<String> _normalizedName = null;
     private String source = null;
     private String release = "";
     private int releaseStartIndex = -1;
     private String hd = null;
     private boolean hasPic = false;
+    private String _hd = null;
     
     private boolean picAlreadyDownloaded = false;
     
     public final static String releaseSourcePattern = "(?i)(cam)|(ts)|(tc)|(r5)";
-    public final static String hdLevel = "(?i)(720p)|(720i)|(720)|(1080p)|(1080i)|(1080)|(480p)|(480i)|(576p)|(576i)";
-    
+    public final static String hdLevel = "(?i)(720p)|(720i)|(1080p)|(1080i)|(480p)|(480i)|(576p)|(576i)";
+    public final static String groupPattern = "(-\\w*(-)|($))|(-\\w*$)|(\\A\\w*-)";
     public static Pattern EXT_PATTERN = Pattern.compile(".*([.].*$)");
     public int getReleaseStartIndex()
     {
@@ -56,13 +59,14 @@ public class FileStruct
         this(f, true);
     }
     
-    public FileStruct(String fileName, boolean isRealFile)
-    {
-        //because there is usually no ext on the file created like this
-        // and we need an extension for the normalize procedure, I am adding it manually
-        //time will tell if this is the right move
-        _normalizedName = normalizeMovieName(fileName + ".srt");
-    }
+//    public FileStruct(String fileName, boolean isRealFile)
+//    {
+//        //because there is usually no ext on the file created like this
+//        // and we need an extension for the normalize procedure, I am adding it manually
+//        //time will tell if this is the right move
+//        
+//        _normalizedName = normalizeMovieName(fileName + ".srt");
+//    }
     
     public FileStruct(File f, boolean extraWebSearchForSearch)
     {
@@ -71,7 +75,13 @@ public class FileStruct
     
     public FileStruct(String fileName)
     {
-        this(fileName, true);
+        //because there is usually no ext on the file created like this
+        // and we need an extension for the normalize procedure, I am adding it manually
+        //time will tell if this is the right move
+        
+        _normalizedName = new LinkedList<String>();
+        _normalizedName.add(normalizeMovieName(fileName + ".srt"));
+//        this(fileName, true);
     }
     
     public FileStruct(File f, boolean extraWebSearchForSearch, boolean useParentDirNameAsFilename)
@@ -87,7 +97,8 @@ public class FileStruct
             _fullFileName = f.getParentFile().getName() + ext;
         }
         
-        _normalizedName = normalizeMovieName(_fullFileName);
+        _normalizedName = new LinkedList<String>();
+        _normalizedName.add(normalizeMovieName(_fullFileName));
         if (extraWebSearchForSearch)
         {
             String[] names = null;
@@ -105,7 +116,8 @@ public class FileStruct
             
             if (names != null && names[0] != null)
             {
-                _normalizedName = names[0];
+                _normalizedName = new LinkedList<String>();
+                _normalizedName.add(names[0]);
             }
             else
             {
@@ -121,12 +133,12 @@ public class FileStruct
                     {
                         n = _fullFileName;
                     }
-                    String realName = Utils.locateRealNameUsingGoogle(n, "www.imdb.com/title");
-                    if (realName == null)
+                    List<String> possibleRealNames = Utils.locateRealNameUsingGoogle(n, "www.imdb.com/title");
+                    if (possibleRealNames == null)
                     {
                         return;
                     }
-                    _normalizedName = realName;
+                    _normalizedName = possibleRealNames;
                 }
             }
         }
@@ -140,10 +152,10 @@ public class FileStruct
     
     public String normalizeMovieName(String in)
     {
-        String groupPattern = "(-\\w*(-)|($))|(-\\w*$)|(\\A\\w*-)";
         String seasonEp1 = "(?i)(s([\\d]+)e([\\d]+))";
         String seasonEp2 = "(?i)([.][\\d]{3,}+[.])";
         String pattern = "(?i)(PAL)|(DVDRip)|(DVDR)|(REPACK)|(720p)|(720)|(1080p)|(1080)|(480p)|(x264)|(BD5)|(bluray)|(-.*$)|(\\A\\w*-)|(\\d\\d\\d\\d)|(XviD)|(HDTV)|(s[\\d]+e[\\d]+)|([.][\\d]{3,}+[.])|(\\[.*\\])|(ac3)|(nl)|(limited)";
+//        String hdPattern = "(?i)(720p)|(480p)|(1080p)";
         
         //need to take into account that if the is a word at the beginning and then a -
         //its the group name or a cdxxx
@@ -175,6 +187,13 @@ public class FileStruct
                 }
             }
         }
+        //find hd
+        p = Pattern.compile(hdLevel);
+        m1 = p.matcher(in);
+        if (m1.find())
+        {
+            _hd = m1.group();
+        }
         //find season and ep
         //in some tv cases, the name could be:
         // house.609.the tyrent.mkv
@@ -202,12 +221,6 @@ public class FileStruct
 //                normalizeStopper = m1.start();
 //            }
 //        }
-        p = Pattern.compile(hdLevel);
-        m1 = p.matcher(in);
-        if (m1.find())
-        {
-            hd = m1.group();
-        }
         p = Pattern.compile(releaseSourcePattern);
         m1 = p.matcher(in);
         if (m1.find())
@@ -288,14 +301,14 @@ public class FileStruct
         this._fullFileName = fullFileName;
     }
 
-    public String getNormalizedName()
+    public List<String> getNormalizedName()
     {
-        return _normalizedName.trim();
+        return _normalizedName;
     }
 
-    public void setNormalizedNmae(String normalizedName)
+    public void setNormalizedName(List<String> normalizedName)
     {
-        this._normalizedName = normalizedName;
+        _normalizedName = normalizedName;
     }
 
 
@@ -396,6 +409,11 @@ public class FileStruct
         sb.append(getFullFileName());
         sb.append(", ext=");
         sb.append(getExt());
+        if (getHD() != null)
+        {
+            sb.append(", hd=");
+            sb.append(getHD());
+        }
         if (isTV())
         {
             sb.append(", season=");
@@ -421,12 +439,40 @@ public class FileStruct
         return ret;
     }
     
-    public String getHDLevel()
+//    public String getHDLevel()
+//    {
+//        if (hd == null)
+//            return null;
+//        
+//        return hd.replaceAll("[pP]", "");
+//    }
+//    
+    
+    /**
+     * external utility to help get hd level data from file name
+     */
+    public static String extractHDLevel(String source)
     {
-        if (hd == null)
-            return null;
+        Pattern p = Pattern.compile(hdLevel);
+        Matcher m1 = p.matcher(source);
+        if (m1.find())
+        {
+            return m1.group();
+        }
         
-        return hd.replaceAll("[pP]", "");
+        return null;
+    }
+    
+    
+    public static String extractGroup(String source)
+    {
+        Pattern p = Pattern.compile(groupPattern);
+        Matcher m1 = p.matcher(source);
+        if (m1.find())
+        {
+            return m1.group();
+        }
+        return null;
     }
     
     public String getSource()
@@ -467,5 +513,14 @@ public class FileStruct
     public boolean hasPicBeenDownloadedAlready()
     {
         return this.picAlreadyDownloaded;
+    }
+    
+    /**
+     * find out if this file has any hd markings in it
+     * @return
+     */
+    public String getHD()
+    {
+        return _hd;
     }
 }
