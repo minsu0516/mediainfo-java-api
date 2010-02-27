@@ -289,6 +289,11 @@ public class Utils
     {
         return string.replaceAll(" ", "%20");
     }
+    
+    public static String unEscape(String string)
+    {
+        return string.replaceAll("&#x26;", "&");
+    }
 
     public static boolean isInRange(String num, String range)
     {
@@ -709,9 +714,10 @@ public class Utils
                 String tmpName = ((HeadingTag)list.toNodeArray()[0]).getChild(0).toPlainTextString();
 //                tmpName = tmpName.replaceAll("\\([\\d]*\\)$", "");
                 List<String> lst = new LinkedList<String>();
-                lst.add(tmpName);
+                lst.add(unEscape(tmpName));
                 
                 parser = new Parser(imdbUrl + "/releaseinfo#akas");
+                parser.setEncoding("UTF-8");
                 NodeFilter filter2 = new AndFilter(new TagNameFilter("a"), new HasAttributeFilter("name", "akas"));
                 list = new NodeList();
                 list = parser.parse(filter2);
@@ -730,10 +736,10 @@ public class Utils
                         }
                         
                         String gr = m.group(1);
-                        if (gr.indexOf("#") == -1)
-                        {
-                            lst.add(gr);
-                        }
+//                        if (gr.indexOf("#") == -1)
+//                        {
+                            lst.add(unEscape(gr));
+//                        }
                         i++;
                     }
                 }
