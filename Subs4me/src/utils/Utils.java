@@ -581,7 +581,7 @@ public class Utils
   //scrape google
     public static String searchRealNameUsingGoogle2(String fileName, String searchForCritiria)
     {
-        String query = "\"" + fileName + "\" " + searchForCritiria; 
+        String query = "\"" + fileName + "\" " + searchForCritiria + " download"; 
         System.out.println("Querying Google for " + query);
         Parser parser;
         try
@@ -720,24 +720,30 @@ public class Utils
                     Node table = list.elementAt(0).getParent().getNextSibling().getNextSibling();
                     Pattern p1 = Pattern.compile("<td>(.*)</td>");
                     Matcher m = p1.matcher(table.toHtml());
-                    if (m.find())
+                    int i = 0;
+                    while (m.find())
                     {
-                        for (int i = 0; i < m.groupCount(); i=i+2)
+                        if (i % 2 > 0)
                         {
-                            String gr = m.group(i);
+                            i++;
+                            continue;
+                        }
+                        
+                        String gr = m.group(1);
+                        if (gr.indexOf("#") == -1)
+                        {
                             lst.add(gr);
                         }
+                        i++;
                     }
                 }
-//                if (list != null && list.size() >0)
-//                {
-//                    String engName = list.elementAt(0).toPlainTextString();
-//                    engName = engName.replaceFirst("\\(.*\\)", "");
-//                    lst.add(engName);
-////                    return lst;
-////                    System.out.println("eng name = " + engName);
-//                }
-                System.out.println("*** Google says - Movie real name is:" + tmpName);
+                StringBuilder sb = new StringBuilder();
+                for (String name : lst)
+                {
+                    sb.append(name);
+                    sb.append(", ");
+                }
+                System.out.println("*** Google says - Movie real name is:" + sb.toString());
                 return lst;
                 
             } catch (ParserException e1)

@@ -7,7 +7,7 @@ Version 1.1.2
  		download that file. since release groups often use short names (Metis=m, HDEX=h), I check if the name of the group in 
  		the file I have is the beginning of the name of the group in torec or sratim... this is done since usually they hae the 
  		full group release name there.(new feature needs more testing).
- change: now get all the possible english name from imdb and check on them all, more work, but maybe it will be better, like for
+ change: now get all the possible names and akas (also known as) from imdb and check on them all, more work, but maybe it will be better, like for
  		 "Who am I" and "G-force"
 Version 1.1.1
  added: /useExitCodes to getsubs - give an exit code when ending prog
