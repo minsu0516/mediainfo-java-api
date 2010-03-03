@@ -547,7 +547,7 @@ public class Sratim implements Provider
                         displayNames.add(name);
 //                        String dlPlease = Utils.postForFileName(subid.substring(15),
 //                                filesTodl.get(i));
-                        System.out.println("*** Sratim found exact movie name, proceeding to dl: "
+                        System.out.println("*** Sratim found exact movie name, proceeding to dl: " + name + ", "
                                 + filesTodl.get(i));
                         LinkedList<String> lst = new LinkedList<String>();
                         lst.add(filesTodl.get(i));

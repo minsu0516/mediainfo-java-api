@@ -1,3 +1,7 @@
+Version 1.1.3
+ fixed: handle "&" in name (Julie & Julia)
+Version 1.1.2a
+ minor change: strip " from name in imdb 
 Version 1.1.2
  change: no longer looking in opensubs, something is not working there, and I do not feel like diving in there.
  change: now parse the IMDB title better - work every time with real name. (problem with old dogs movie)

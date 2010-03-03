@@ -290,9 +290,22 @@ public class Utils
         return string.replaceAll(" ", "%20");
     }
     
-    public static String unEscape(String string)
+    public static List<String> unEscape(String string, boolean replaceVerbus)
     {
-        return string.replaceAll("&#x26;", "&");
+        List<String> lst = new LinkedList<String>();
+        String rep = string;
+        //strip " &#x22;
+        rep = rep.replaceAll("&#x22;", "");
+        rep = rep.replaceAll("\"", "");
+        rep = rep.trim();
+        
+        String repx = rep.replaceAll("&#x26;", "and");
+        lst.add(repx);
+        repx = rep.replaceAll("&#x26;", "&amp;");
+        lst.add(repx);
+        repx = repx.replaceAll("&amp;", "and");
+        lst.add(repx);
+        return lst;
     }
 
     public static boolean isInRange(String num, String range)
@@ -714,8 +727,9 @@ public class Utils
                 String tmpName = ((HeadingTag)list.toNodeArray()[0]).getChild(0).toPlainTextString();
 //                tmpName = tmpName.replaceAll("\\([\\d]*\\)$", "");
                 List<String> lst = new LinkedList<String>();
-                lst.add(unEscape(tmpName));
-                
+                List<String> namesLst =  unEscape(tmpName, true);
+                addToList(lst, namesLst);
+
                 parser = new Parser(imdbUrl + "/releaseinfo#akas");
                 parser.setEncoding("UTF-8");
                 NodeFilter filter2 = new AndFilter(new TagNameFilter("a"), new HasAttributeFilter("name", "akas"));
@@ -736,10 +750,8 @@ public class Utils
                         }
                         
                         String gr = m.group(1);
-//                        if (gr.indexOf("#") == -1)
-//                        {
-                            lst.add(unEscape(gr));
-//                        }
+                        List<String> namesLst1 =  unEscape(gr, true);
+                        addToList(lst, namesLst1);
                         i++;
                     }
                 }
@@ -765,6 +777,26 @@ public class Utils
         return null;
     }
     
+    private static void addToList(List<String> lst, List<String> newNames)
+    {
+        for (String name : newNames)
+        {
+            boolean found = false;
+            for (String alreadyInNmaes : lst)
+            {
+                if (alreadyInNmaes.equals(name))
+                {
+                    found = true;
+                    break;
+                }
+            }
+            if (!found)
+            {
+                lst.add(name);
+            }
+        }
+    }
+
     public static boolean isMovieFile(FileStruct file)
     {
         if (file.getExt().equalsIgnoreCase("mkv")
