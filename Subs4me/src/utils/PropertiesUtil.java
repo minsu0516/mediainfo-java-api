@@ -56,9 +56,10 @@ public class PropertiesUtil {
             if (streamName.contains("subs4me.properties")) {
                 logger.warning("Warning (non-fatal): User properties file: subs4me.properties, not found.");
             } else {
-                logger.severe("Failed loading file " + streamName + ": Please check your configuration. The properties file should be in the classpath.");
+                logger.severe("Failed loading file " + streamName + ": Please check your configuration. The properties file should be in the classpath.\n" +
+                		"using default properties");
             }
-            return false;
+//            return false;
         }
         return true;
     }
