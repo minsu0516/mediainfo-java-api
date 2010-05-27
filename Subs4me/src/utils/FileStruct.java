@@ -116,7 +116,7 @@ public class FileStruct
             
             if (names != null && names[0] != null)
             {
-                _normalizedName = new LinkedList<String>();
+//                _normalizedName = new LinkedList<String>();
                 _normalizedName.add(names[0]);
             }
             else
@@ -138,7 +138,12 @@ public class FileStruct
                     {
                         return;
                     }
-                    _normalizedName = possibleRealNames;
+                    if (possibleRealNames.contains(_normalizedName.get(0)))
+                    {
+                        int loc = possibleRealNames.indexOf(_normalizedName.get(0));
+                        possibleRealNames.remove(loc);
+                    }
+                    _normalizedName.addAll(possibleRealNames);
                 }
             }
         }
@@ -154,7 +159,7 @@ public class FileStruct
     {
         String seasonEp1 = "(?i)(s([\\d]+)e([\\d]+))";
         String seasonEp2 = "(?i)([.][\\d]{3,}+[.])";
-        String pattern = "(?i)(PAL)|(DVDRip)|(DVDR)|(REPACK)|(720p)|(720)|(1080p)|(1080)|(480p)|(x264)|(BD5)|(bluray)|(-.*$)|(\\A\\w*-)|(\\d\\d\\d\\d)|(XviD)|(HDTV)|(s[\\d]+e[\\d]+)|([.][\\d]{3,}+[.])|(\\[.*\\])|(ac3)|(nl)|(limited)";
+        String pattern = "((iNTERNAL)|(?i)(PAL)|(DVDRip)|(DVDR)|(REPACK)|(720p)|(720)|(1080p)|(1080)|(480p)|(x264)|(BD5)|(bluray)|(-.*$)|(\\A\\w*-)|(\\d\\d\\d\\d)|(XviD)|(HDTV)|(s[\\d]+e[\\d]+)|([.][\\d]{3,}+[.])|(\\[.*\\])|(ac3)|(nl)|(limited))";
 //        String hdPattern = "(?i)(720p)|(480p)|(1080p)";
         
         //need to take into account that if the is a word at the beginning and then a -
