@@ -1,3 +1,9 @@
+Version 1.2
+ fixed: Torec is back with us
+ change: Some improvements for logging
+ change: Now try to rely more on local filename parsing and only then on google/imdb names. usually I parse the file name 
+ 		 into movie name quite decently, so try to use that first.
+ change: do NOT get the movie pic automatically 
 Version 1.1.3
  fixed: handle "&" in name (Julie & Julia)
 Version 1.1.2a
