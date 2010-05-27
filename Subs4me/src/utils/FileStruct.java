@@ -102,7 +102,7 @@ public class FileStruct
         if (extraWebSearchForSearch)
         {
             String[] names = null;
-            if (!Subs4me.dontUseOpenSubsForNameSearch)
+            if (!Subs4me.dontUseOpenSubsForNameSearch && f.length() > 100000)
             {
                 try
                 {
