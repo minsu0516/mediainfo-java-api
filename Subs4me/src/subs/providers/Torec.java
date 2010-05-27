@@ -1,21 +1,22 @@
 package subs.providers;
 
-import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
-import java.io.FileReader;
-import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.io.PrintWriter;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Enumeration;
+import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.LinkedList;
-import java.util.Scanner;
+import java.util.Properties;
+import java.util.Map.Entry;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -28,13 +29,13 @@ import org.htmlparser.filters.HasChildFilter;
 import org.htmlparser.filters.HasParentFilter;
 import org.htmlparser.filters.LinkRegexFilter;
 import org.htmlparser.filters.TagNameFilter;
+import org.htmlparser.http.ConnectionManager;
 import org.htmlparser.nodes.TagNode;
 import org.htmlparser.util.NodeIterator;
 import org.htmlparser.util.NodeList;
 import org.htmlparser.util.ParserException;
 import org.htmlparser.util.SimpleNodeIterator;
 
-import subs.Login;
 import subs.Provider;
 import subs.Results;
 import subs.Subs4me;
@@ -46,11 +47,40 @@ public class Torec implements Provider
     public static final String baseUrl ="http://www.torec.net";
     private FileStruct currentFile = null;
     private static Pattern subIdPattern = Pattern.compile("ID=([\\d]*)");
+    Parser parser;
+    
+    private ConnectionManager cm = new ConnectionManager();
     
     private static final Torec instance = new Torec();
     static
     {
         Subs4me.registerProvider(instance);
+    }
+    
+    private Torec()
+    {
+        cm.setCookieProcessingEnabled(true);
+        Properties props = new Properties();
+        
+        props.setProperty("User-Agent", "Mozilla/5.0 (Windows; U; Windows NT 5.1; en-US; rv:1.9.2.3) Gecko/20100401 Firefox/3.6.3 ( .NET CLR 3.5.30729)");
+        props.setProperty("Accept","text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8");
+        props.setProperty("Accept-Language","en-us,en;q=0.5");
+        props.setProperty("Accept-Encoding","gzip,deflate");
+        props.setProperty("Accept-Charset","ISO-8859-1,utf-8;q=0.7,*;q=0.7");
+        props.setProperty("Keep-Alive","115");
+        props.setProperty("Connection","keep-alive");
+        
+        cm.setRequestProperties(props);
+        Parser.setConnectionManager(cm);
+        try
+        {
+            parser = new Parser(baseUrl);
+        }
+        catch (ParserException e)
+        {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
     }
     
     public static Torec getInstance()
@@ -154,13 +184,12 @@ public class Torec implements Provider
                 buffer.append(part);
             }
 
-            HttpURLConnection connection = Utils.createPost(
+            HttpURLConnection connection = createPost(
                     "http://www.torec.net/ssearch.asp", buffer);
 
-            Parser parser;
             try
             {
-                parser = new Parser(connection);
+                parser.setConnection(connection);
                 parser.setEncoding("UTF-8");
 
                 NodeList list = new NodeList();
@@ -262,6 +291,64 @@ public class Torec implements Provider
 
         return null;
     }
+    
+    public HttpURLConnection createPost(String urlString,
+            StringBuffer extraProps)
+    {
+        URL url;
+        HttpURLConnection connection = null;
+        PrintWriter out;
+
+        try
+        {
+            url = new URL(urlString);
+            connection = (HttpURLConnection) url.openConnection();
+            connection.setRequestMethod("POST");
+
+            connection.setDoOutput(true);
+            connection.setDoInput(true);
+            connection.setUseCaches(false);
+
+            // more or less of these may be required
+            // see Request Header Definitions:
+            // http://www.ietf.org/rfc/rfc2616.txt
+            
+//            connection.setRequestProperty("Accept-Charset", "*");
+//            connection.setRequestProperty("Accept_Languaget", "en-us,en;q=0.5");
+//            connection.setRequestProperty("Accept-Encoding", "gzip,deflate");
+//            connection.setRequestProperty("Accept-Charset", "ISO-8859-1,utf-8;q=0.7,*;q=0.7");
+            Hashtable p = cm.getRequestProperties();
+            Enumeration en = p.keys();
+            while (en.hasMoreElements())
+            {
+                String key = (String) en.nextElement();
+                
+                String val = (String) p.get(key);
+                connection.setRequestProperty(key, val);
+            }
+            connection.setRequestProperty("X-Requested-With", "XMLHttpRequest");
+            connection.setRequestProperty("Referer", "www.torec.net");
+           
+            cm.addCookies(connection);
+            
+            out = new PrintWriter(connection.getOutputStream());
+            out.print(extraProps);
+            out.close();
+        }
+        catch (MalformedURLException e)
+        {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
+        catch (IOException e)
+        {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
+
+        return connection;
+    }
+
 
     public String searchForCorrectSubidOfSeries(String seriesInfo,
             FileStruct currentFile)
@@ -270,7 +357,7 @@ public class Torec implements Provider
         {
             if (seriesInfo.startsWith("/"))
                 seriesInfo = seriesInfo.substring(1);
-            Parser parser = new Parser(baseUrl + "/" + seriesInfo);
+            parser.setURL(baseUrl + "/" + seriesInfo);
             parser.setEncoding("UTF-8");
             
             //lets find out how many seasons are showing:
@@ -373,7 +460,7 @@ public class Torec implements Provider
             {
                 // now we move into the movie page itself
                 // bring the table for download files
-                Parser parser = new Parser(baseUrl + "/" + subid);
+                parser.setURL(baseUrl + "/" + subid);
                 parser.setEncoding("UTF-8");
                 NodeFilter filter = new AndFilter(new TagNameFilter("option"),
                         new HasParentFilter(new TagNameFilter("table"), true));
@@ -536,13 +623,12 @@ public class Torec implements Provider
         StringBuffer buffer = new StringBuffer(1024);
         // 'input' fields separated by ampersands (&)
         buffer.append("sub_id=" + subid);
-        HttpURLConnection connection = Utils.createPost(
+        HttpURLConnection connection = createPost(
                 baseUrl + "/ajax/sub/guest_time.asp", buffer);
     
-        Parser parser;
         try
         {
-            parser = new Parser(connection);
+            parser.setConnection(connection);
             parser.setEncoding("UTF-8");
     
             // HtmlPage page = new HtmlPage(parser);
@@ -565,10 +651,10 @@ public class Torec implements Provider
             buffer.append(code);
             buffer.append("&guest=");
             buffer.append(guest);
-            connection = Utils.createPost(
+            connection = createPost(
                     baseUrl + "/ajax/sub/download.asp", buffer);
     
-            parser = new Parser(connection);
+            parser.setConnection(connection);
             parser.setEncoding("UTF-8");
             String name = "";
             for (NodeIterator e = parser.elements(); e.hasMoreNodes();)
@@ -606,7 +692,7 @@ public class Torec implements Provider
 
             try
             {
-                Parser parser = new Parser(baseUrl + "/" + id);
+                parser.setURL(baseUrl + "/" + id);
                 parser.setEncoding("UTF-8");
                 NodeFilter filter = new AndFilter(new TagNameFilter("param"),
                         new HasAttributeFilter("name", "flashvars"));
