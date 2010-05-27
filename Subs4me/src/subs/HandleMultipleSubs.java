@@ -188,7 +188,7 @@ public class HandleMultipleSubs
                 break;
             default:
                 boolean ok = false;
-                System.out.println("You chose " + sel + ", renaming file to " + currentFile.getNameNoExt() + ".srt\n");
+                System.out.println("You chose " + sel + ", renaming \"" + pResults.get(sel).getDestFileName() + "\" to \"" + currentFile.getNameNoExt() + ".srt\"\n");
                 
                 if (sel > files.length)
                 {
@@ -197,20 +197,11 @@ public class HandleMultipleSubs
                     {
                         Sratim.getInstance().downloadFile(p.getFileURL(), p.getDestFileName(), currentFile);
                         Utils.deleteFile(currentFile.getFile());
-//                        if (!currentFile.isVideoFile())
-//                        {
-//                            
-//                            currentFile.getFile().delete();
-//                        }
                     }
                     else if (p.getProviderName().equalsIgnoreCase(Torec.getInstance().getName()))
                     {
                         Torec.getInstance().downloadFile(p.getFileURL(), p.getDestFileName(), currentFile);
                         Utils.deleteFile(currentFile.getFile());
-//                        if (!currentFile.isVideoFile())
-//                        {
-//                            currentFile.getFile().delete();
-//                        }
                     }
                     
                     for (int i = 0; i < files.length; i++)
@@ -218,7 +209,6 @@ public class HandleMultipleSubs
                         String delName = files[i];
                         File del = new File(currentFile.getFile().getParent(), delName);
                         Utils.deleteFile(del);
-//                        del.delete();
                     }
                 }
                 else
