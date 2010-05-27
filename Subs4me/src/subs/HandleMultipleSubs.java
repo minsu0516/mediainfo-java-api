@@ -188,7 +188,7 @@ public class HandleMultipleSubs
                 break;
             default:
                 boolean ok = false;
-                System.out.println("You chose " + sel + ", renaming \"" + pResults.get(sel).getDestFileName() + "\" to \"" + currentFile.getNameNoExt() + ".srt\"\n");
+                System.out.println("You chose " + sel + ", renaming \"" + pResults.get(sel-1).getDestFileName() + "\" to \"" + currentFile.getNameNoExt() + ".srt\"\n");
                 
                 if (sel > files.length)
                 {
