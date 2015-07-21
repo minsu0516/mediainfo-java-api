@@ -1,5 +1,5 @@
 
-package net.sourceforge.subs4me.filebot.mediainfo;
+package org.apothem.mediainfo.api;
 
 
 import java.io.Closeable;
