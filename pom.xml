@@ -5,7 +5,7 @@
 
 	<groupId>org.apothem</groupId>
 	<artifactId>mediainfo-java-api</artifactId>
-	<version>1.0.0</version>
+	<version>1.0.1.BUILD-SNAPSHOT</version>
 	<packaging>jar</packaging>
 	
 	<name>mediainfo java api</name>
